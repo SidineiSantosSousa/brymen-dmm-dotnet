@@ -1,6 +1,7 @@
 using Brymen.Dmm.Api.Acquisition;
 using Brymen.Dmm.Api.Contracts;
 using Brymen.Dmm.Api.Meter;
+using Brymen.Dmm.Protocol;
 using Microsoft.AspNetCore.SignalR;
 
 namespace Brymen.Dmm.Api.Hubs;
@@ -10,7 +11,7 @@ namespace Brymen.Dmm.Api.Hubs;
 /// <list type="bullet">
 ///   <item><description><c>reading</c>: cada leitura publicada no <see cref="ReadingBroadcaster"/>, a mesma fonte do SSE;</description></item>
 ///   <item><description><c>acquisitionSample</c>: cada amostra gravada pelo <see cref="Recorder"/>;</description></item>
-///   <item><description><c>status</c>: cada mudança do link ou do cabo (estado, abertura, importação, erro registrado).</description></item>
+///   <item><description><c>status</c>: cada mudança do link, do cabo ou do medidor (estado, abertura, importação, erro registrado, família detectada).</description></item>
 /// </list>
 /// É mais um assinante do broadcaster: o polling nunca espera pelo SignalR. Se os clientes não acompanharem, o canal
 /// descarta o item mais antigo e a contagem vai para o log. As assinaturas são feitas em <see cref="StartAsync"/>,
@@ -127,10 +128,13 @@ internal sealed class SignalRForwarder(
         }
     }
 
-    /// <summary>O que, no <see cref="MeterSnapshot"/>, gera um evento <c>status</c>; o contador de leituras não entra.</summary>
+    /// <summary>
+    /// O que, no <see cref="MeterSnapshot"/>, gera um evento <c>status</c>: inclusive a família detectada (o objeto
+    /// <c>model</c>). O contador de leituras e as estatísticas do tempo real não entram.
+    /// </summary>
     private readonly record struct StatusKey(
-        bool LinkEnabled, MeterConnectionState State, bool DeviceOpen, string? DevicePath, bool Importing, MeterError? LastError)
+        bool LinkEnabled, MeterConnectionState State, bool DeviceOpen, string? DevicePath, bool Importing, MeterError? LastError, MeterFamily? Family)
     {
-        public static StatusKey From(MeterSnapshot s) => new(s.LinkEnabled, s.State, s.DeviceOpen, s.Device?.Path, s.Importing, s.LastError);
+        public static StatusKey From(MeterSnapshot s) => new(s.LinkEnabled, s.State, s.DeviceOpen, s.Device?.Path, s.Importing, s.LastError, s.Family);
     }
 }

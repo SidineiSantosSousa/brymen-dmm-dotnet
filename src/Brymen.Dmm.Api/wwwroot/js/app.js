@@ -64,6 +64,28 @@ function renderMeter(status) {
   badge.className = `badge ${status.importing ? "warn" : cls}`;
   badge.title = status.lastError ? `[${status.lastError.code}] ${status.lastError.message}` : (status.device ? status.device.path : "");
   $("link-toggle").textContent = linkEnabled ? "Unlink" : "Link";
+  renderModel(status.model, status.realTimeStatistics);
+}
+
+// Modelo detectado pelo Model ID do tempo real (null antes da 1ª detecção): o nome vai no cabeçalho, e um medidor sem
+// datalogger (família BM82x, como o Minipa ET-2517A) não mostra "Importar do medidor", que responderia 409 com E9014.
+function renderModel(model, stats) {
+  const title = $("meter-model");
+  title.textContent = model ? model.name : "Brymen DMM";
+  let details = model ? `Família ${model.family}, Model ID ${model.modelId}` : "Medidor ainda não identificado";
+  if (stats && stats.resends > 0) {
+    details += ` · ${stats.resends} reenvio(s) recuperaram ${stats.recoveredQueries} consulta(s) de ${stats.queries}`;
+  }
+  title.title = details;
+  document.title = model ? `${model.name} · Brymen DMM` : "Brymen DMM";
+
+  const supportsDataLogger = !model || model.supportsDataLogger !== false;
+  $("log-import").hidden = !supportsDataLogger;
+  const note = $("log-unsupported");
+  note.hidden = supportsDataLogger;
+  if (!supportsDataLogger) {
+    note.textContent = `${model.name} não tem datalogger: não há memória para importar.`;
+  }
 }
 
 async function refreshMeter() {

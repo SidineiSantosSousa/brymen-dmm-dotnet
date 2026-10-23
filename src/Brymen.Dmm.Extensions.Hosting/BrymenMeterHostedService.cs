@@ -1,3 +1,4 @@
+using Brymen.Dmm.Protocol;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -39,6 +40,8 @@ internal sealed partial class BrymenMeterHostedService : IHostedLifecycleService
     private Task? _reconnect;
     private BrymenMeter? _meter;
     private string? _lastLoggedCode;
+    // A família da última leitura anunciada no log (evento 8), desde a última abertura.
+    private MeterFamily? _lastLoggedFamily;
     private bool _disposed;
 
     /// <param name="accessor">O acessor deste medidor.</param>
@@ -132,6 +135,7 @@ internal sealed partial class BrymenMeterHostedService : IHostedLifecycleService
         }
         _accessor.StateChanged -= OnStateChanged;
         _accessor.ErrorOccurred -= OnError;
+        _accessor.ReadingReceived -= OnReading;
         stopping.Dispose();
     }
 
@@ -177,12 +181,14 @@ internal sealed partial class BrymenMeterHostedService : IHostedLifecycleService
             _accessor.OnStarting();
             _accessor.StateChanged += OnStateChanged;
             _accessor.ErrorOccurred += OnError;
+            _accessor.ReadingReceived += OnReading;
             await TryOpenAsync(options, firstAttempt: true, cancellationToken).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
             _accessor.StateChanged -= OnStateChanged;
             _accessor.ErrorOccurred -= OnError;
+            _accessor.ReadingReceived -= OnReading;
             // Quem já espera o medidor recebe a falha da partida.
             _accessor.Detach(null, ex);
             lock (_sync)
@@ -312,6 +318,7 @@ internal sealed partial class BrymenMeterHostedService : IHostedLifecycleService
             _meter = meter;
             // A abertura em si já é anunciada no log; um "restabelecida" depois dela seria repetido.
             _lastLoggedCode = null;
+            _lastLoggedFamily = null;
         }
         LogOpened(_logger, meter.Device.Path, meter.Device.Product ?? "?");
         _accessor.Attach(meter);
@@ -330,6 +337,18 @@ internal sealed partial class BrymenMeterHostedService : IHostedLifecycleService
         {
             // A parada descartou o medidor entre a abertura e o início do laço.
         }
+    }
+
+    // A família detectada pela 1ª leitura depois da abertura, e cada troca dela (o medidor trocado no mesmo cabo).
+    private void OnReading(object? sender, DmmReading reading)
+    {
+        lock (_sync)
+        {
+            if (_lastLoggedFamily == reading.Family)
+                return;
+            _lastLoggedFamily = reading.Family;
+        }
+        LogFamily(_logger, reading.Family.Describe(), reading.Family.HasDataLogger() ? "com" : "sem");
     }
 
     private void OnStateChanged(object? sender, MeterStateChangedEventArgs e)
@@ -387,4 +406,7 @@ internal sealed partial class BrymenMeterHostedService : IHostedLifecycleService
 
     [LoggerMessage(EventId = 7, Level = LogLevel.Information, Message = "Multímetro fechado.")]
     private static partial void LogStopped(ILogger logger);
+
+    [LoggerMessage(EventId = 8, Level = LogLevel.Information, Message = "Família do multímetro: {Family}, {DataLogger} datalogger.")]
+    private static partial void LogFamily(ILogger logger, string family, string dataLogger);
 }

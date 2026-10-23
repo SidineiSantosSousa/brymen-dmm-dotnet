@@ -7,12 +7,15 @@ using Microsoft.Extensions.Logging;
 
 namespace Brymen.Dmm.Extensions.Hosting.Tests;
 
-/// <summary>Um BC-86X simulado, sem latência, ligado a um BM52x simulado com as capturas reais.</summary>
+/// <summary>
+/// Um BC-86X simulado, sem latência, ligado a um BM52x simulado com as capturas reais (ou a <paramref name="meter"/>,
+/// como o BM82x de <see cref="SimulatedBm52xMeter.CreateBm82x"/>).
+/// </summary>
 internal sealed class SimulatedCable
 {
-    public SimulatedCable(string? path = null)
+    public SimulatedCable(string? path = null, SimulatedBm52xMeter? meter = null)
     {
-        Meter = SimulatedBm52xMeter.FromCaptures();
+        Meter = meter ?? SimulatedBm52xMeter.FromCaptures();
         Device = new SimulatedHidDevice(Meter.Respond, path is null ? null : SimulatedHidDevice.DefaultInfo with { Path = path });
         Provider = new SimulatedHidDeviceProvider([Device]);
     }

@@ -19,7 +19,10 @@
     "digits": "Correção (revisão): 4 caracteres crus do display, espaço = dígito apagado (ex.: \" 0L \"); pontos decimais não entram aqui.",
     "text": "Correção (revisão): (\"-\" se o sinal do display estiver aceso) + caracteres com \".\" inserido à direita do dígito cujo bit 4 está aceso, sem espaços nas pontas (ex.: \"-12.34\", \"0.L\").",
     "blankDisplay": "Correção (revisão): display inteiramente apagado => o objeto main/secondary é null.",
-    "pointerStart": "Correção (revisão): ponteiro de memória do 1º byte útil do bloco; é metadado da sequência de comandos (não é derivável dos 36 bytes). null = sequência exata não registrada."
+    "pointerStart": "Correção (revisão): ponteiro de memória do 1º byte útil do bloco; é metadado da sequência de comandos (não é derivável dos 36 bytes). null = sequência exata não registrada.",
+    "family": "Acréscimo (2026-10-23): família do medidor pelo Model ID dos bytes 20-23, \"BM52x\" (52 52 52 52) ou \"BM82x\" (82 82 82 82). Vetor sem o campo family = BM52x (BM525s).",
+    "command": "Acréscimo (2026-10-23): \"66\", \"88\", \"89\" e \"8A\" = Command 3 com Command 2 = 52 (00 | 00 52 cc); \"8266\" = Command 2 e Command 3 do pedido 00 | 00 82 66.",
+    "vectorModelBytes": "Acréscimo (2026-10-23): o modelBytes no nível do vetor repete o expected.modelBytes, para filtrar por família sem decodificar."
   },
   "vectors": [
     {
@@ -1416,8 +1419,610 @@
         ]
       },
       "note": "Correção (revisão): índices de amostra 0-based (i); a amostra i tem ML_0 no ponteiro 6 + 14 + 6*i. Total de blocos íntegros nos dois dumps = 192 (95 + 97)."
+    },
+    {
+      "name": "et2517a-acv-0.013V-hz-0.000Hz-auto",
+      "kind": "rtd",
+      "command": "8266",
+      "family": "BM82x",
+      "modelBytes": "82828282",
+      "hex": "00001000BFAFA0E90000BFAFAFAF00012006008282828210000000",
+      "source": "Captura real Minipa ET-2517A (BM82x) 2026-10-23, captures/et2517a-sweep-2026-10-23.txt, linha de 0,2 s",
+      "synthetic": false,
+      "expected": {
+        "valid": true,
+        "modelBytes": "82828282",
+        "main": {
+          "digits": "0013",
+          "text": "0.013",
+          "negative": false,
+          "overload": false,
+          "value": 0.013,
+          "prefix": "",
+          "unit": "V",
+          "mode": "AC",
+          "siValue": 0.013
+        },
+        "secondary": {
+          "digits": "0000",
+          "text": "0.000",
+          "negative": false,
+          "overload": false,
+          "value": 0.0,
+          "prefix": "",
+          "unit": "Hz",
+          "mode": "NONE",
+          "siValue": 0.0
+        },
+        "flags": [
+          "AUTO"
+        ],
+        "unknown": {
+          "byte2": "00",
+          "byte18": "06",
+          "byte24LowNibble": 0,
+          "bytes25to27": "000000"
+        }
+      },
+      "note": "ACV + Hz em AUTO, pontas abertas; o mesmo quadro aparece em et2517a-commands-2026-10-23.txt."
+    },
+    {
+      "name": "et2517a-dcv-0.000V-acv-0.337V",
+      "kind": "rtd",
+      "command": "8266",
+      "family": "BM82x",
+      "modelBytes": "82828282",
+      "hex": "00002000BFAFAFAF4000BFE9E9A810002000008282828210000000",
+      "source": "Captura real Minipa ET-2517A (BM82x) 2026-10-23, captures/et2517a-sweep-2026-10-23.txt, linha de 110,4 s",
+      "synthetic": false,
+      "expected": {
+        "valid": true,
+        "modelBytes": "82828282",
+        "main": {
+          "digits": "0000",
+          "text": "0.000",
+          "negative": false,
+          "overload": false,
+          "value": 0.0,
+          "prefix": "",
+          "unit": "V",
+          "mode": "DC",
+          "siValue": 0.0
+        },
+        "secondary": {
+          "digits": "0337",
+          "text": "0.337",
+          "negative": false,
+          "overload": false,
+          "value": 0.337,
+          "prefix": "",
+          "unit": "V",
+          "mode": "AC",
+          "siValue": 0.337
+        },
+        "flags": [
+          "AUTO"
+        ],
+        "unknown": {
+          "byte2": "00",
+          "byte18": "00",
+          "byte24LowNibble": 0,
+          "bytes25to27": "000000"
+        }
+      },
+      "note": "DCV (principal, b3.5) com ACV no secundário (b9.6 + b15.4)."
+    },
+    {
+      "name": "et2517a-hz-60.01Hz-acmv-60.06mV",
+      "kind": "rtd",
+      "command": "8266",
+      "family": "BM82x",
+      "modelBytes": "82828282",
+      "hex": "000000006FBFAFA040006FBFAF6F90100000008282828210000000",
+      "source": "Captura real Minipa ET-2517A (BM82x) 2026-10-23, captures/et2517a-sweep-2026-10-23.txt, linha de 94,7 s",
+      "synthetic": false,
+      "expected": {
+        "valid": true,
+        "modelBytes": "82828282",
+        "main": {
+          "digits": "6001",
+          "text": "60.01",
+          "negative": false,
+          "overload": false,
+          "value": 60.01,
+          "prefix": "",
+          "unit": "Hz",
+          "mode": "NONE",
+          "siValue": 60.01
+        },
+        "secondary": {
+          "digits": "6006",
+          "text": "60.06",
+          "negative": false,
+          "overload": false,
+          "value": 60.06,
+          "prefix": "m",
+          "unit": "V",
+          "mode": "AC",
+          "siValue": 0.06006
+        },
+        "flags": [
+          "AUTO"
+        ],
+        "unknown": {
+          "byte2": "00",
+          "byte18": "00",
+          "byte24LowNibble": 0,
+          "bytes25to27": "000000"
+        }
+      },
+      "note": "Hz no principal (b16.4) e mV AC no secundário (b15.7 + b15.4 + b9.6): 60 Hz da rede captados pelas pontas."
+    },
+    {
+      "name": "et2517a-hz-60.01Hz-acmv-58.93mV",
+      "kind": "rtd",
+      "command": "8266",
+      "family": "BM82x",
+      "modelBytes": "82828282",
+      "hex": "000000006FBFAFA040006DFFEDE990100000008282828210000000",
+      "source": "Captura real Minipa ET-2517A (BM82x) 2026-10-23, captures/et2517a-sweep-2026-10-23.txt, linha de 95,1 s",
+      "synthetic": false,
+      "expected": {
+        "valid": true,
+        "modelBytes": "82828282",
+        "main": {
+          "digits": "6001",
+          "text": "60.01",
+          "negative": false,
+          "overload": false,
+          "value": 60.01,
+          "prefix": "",
+          "unit": "Hz",
+          "mode": "NONE",
+          "siValue": 60.01
+        },
+        "secondary": {
+          "digits": "5893",
+          "text": "58.93",
+          "negative": false,
+          "overload": false,
+          "value": 58.93,
+          "prefix": "m",
+          "unit": "V",
+          "mode": "AC",
+          "siValue": 0.05893
+        },
+        "flags": [
+          "AUTO"
+        ],
+        "unknown": {
+          "byte2": "00",
+          "byte18": "00",
+          "byte24LowNibble": 0,
+          "bytes25to27": "000000"
+        }
+      },
+      "note": "Como o anterior; o 5p (b12.4) vem no byte FF = '8.'."
+    },
+    {
+      "name": "et2517a-continuity-open-0L.-ohm",
+      "kind": "rtd",
+      "command": "8266",
+      "family": "BM82x",
+      "modelBytes": "82828282",
+      "hex": "0000000000AF170001000000000000200000008282828200000000",
+      "source": "Captura real Minipa ET-2517A (BM82x) 2026-10-23, captures/et2517a-sweep-2026-10-23.txt, linha de 96,2 s",
+      "synthetic": false,
+      "expected": {
+        "valid": true,
+        "modelBytes": "82828282",
+        "main": {
+          "digits": " 0L ",
+          "text": "0L.",
+          "negative": false,
+          "overload": true,
+          "value": null,
+          "prefix": "",
+          "unit": "Ohm",
+          "mode": "NONE",
+          "siValue": null
+        },
+        "secondary": null,
+        "flags": [
+          "CONTINUITY_BEEP"
+        ],
+        "unknown": {
+          "byte2": "00",
+          "byte18": "00",
+          "byte24LowNibble": 0,
+          "bytes25to27": "000000"
+        }
+      },
+      "note": "Continuidade com as pontas abertas: ' 0L ' com o ponto 3p, Ω (b16.5) e o •))) (b9.0); sem AUTO."
+    },
+    {
+      "name": "et2517a-temperature-no-probe-dashes-F",
+      "kind": "rtd",
+      "command": "8266",
+      "family": "BM82x",
+      "modelBytes": "82828282",
+      "hex": "000000014040404E00000000000000000000008282828200000000",
+      "source": "Captura real Minipa ET-2517A (BM82x) 2026-10-23, captures/et2517a-sweep-2026-10-23.txt, linha de 99,0 s",
+      "synthetic": false,
+      "expected": {
+        "valid": true,
+        "modelBytes": "82828282",
+        "main": {
+          "digits": "---F",
+          "text": "---F",
+          "negative": false,
+          "overload": false,
+          "value": null,
+          "prefix": "",
+          "unit": "°F",
+          "mode": "NONE",
+          "siValue": null
+        },
+        "secondary": null,
+        "flags": [
+          "MAIN_T1"
+        ],
+        "unknown": {
+          "byte2": "00",
+          "byte18": "00",
+          "byte24LowNibble": 0,
+          "bytes25to27": "000000"
+        }
+      },
+      "note": "Temperatura sem termopar: '---F', °F pelo 4º dígito e T1 (b4.0); sem unidade nos bytes 15-17."
+    },
+    {
+      "name": "et2517a-diode-open-.0L-V-diod",
+      "kind": "rtd",
+      "command": "8266",
+      "family": "BM82x",
+      "modelBytes": "82828282",
+      "hex": "0000000010AF07000000E32063E300002000008282828200000000",
+      "source": "Captura real Minipa ET-2517A (BM82x) 2026-10-23, captures/et2517a-sweep-2026-10-23.txt, linha de 100,8 s",
+      "synthetic": false,
+      "expected": {
+        "valid": true,
+        "modelBytes": "82828282",
+        "main": {
+          "digits": " 0L ",
+          "text": ".0L",
+          "negative": false,
+          "overload": true,
+          "value": null,
+          "prefix": "",
+          "unit": "V",
+          "mode": "NONE",
+          "siValue": null
+        },
+        "secondary": {
+          "digits": "diod",
+          "text": "diod",
+          "negative": false,
+          "overload": false,
+          "value": null,
+          "prefix": "",
+          "unit": "",
+          "mode": "NONE",
+          "siValue": null
+        },
+        "flags": [],
+        "unknown": {
+          "byte2": "00",
+          "byte18": "00",
+          "byte24LowNibble": 0,
+          "bytes25to27": "000000"
+        }
+      },
+      "note": "Diodo com as pontas abertas: ' 0L ' com o ponto 1p ('.0L') e V; secundário com o texto 'diod'."
+    },
+    {
+      "name": "et2517a-acv-manual-0.115V-hz-dashes",
+      "kind": "rtd",
+      "command": "8266",
+      "family": "BM82x",
+      "modelBytes": "82828282",
+      "hex": "00001000BFA0A06D00005040404000012006008282828200000000",
+      "source": "Captura real Minipa ET-2517A (BM82x) 2026-10-23, captures/et2517a-sweep-2026-10-23.txt, linha de 111,6 s",
+      "synthetic": false,
+      "expected": {
+        "valid": true,
+        "modelBytes": "82828282",
+        "main": {
+          "digits": "0115",
+          "text": "0.115",
+          "negative": false,
+          "overload": false,
+          "value": 0.115,
+          "prefix": "",
+          "unit": "V",
+          "mode": "AC",
+          "siValue": 0.115
+        },
+        "secondary": {
+          "digits": "----",
+          "text": "-.---",
+          "negative": false,
+          "overload": false,
+          "value": null,
+          "prefix": "",
+          "unit": "Hz",
+          "mode": "NONE",
+          "siValue": null
+        },
+        "flags": [],
+        "unknown": {
+          "byte2": "00",
+          "byte18": "06",
+          "byte24LowNibble": 0,
+          "bytes25to27": "000000"
+        }
+      },
+      "note": "1ª faixa manual (sem AUTO) com o secundário Hz em traços ('-.---')."
+    },
+    {
+      "name": "et2517a-acv-manual-00.46V-secondary-point-only",
+      "kind": "rtd",
+      "command": "8266",
+      "family": "BM82x",
+      "modelBytes": "82828282",
+      "hex": "00001000AFBFE46F00000010000000012000008282828200000000",
+      "source": "Captura real Minipa ET-2517A (BM82x) 2026-10-23, captures/et2517a-sweep-2026-10-23.txt, linha de 114,6 s",
+      "synthetic": false,
+      "expected": {
+        "valid": true,
+        "modelBytes": "82828282",
+        "main": {
+          "digits": "0046",
+          "text": "00.46",
+          "negative": false,
+          "overload": false,
+          "value": 0.46,
+          "prefix": "",
+          "unit": "V",
+          "mode": "AC",
+          "siValue": 0.46
+        },
+        "secondary": null,
+        "flags": [],
+        "unknown": {
+          "byte2": "00",
+          "byte18": "00",
+          "byte24LowNibble": 0,
+          "bytes25to27": "000000"
+        }
+      },
+      "note": "Faixa manual 99.99 V com zero à esquerda; o secundário só tem o ponto 5p (b12 = 10) e o ② Hz (b16.0): os 4 caracteres são espaços, então o secundário é null."
+    },
+    {
+      "name": "et2517a-rec-min-max-avg-00.67V",
+      "kind": "rtd",
+      "command": "8266",
+      "family": "BM82x",
+      "modelBytes": "82828282",
+      "hex": "00001B00AFBF6FA800000010000000012006008282828220000000",
+      "source": "Captura real Minipa ET-2517A (BM82x) 2026-10-23, captures/et2517a-sweep-2026-10-23.txt, linha de 115,3 s",
+      "synthetic": false,
+      "expected": {
+        "valid": true,
+        "modelBytes": "82828282",
+        "main": {
+          "digits": "0067",
+          "text": "00.67",
+          "negative": false,
+          "overload": false,
+          "value": 0.67,
+          "prefix": "",
+          "unit": "V",
+          "mode": "AC",
+          "siValue": 0.67
+        },
+        "secondary": null,
+        "flags": [
+          "MIN",
+          "MAX",
+          "AVG",
+          "R_BOX"
+        ],
+        "unknown": {
+          "byte2": "00",
+          "byte18": "06",
+          "byte24LowNibble": 0,
+          "bytes25to27": "000000"
+        }
+      },
+      "note": "REC: MIN, MAX e AVG juntos (b3 = 1B) e [R] (b24.5), sem AUTO."
+    },
+    {
+      "name": "et2517a-rec-max-00.67V",
+      "kind": "rtd",
+      "command": "8266",
+      "family": "BM82x",
+      "modelBytes": "82828282",
+      "hex": "00001100AFBF6FA800000010000000012006008282828220000000",
+      "source": "Captura real Minipa ET-2517A (BM82x) 2026-10-23, captures/et2517a-sweep-2026-10-23.txt, linha de 116,0 s",
+      "synthetic": false,
+      "expected": {
+        "valid": true,
+        "modelBytes": "82828282",
+        "main": {
+          "digits": "0067",
+          "text": "00.67",
+          "negative": false,
+          "overload": false,
+          "value": 0.67,
+          "prefix": "",
+          "unit": "V",
+          "mode": "AC",
+          "siValue": 0.67
+        },
+        "secondary": null,
+        "flags": [
+          "MAX",
+          "R_BOX"
+        ],
+        "unknown": {
+          "byte2": "00",
+          "byte18": "06",
+          "byte24LowNibble": 0,
+          "bytes25to27": "000000"
+        }
+      },
+      "note": "REC mostrando o MAX (b3 = 11) com [R]; 00.67 é o maior valor dos quadros REC anteriores."
+    },
+    {
+      "name": "et2517a-acv-manual-0L-V-hz-dashes",
+      "kind": "rtd",
+      "command": "8266",
+      "family": "BM82x",
+      "modelBytes": "82828282",
+      "hex": "0000100000AF070000005040404000012006008282828200000000",
+      "source": "Captura real Minipa ET-2517A (BM82x) 2026-10-23, captures/et2517a-sweep-2026-10-23.txt, linha de 121,3 s",
+      "synthetic": false,
+      "expected": {
+        "valid": true,
+        "modelBytes": "82828282",
+        "main": {
+          "digits": " 0L ",
+          "text": "0L",
+          "negative": false,
+          "overload": true,
+          "value": null,
+          "prefix": "",
+          "unit": "V",
+          "mode": "AC",
+          "siValue": null
+        },
+        "secondary": {
+          "digits": "----",
+          "text": "-.---",
+          "negative": false,
+          "overload": false,
+          "value": null,
+          "prefix": "",
+          "unit": "Hz",
+          "mode": "NONE",
+          "siValue": null
+        },
+        "flags": [],
+        "unknown": {
+          "byte2": "00",
+          "byte18": "06",
+          "byte24LowNibble": 0,
+          "bytes25to27": "000000"
+        }
+      },
+      "note": "Overload em faixa manual: ' 0L ' sem ponto, V AC, secundário em traços."
+    },
+    {
+      "name": "et2517a-acv-manual-001.9V-byte24-0F",
+      "kind": "rtd",
+      "command": "8266",
+      "family": "BM82x",
+      "modelBytes": "82828282",
+      "hex": "00001000AFAFB0ED000050404040000120F600828282820F000000",
+      "source": "Captura real Minipa ET-2517A (BM82x) 2026-10-23, captures/et2517a-sweep-2026-10-23.txt, linha de 121,5 s",
+      "synthetic": false,
+      "expected": {
+        "valid": true,
+        "modelBytes": "82828282",
+        "main": {
+          "digits": "0019",
+          "text": "001.9",
+          "negative": false,
+          "overload": false,
+          "value": 1.9,
+          "prefix": "",
+          "unit": "V",
+          "mode": "AC",
+          "siValue": 1.9
+        },
+        "secondary": {
+          "digits": "----",
+          "text": "-.---",
+          "negative": false,
+          "overload": false,
+          "value": null,
+          "prefix": "",
+          "unit": "Hz",
+          "mode": "NONE",
+          "siValue": null
+        },
+        "flags": [],
+        "unknown": {
+          "byte2": "00",
+          "byte18": "F6",
+          "byte24LowNibble": 15,
+          "bytes25to27": "000000"
+        }
+      },
+      "note": "Faixa manual 999.9 V ('001.9'); byte 18 = F6 e nibble baixo do byte 24 = F (não documentados)."
+    },
+    {
+      "name": "pdfn-example-ac380.1V-50.12Hz-corrected",
+      "kind": "rtd",
+      "command": "8266",
+      "family": "BM82x",
+      "modelBytes": "82828282",
+      "hex": "00001000E9EFBFA000006DBFA0CB00012000008282828210000000",
+      "source": "10000count-professional-dual-display-DMMs-protocol.pdf (PDF-N) p.1, Example; bytes 10/11 trocados como manda a Table 1 do próprio PDF-N; xx=00, 1x=10",
+      "synthetic": false,
+      "expected": {
+        "valid": true,
+        "modelBytes": "82828282",
+        "main": {
+          "digits": "3801",
+          "text": "380.1",
+          "negative": false,
+          "overload": false,
+          "value": 380.1,
+          "prefix": "",
+          "unit": "V",
+          "mode": "AC",
+          "siValue": 380.1
+        },
+        "secondary": {
+          "digits": "5012",
+          "text": "50.12",
+          "negative": false,
+          "overload": false,
+          "value": 50.12,
+          "prefix": "",
+          "unit": "Hz",
+          "mode": "NONE",
+          "siValue": 50.12
+        },
+        "flags": [
+          "AUTO"
+        ],
+        "unknown": {
+          "byte2": "00",
+          "byte18": "00",
+          "byte24LowNibble": 0,
+          "bytes25to27": "000000"
+        }
+      },
+      "note": "Igual ao pdf-example-ac380.1V-50.12Hz-corrected do BM52x, com 82 82 82 82 nos bytes 20-23. Bytes \"don't care\" (2, 18, 25-27 e nibble baixo do 24) preenchidos com 0."
     }
   ],
   "reviewedAt": "2026-10-22",
-  "review": "Revisão adversarial independente: todos os vetores foram re-decodificados por scratchpad/scripts-verify/verify_bm52x.py (código escrito do zero a partir dos PDFs renderizados); 1956 verificações, 0 divergências. Alterações marcadas com 'Correção (revisão)'."
+  "review": "Revisão adversarial independente: todos os vetores foram re-decodificados por scratchpad/scripts-verify/verify_bm52x.py (código escrito do zero a partir dos PDFs renderizados); 1956 verificações, 0 divergências. Alterações marcadas com 'Correção (revisão)'.",
+  "otherDevices": [
+    {
+      "meter": "Minipa ET-2517A (família Brymen BM82x, Model ID 0x82, sem datalogger)",
+      "cable": "BC-86X (kit BU-86X), o mesmo do BM525s",
+      "vid": "0x0820",
+      "pid": "0x0001",
+      "bcdDevice": "0x8603",
+      "realTimeCommand": "00 | 00 82 66",
+      "memoryCommands": "nenhum (52 88 e 82 88 sem resposta)",
+      "capturedAt": "2026-10-23"
+    }
+  ],
+  "updatedAt": "2026-10-23",
+  "update": "Acréscimo de 13 vetores reais do Minipa ET-2517A (BM82x, captures/et2517a-sweep-2026-10-23.txt) e do exemplo do PDF-N corrigido, todos com command \"8266\", family \"BM82x\" e modelBytes \"82828282\" (especificação §8). Os 14 vetores anteriores não mudaram. Conferência: scratchpad/scripts-n/bm82x_ref.py verify (decodificador de referência escrito do zero)."
 }

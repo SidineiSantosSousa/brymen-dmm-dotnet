@@ -12,11 +12,17 @@ internal sealed class BrymenMeterSettings
 {
     public string? DevicePath { get; set; }
 
+    public MeterFamilySelection? Family { get; set; }
+
     public TimeSpan? PollInterval { get; set; }
 
     public TimeSpan? ReportTimeout { get; set; }
 
     public TimeSpan? RealTimeAfterMemoryTimeout { get; set; }
+
+    public TimeSpan? RealTimeResendTimeout { get; set; }
+
+    public TimeSpan? RealTimeResendBudget { get; set; }
 
     public TimeSpan? ReconnectDelay { get; set; }
 
@@ -42,12 +48,18 @@ internal sealed class BrymenMeterSettings
     {
         if (DevicePath is not null)
             options.DevicePath = DevicePath;
+        if (Family is { } family)
+            options.Family = family;
         if (PollInterval is { } pollInterval)
             options.PollInterval = pollInterval;
         if (ReportTimeout is { } reportTimeout)
             options.ReportTimeout = reportTimeout;
         if (RealTimeAfterMemoryTimeout is { } realTimeAfterMemoryTimeout)
             options.RealTimeAfterMemoryTimeout = realTimeAfterMemoryTimeout;
+        if (RealTimeResendTimeout is { } realTimeResendTimeout)
+            options.RealTimeResendTimeout = realTimeResendTimeout;
+        if (RealTimeResendBudget is { } realTimeResendBudget)
+            options.RealTimeResendBudget = realTimeResendBudget;
         if (ReconnectDelay is { } reconnectDelay)
             options.ReconnectDelay = reconnectDelay;
         if (AutoReconnect is { } autoReconnect)

@@ -18,9 +18,9 @@
   <PropertyGroup>
     <IsPackable>true</IsPackable>
     <PackageId>Brymen.Dmm.Extensions.Hosting</PackageId>
-    <Title>Brymen.Dmm.Extensions.Hosting: o multímetro Brymen BM52x no Generic Host</Title>
-    <Description>Integração do Brymen.Dmm com o Generic Host do .NET (Microsoft.Extensions.Hosting): AddBrymenMeter registra as opções (por código ou por IConfiguration, com binding por source generator, compatível com Native AOT), um serviço hospedado que abre o multímetro Brymen BM525s (= Minipa ET-2615A) pelo cabo USB BC-86X com reconexão automática e mantém a leitura contínua, e o IBrymenMeterAccessor, com o medidor atual, a última leitura e os eventos. Projeto independente, sem afiliação com a Brymen nem com a Minipa.</Description>
-    <PackageTags>brymen;bm525s;bm52x;bc-86x;bu-86x;minipa;et-2615a;multimeter;multimetro;dmm;hosting;dependency-injection;worker</PackageTags>
+    <Title>Brymen.Dmm.Extensions.Hosting: os multímetros Brymen BM52x e BM82x no Generic Host</Title>
+    <Description>Integração do Brymen.Dmm com o Generic Host do .NET (Microsoft.Extensions.Hosting): AddBrymenMeter registra as opções (por código ou por IConfiguration, com binding por source generator, compatível com Native AOT), um serviço hospedado que abre o multímetro Brymen BM525s (= Minipa ET-2615A) ou BM82x (como o Minipa ET-2517A) pelo cabo USB BC-86X com reconexão automática e mantém a leitura contínua, e o IBrymenMeterAccessor, com o medidor atual, a última leitura e os eventos. Projeto independente, sem afiliação com a Brymen nem com a Minipa.</Description>
+    <PackageTags>brymen;bm525s;bm52x;bm82x;bm827s;bc-86x;bu-86x;minipa;et-2615a;et-2517a;multimeter;multimetro;dmm;hosting;dependency-injection;worker</PackageTags>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>

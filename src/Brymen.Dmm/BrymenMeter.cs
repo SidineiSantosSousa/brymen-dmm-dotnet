@@ -5,15 +5,22 @@ using Brymen.Dmm.Protocol;
 namespace Brymen.Dmm;
 
 /// <summary>
-/// Multímetro Brymen BM52x (BM525s = Minipa ET-2615A) pelo cabo óptico USB BC-86X (kit BU-86X): leitura do tempo real
-/// avulsa (<see cref="ReadAsync"/>), contínua (<see cref="ReadContinuouslyAsync"/>) ou por eventos
-/// (<see cref="Start"/>), e importação da memória do datalogger (<see cref="ReadLoggerMemoryAsync"/>).
+/// Multímetro Brymen BM52x (BM525s = Minipa ET-2615A) ou BM82x (Minipa ET-2517A) pelo cabo óptico USB BC-86X (kit BU-86X):
+/// leitura do tempo real avulsa (<see cref="ReadAsync"/>), contínua (<see cref="ReadContinuouslyAsync"/>) ou por eventos
+/// (<see cref="Start"/>), e importação da memória do datalogger do BM52x (<see cref="ReadLoggerMemoryAsync"/>).
 /// </summary>
 /// <remarks>
 /// <para>
 /// Abra com <see cref="OpenAsync"/> (cabo real) ou <see cref="OpenSimulatedAsync"/> (medidor simulado com as capturas
 /// reais). A classe é thread-safe, e todas as operações no cabo são serializadas: uma importação da memória pausa a
 /// leitura contínua, que é retomada no fim dela. Uma falha de comunicação fecha o cabo, e a operação seguinte o reabre.
+/// </para>
+/// <para>
+/// A família do medidor (<see cref="Family"/>) é detectada pela 1ª leitura depois da abertura, sem consulta extra
+/// (<see cref="BrymenMeterOptions.Family"/>, §8.6 da especificação), e o tempo real usa o código dela: <c>52 66</c> no
+/// BM52x e <c>82 66</c> no BM82x. O BM82x descarta parte dos pedidos de tempo real: cada consulta reenvia o pedido sem
+/// fechar o cabo (<see cref="BrymenMeterOptions.RealTimeResendTimeout"/>, <see cref="BrymenMeterOptions.RealTimeResendBudget"/>),
+/// e as perdas recuperadas não são falhas: elas só aparecem em <see cref="RealTimeStatistics"/>.
 /// </para>
 /// <para>
 /// As operações assíncronas nunca fazem a E/S na thread de quem chama: elas passam para o pool antes do 1º comando e
@@ -123,6 +130,35 @@ public sealed class BrymenMeter : IBrymenMeter, IAsyncDisposable, IDisposable
     }
 
     /// <summary>
+    /// A família do medidor: a de <see cref="BrymenMeterOptions.Family"/>, quando fixa, ou a detectada pelo Model ID da
+    /// leitura mais recente (<see cref="MeterConnection.Family"/>). Com <see cref="MeterFamilySelection.Auto"/>, é
+    /// <see langword="null"/> logo depois da abertura, até a 1ª leitura (a detecção não faz consulta extra), e depois de 3
+    /// consultas seguidas sem resposta, até a detecção seguinte.
+    /// </summary>
+    public MeterFamily? Family => _connection.Family;
+
+    /// <summary>
+    /// Se o medidor pode ter datalogger: <see langword="false"/> só com uma família conhecida sem datalogger (BM82x), em que
+    /// <see cref="ReadLoggerMemoryAsync"/> e <see cref="ReadLoggerImageAsync"/> falham com
+    /// <see cref="BrymenErrorCodes.DataLoggerNotSupported"/>, sem nenhum comando de memória (na hora, com a família
+    /// confirmada há pouco; senão, depois da conferência do modelo).
+    /// </summary>
+    public bool SupportsDataLogger => _connection.SupportsDataLogger;
+
+    /// <summary>
+    /// Descrição da família, com os modelos validados: <c>"BM52x (BM525s / Minipa ET-2615A)"</c> ou
+    /// <c>"BM82x (Minipa ET-2517A)"</c> (<see cref="MeterFamilies.Describe"/>); <see langword="null"/> com
+    /// <see cref="Family"/> desconhecida. O Model ID identifica a família, e não o modelo exato.
+    /// </summary>
+    public string? ModelDescription => Family?.Describe();
+
+    /// <summary>
+    /// Os contadores das consultas de tempo real desde a abertura (<see cref="MeterConnection.RealTimeStatistics"/>):
+    /// consultas, pedidos, reenvios, pedidos perdidos, consultas recuperadas por reenvio e consultas sem resposta.
+    /// </summary>
+    public RealTimeStatistics RealTimeStatistics => _connection.RealTimeStatistics;
+
+    /// <summary>
     /// Procura o cabo (<see cref="BrymenMeterOptions.DevicePath"/> ou o primeiro VID 0820h/PID 0001h) e o abre. A
     /// procura e a abertura são síncronas (a enumeração HID do sistema), e a tarefa já volta concluída.
     /// </summary>
@@ -185,14 +221,18 @@ public sealed class BrymenMeter : IBrymenMeter, IAsyncDisposable, IDisposable
     public static IReadOnlyList<HidDeviceInfo> FindDevices(IHidDeviceProvider? provider = null) => MeterConnection.FindDevices(provider);
 
     /// <summary>
-    /// Um <c>52 66</c> decodificado. O 1º depois da abertura ou de uma leitura da memória espera até
-    /// <see cref="BrymenMeterOptions.RealTimeAfterMemoryTimeout"/> (3 s) pelo 1º relatório; os demais, até
-    /// <see cref="BrymenMeterOptions.ReportTimeout"/>.
+    /// Uma consulta de tempo real decodificada (<c>52 66</c> no BM52x, <c>82 66</c> no BM82x e na detecção da família). A
+    /// 1ª depois da abertura ou de uma leitura da memória tem o prazo de <see cref="BrymenMeterOptions.RealTimeAfterMemoryTimeout"/>
+    /// (3 s): um envio só com a família BM52x conhecida, e com os reenvios a cada
+    /// <see cref="BrymenMeterOptions.RealTimeResendTimeout"/> na detecção e no BM82x. As demais esperam até
+    /// <see cref="BrymenMeterOptions.ReportTimeout"/> no BM52x, e reenviam até <see cref="BrymenMeterOptions.RealTimeResendBudget"/>
+    /// no BM82x.
     /// </summary>
     /// <remarks>
-    /// Uma consulta só, sem nova tentativa. No BM525s real, o 1º comando depois de muito tempo sem comunicação já ficou
-    /// sem resposta uma vez, com os seguintes normais: trate <see cref="BrymenErrorCodes.NoDataReceived"/> com uma nova
-    /// tentativa, ou use <see cref="ReadContinuouslyAsync"/>, que tolera 2 falhas seguidas.
+    /// Uma consulta só, sem nova tentativa além dos reenvios do BM82x. No BM525s real, o 1º comando depois de muito tempo
+    /// sem comunicação já ficou sem resposta uma vez, com os seguintes normais: trate
+    /// <see cref="BrymenErrorCodes.NoDataReceived"/> com uma nova tentativa, ou use <see cref="ReadContinuouslyAsync"/>, que
+    /// tolera 2 falhas seguidas.
     /// </remarks>
     /// <param name="cancellationToken">Cancela a consulta.</param>
     /// <exception cref="BrymenMeterException">
@@ -320,7 +360,7 @@ public sealed class BrymenMeter : IBrymenMeter, IAsyncDisposable, IDisposable
             await loop.ConfigureAwait(ConfigureAwaitOptions.SuppressThrowing);
     }
 
-    /// <summary>Lê e decodifica a memória do datalogger (sessões e amostras).</summary>
+    /// <summary>Lê e decodifica a memória do datalogger (sessões e amostras); só a família BM52x tem datalogger.</summary>
     /// <param name="progress">Recebe o progresso a cada bloco, na thread da leitura (<see cref="IProgress{T}.Report"/> síncrono).</param>
     /// <param name="cancellationToken">Cancela a leitura.</param>
     /// <exception cref="BrymenMeterException">Como em <see cref="ReadLoggerImageAsync"/>; e <see cref="BrymenErrorCodes.InvalidFrame"/> se a imagem não puder ser decodificada.</exception>
@@ -346,10 +386,19 @@ public sealed class BrymenMeter : IBrymenMeter, IAsyncDisposable, IDisposable
     /// tentativas. A leitura contínua (<see cref="Start"/>, <see cref="ReadContinuouslyAsync"/>) fica pausada até o fim, e
     /// a 1ª consulta depois dela espera até <see cref="BrymenMeterOptions.RealTimeAfterMemoryTimeout"/>.
     /// </summary>
+    /// <remarks>
+    /// Numa família sem datalogger (BM82x, <see cref="SupportsDataLogger"/> = <see langword="false"/>), falha com
+    /// <see cref="BrymenErrorCodes.DataLoggerNotSupported"/>, sem nenhum comando de memória: na hora, com a família fixa ou
+    /// confirmada por um quadro de tempo real há menos de <see cref="MeterConnection.FamilyConfirmationWindow"/> (a leitura
+    /// contínua rodando, por exemplo); com a família desconhecida, ou conhecida há mais tempo (o medidor pode ter sido
+    /// trocado no cabo), depois da conferência do modelo, uma consulta de tempo real que a detecta. Não é falha de
+    /// comunicação: o cabo continua como está, e <see cref="State"/>, <see cref="LastError"/> e <see cref="ErrorOccurred"/>
+    /// não mudam.
+    /// </remarks>
     /// <param name="progress">Recebe o progresso a cada bloco, na thread da leitura (<see cref="IProgress{T}.Report"/> síncrono).</param>
     /// <param name="cancellationToken">Cancela a leitura.</param>
     /// <exception cref="BrymenMeterException">
-    /// <see cref="BrymenErrorCodes.CableNotFound"/>, <see cref="BrymenErrorCodes.NoDataLogger"/>,
+    /// <see cref="BrymenErrorCodes.DataLoggerNotSupported"/>, <see cref="BrymenErrorCodes.CableNotFound"/>, <see cref="BrymenErrorCodes.NoDataLogger"/>,
     /// <see cref="BrymenErrorCodes.TransmissionTimeout"/>, <see cref="BrymenErrorCodes.InvalidFrame"/> ou
     /// <see cref="BrymenErrorCodes.Internal"/> (uma exceção fora do contrato, como a de um <see cref="IHidDeviceProvider"/>
     /// próprio ou de <paramref name="progress"/>); a falha também vai para <see cref="LastError"/> e
@@ -364,13 +413,23 @@ public sealed class BrymenMeter : IBrymenMeter, IAsyncDisposable, IDisposable
         try
         {
             await new ThreadPoolHop();
+            // A família sem datalogger fixa ou confirmada há pouco: na hora, sem esperar o cabo nem mudar o estado.
+            _connection.ThrowIfNoDataLogger();
             await _io.WaitAsync(operation.Token).ConfigureAwait(false);
             try
             {
+                _connection.ThrowIfNoDataLogger();
                 EnsureOpen(notes);
                 var image = await _connection.ReadLoggerImageAsync(progress, operation.Token).ConfigureAwait(false);
                 SetState(MeterState.Connected, notes);
                 return image;
+            }
+            catch (BrymenMeterException ex) when (ex.Code == BrymenErrorCodes.DataLoggerNotSupported)
+            {
+                // Não é falha de comunicação: se a conferência do modelo o detectou, o medidor respondeu.
+                if (_connection.IsOpen)
+                    SetState(MeterState.Connected, notes);
+                throw;
             }
             catch (BrymenMeterException ex)
             {

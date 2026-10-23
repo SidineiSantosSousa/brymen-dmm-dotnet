@@ -2,13 +2,13 @@
 #
 # Imagem multi-arquitetura (linux/amd64 e linux/arm64) do Brymen DMM REST.
 #
-#   docker buildx build --platform linux/amd64,linux/arm64 -t brymen-dmm:0.1.0 --push .
-#   docker buildx build --platform linux/arm64 -t brymen-dmm:0.1.0 --load .
+#   docker buildx build --platform linux/amd64,linux/arm64 -t brymen-dmm:0.2.0 --push .
+#   docker buildx build --platform linux/arm64 -t brymen-dmm:0.2.0 --load .
 #
 # Sem o BuildKit (Docker sem o plugin buildx, ou DOCKER_BUILDKIT=0), o builder legado não define o BUILDPLATFORM nem o
 # TARGETARCH: passe os dois, com a arquitetura da máquina do build e a do alvo (amd64 ou arm64). Ex., num Raspberry Pi
 # ou Orange Pi de 64 bits:
-#   DOCKER_BUILDKIT=0 docker build --build-arg BUILDPLATFORM=linux/arm64 --build-arg TARGETARCH=arm64 -t brymen-dmm:0.1.0 .
+#   DOCKER_BUILDKIT=0 docker build --build-arg BUILDPLATFORM=linux/arm64 --build-arg TARGETARCH=arm64 -t brymen-dmm:0.2.0 .
 #
 # O SDK roda na arquitetura de quem compila ($BUILDPLATFORM) e publica para a arquitetura alvo
 # ($TARGETARCH): não há emulação QEMU no build. O executável é self-contained e trimmed, por isso o

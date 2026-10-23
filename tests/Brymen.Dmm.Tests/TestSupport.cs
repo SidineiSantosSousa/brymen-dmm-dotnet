@@ -8,7 +8,8 @@ namespace Brymen.Dmm.Tests;
 
 /// <summary>
 /// Teste com o cabo BC-86X real pelo transporte nativo (hidraw no Linux, hid.dll no Windows): só roda com
-/// <c>BRYMEN_HW_TESTS=1</c>, com o medidor ligado. Só usa os comandos <c>52 66</c>, <c>88</c>, <c>89</c> e <c>8A</c>.
+/// <c>BRYMEN_HW_TESTS=1</c>, com o medidor ligado (BM52x ou BM82x). Só usa os comandos <c>82 66</c> e <c>52 66</c> e, no
+/// BM52x, <c>52 88</c>, <c>52 89</c> e <c>52 8A</c>.
 /// </summary>
 public sealed class HardwareFactAttribute : FactAttribute
 {
@@ -56,6 +57,9 @@ internal sealed class SimulatedSetup
 
     /// <summary>Comandos recebidos pelo cabo simulado (o 3º byte de <c>00 52 cmd</c>), em hexadecimal.</summary>
     public IReadOnlyList<string> Commands => [.. Device.Writes.Select(w => w.Data[2].ToString("X2", CultureInfo.InvariantCulture))];
+
+    /// <summary>Pedidos recebidos com a família (o 2º e o 3º bytes de <c>00 fam cmd</c>, como <c>"8266"</c>), em hexadecimal.</summary>
+    public IReadOnlyList<string> Requests => [.. Device.Writes.Select(w => Convert.ToHexString(w.Data, 1, 2))];
 
     public Task<BrymenMeter> OpenAsync() => BrymenMeter.OpenAsync(Options);
 }
@@ -257,6 +261,62 @@ internal sealed class TimeoutRecordingProvider(IHidDeviceProvider inner) : IHidD
         lock (_opened)
             _opened.Add(recording);
         return recording;
+    }
+}
+
+/// <summary>
+/// Provider que conta as aberturas do cabo e registra cada pedido escrito (<c>"8266"</c>, <c>"5288"</c>...), em qualquer
+/// dispositivo aberto por ele. Serve para os testes com o cabo real.
+/// </summary>
+internal sealed class RequestRecordingProvider(IHidDeviceProvider inner) : IHidDeviceProvider
+{
+    private readonly Lock _lock = new();
+    private readonly List<string> _requests = [];
+    private int _opens;
+
+    /// <summary>Aberturas do cabo por este provider.</summary>
+    public int Opens => Volatile.Read(ref _opens);
+
+    /// <summary>Os bytes 2 e 3 de cada relatório de saída (“Command 2” e “Command 3”), na ordem.</summary>
+    public IReadOnlyList<string> Requests
+    {
+        get { lock (_lock) return [.. _requests]; }
+    }
+
+    public IReadOnlyList<HidDeviceInfo> Enumerate(ushort vendorId, ushort productId) => inner.Enumerate(vendorId, productId);
+
+    public IHidDevice Open(HidDeviceInfo device)
+    {
+        var opened = inner.Open(device);
+        Interlocked.Increment(ref _opens);
+        return new Device(opened, this);
+    }
+
+    private void Add(ReadOnlySpan<byte> data)
+    {
+        string request = Convert.ToHexString(data[1..Math.Min(3, data.Length)]);
+        lock (_lock)
+            _requests.Add(request);
+    }
+
+    private sealed class Device(IHidDevice inner, RequestRecordingProvider owner) : IHidDevice
+    {
+        public HidDeviceInfo Info => inner.Info;
+
+        public int InputReportLength => inner.InputReportLength;
+
+        public int OutputReportLength => inner.OutputReportLength;
+
+        public async ValueTask WriteReportAsync(byte reportId, ReadOnlyMemory<byte> data, CancellationToken cancellationToken = default)
+        {
+            await inner.WriteReportAsync(reportId, data, cancellationToken);
+            owner.Add(data.Span);
+        }
+
+        public ValueTask<int> ReadReportAsync(Memory<byte> buffer, TimeSpan timeout, CancellationToken cancellationToken = default)
+            => inner.ReadReportAsync(buffer, timeout, cancellationToken);
+
+        public void Dispose() => inner.Dispose();
     }
 }
 

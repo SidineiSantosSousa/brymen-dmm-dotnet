@@ -5,14 +5,17 @@ using Brymen.Dmm.Api.Errors;
 namespace Brymen.Dmm.Api.Meter;
 
 /// <summary>
-/// Polling do tempo real: com o link ativo, faz uma consulta <c>52 66</c> a cada <c>Meter:PollInterval</c> pela
-/// <see cref="MeterSession"/> (decodificada pelo <see cref="MeterConnection"/> da biblioteca), aplica o comparador e
+/// Polling do tempo real: com o link ativo, faz uma consulta de tempo real a cada <c>Meter:PollInterval</c> pela
+/// <see cref="MeterSession"/> (com a detecção da família e a política de reenvio do <see cref="MeterConnection"/> da
+/// biblioteca: <c>82 66</c> na detecção, depois <c>52 66</c> no BM52x e <c>82 66</c> no BM82x), aplica o comparador e
 /// publica no <see cref="ReadingBroadcaster"/> e no gravador.
 /// Como o original (relatório de RE, §6.5) e a leitura contínua do <see cref="BrymenMeter"/>, as duas primeiras falhas
-/// seguidas só reabrem o cabo (W7012); a terceira vira E9016 e a reconexão espera <c>Meter:ReconnectDelay</c>. Cabo
-/// ausente é E9015. Quadro inválido (W8011) também conta como falha, mas não fecha o cabo: na 3ª seguida, a última
-/// leitura deixa de ser servida como atual. O estado <c>reconnecting</c>, a última leitura e as mensagens que avisam da
-/// nova tentativa automática são da API.
+/// seguidas só reabrem o cabo (W7012); a terceira vira E9016 e a reconexão espera <c>Meter:ReconnectDelay</c>. Uma falha
+/// é uma consulta inteira sem resposta: os pedidos que o ET-2517A descarta e que um reenvio recupera ficam dentro da
+/// consulta (só nas estatísticas do tempo real), devolvem uma leitura e zeram a contagem; no BM82x, o W7012 só sai com o
+/// <c>Meter:RealTimeResendBudget</c> esgotado. Cabo ausente é E9015. Quadro inválido (W8011) também conta como falha, mas
+/// não fecha o cabo: na 3ª seguida, a última leitura deixa de ser servida como atual. O estado <c>reconnecting</c>, a
+/// última leitura e as mensagens que avisam da nova tentativa automática são da API.
 /// </summary>
 internal sealed class MeterPollingService(
     MeterSession session,

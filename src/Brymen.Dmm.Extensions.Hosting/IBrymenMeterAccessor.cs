@@ -31,8 +31,8 @@ namespace Brymen.Dmm.Extensions.Hosting;
 /// <see cref="ErrorOccurred"/> só é registrada no log. Um handler lento atrasa a próxima consulta ao medidor.
 /// </para>
 /// <para>
-/// Os membros que vierem em versões futuras terão implementação padrão, para não quebrar quem implementa ou simula a
-/// interface num teste.
+/// Os membros novos têm implementação padrão (<see cref="Family"/>, na 0.2.0), para não quebrar quem implementa ou
+/// simula a interface num teste.
 /// </para>
 /// </remarks>
 public interface IBrymenMeterAccessor
@@ -67,6 +67,15 @@ public interface IBrymenMeterAccessor
     /// (<see cref="BrymenErrorCodes.EventHandlerFailed"/>) não entram aqui.
     /// </summary>
     BrymenMeterError? LastError { get; }
+
+    /// <summary>
+    /// A família do medidor (<see cref="BrymenMeter.Family"/>, repassada): BM52x ou BM82x, detectada pela 1ª leitura do
+    /// serviço, ou a configurada em <see cref="BrymenMeterOptions.Family"/>. Sem medidor aberto (ou antes da detecção), é a
+    /// da última leitura (<see cref="DmmReading.Family"/>), ou <see langword="null"/> se nenhuma chegou. As operações do
+    /// medidor, inclusive <see cref="IBrymenMeter.SupportsDataLogger"/> e <see cref="IBrymenMeter.RealTimeStatistics"/>, ficam
+    /// em <see cref="Meter"/>. A implementação padrão devolve <c>Meter?.Family</c>.
+    /// </summary>
+    MeterFamily? Family => Meter?.Family;
 
     /// <summary>Cada leitura do laço do serviço (<see cref="BrymenMeter.ReadingReceived"/>, repassado).</summary>
     event EventHandler<DmmReading>? ReadingReceived;

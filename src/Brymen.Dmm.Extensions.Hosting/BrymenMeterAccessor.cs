@@ -92,6 +92,22 @@ internal sealed partial class BrymenMeterAccessor : IBrymenMeterAccessor, IDispo
         get { lock (_sync) return _lastError; }
     }
 
+    public MeterFamily? Family
+    {
+        get
+        {
+            BrymenMeter? meter;
+            DmmReading? lastReading;
+            lock (_sync)
+            {
+                meter = _meter;
+                lastReading = _lastReading;
+            }
+            // Lido fora do lock, como em State: nada de fora é chamado com o lock deste acessor.
+            return meter?.Family ?? lastReading?.Family;
+        }
+    }
+
     public Task<IBrymenMeter> WaitForMeterAsync(CancellationToken cancellationToken = default)
     {
         Task<IBrymenMeter> available;
@@ -443,6 +459,14 @@ internal sealed partial class BrymenMeterAccessor : IBrymenMeterAccessor, IDispo
         public MeterState State => meter.State;
 
         public BrymenMeterError? LastError => meter.LastError;
+
+        public MeterFamily? Family => meter.Family;
+
+        public bool SupportsDataLogger => meter.SupportsDataLogger;
+
+        public string? ModelDescription => meter.ModelDescription;
+
+        public RealTimeStatistics RealTimeStatistics => meter.RealTimeStatistics;
 
         public Task<DmmReading> ReadAsync(CancellationToken cancellationToken = default) => meter.ReadAsync(cancellationToken);
 

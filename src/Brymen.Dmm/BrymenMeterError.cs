@@ -24,7 +24,19 @@ public static class BrymenErrorCodes
     /// </summary>
     public const string NoDataLogger = "E9017";
 
-    /// <summary><c>W7012</c>, “No data received.”: um <c>52 66</c> sem resposta completa (timeout ou falha de E/S).</summary>
+    /// <summary>
+    /// <c>E9014</c> (próprio da biblioteca): a família do medidor não tem datalogger. A leitura da memória de um BM82x
+    /// (Model ID <c>82h</c>, como o Minipa ET-2517A) falha sem nenhum comando de memória: na hora, com a família fixa ou
+    /// confirmada há pouco (<see cref="MeterConnection.IsFamilyConfirmed"/>), ou depois da conferência do modelo. Não é
+    /// falha de comunicação: o <see cref="BrymenMeter.State"/> e o <see cref="BrymenMeter.LastError"/> não mudam.
+    /// </summary>
+    public const string DataLoggerNotSupported = "E9014";
+
+    /// <summary>
+    /// <c>W7012</c>, “No data received.”: uma consulta de tempo real (<c>52 66</c> ou <c>82 66</c>) sem resposta completa
+    /// (timeout ou falha de E/S). No BM82x, só depois de esgotado o orçamento dos reenvios
+    /// (<see cref="BrymenMeterOptions.RealTimeResendBudget"/>): um pedido perdido e recuperado por reenvio não é falha.
+    /// </summary>
     public const string NoDataReceived = "W7012";
 
     /// <summary><c>W8011</c>, “A handshaking error occurred.”: quadro inválido ou inconsistente recebido do medidor.</summary>
@@ -76,5 +88,6 @@ internal static class MeterMessages
     public const string NoDataReceived = "Nenhum dado recebido. Verifique a conexão do cabo e se o medidor está ligado.";
     public const string TransmissionTimeout = "Tempo esgotado na transmissão de dados. Verifique o medidor, a conexão do cabo e se o medidor está ligado.";
     public const string NoDataLogger = "O medidor está desligado, desconectado ou não tem a função DATA LOGGING.";
+    public const string DataLoggerNotSupported = "A família do medidor não tem datalogger: nenhum comando de memória foi enviado.";
     public const string InvalidFrame = "Quadro inválido recebido do medidor:";
 }

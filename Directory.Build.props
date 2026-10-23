@@ -8,7 +8,7 @@
     <InvariantGlobalization>true</InvariantGlobalization>
     <!-- O produto das bibliotecas (o Protocol e o Hid vão dentro do pacote Brymen.Dmm); a API e o hosting têm o seu. -->
     <Product>Brymen.Dmm</Product>
-    <Version>0.1.0</Version>
+    <Version>0.2.0</Version>
     <!-- Autoria explícita: o padrão do SDK (o nome do assembly, "Brymen.Dmm.Hid") pareceria uma empresa Brymen. -->
     <Authors>Sidinei Santos Sousa</Authors>
     <Company>Sidinei Santos Sousa</Company>
@@ -41,6 +41,15 @@
        fontes. -->
   <PropertyGroup Condition="'$(Configuration)' == 'Release' And ($(BrymenRepoRelativeDirectory.StartsWith('src\')) Or $(BrymenRepoRelativeDirectory.StartsWith('src/')))">
     <PathMap>$([MSBuild]::EnsureTrailingSlash('$(MSBuildThisFileDirectory)'))=/_/</PathMap>
+  </PropertyGroup>
+
+  <!-- Num clone git, o SDK liga o Source Link, que mapeia cada SourceRoot para a URL do GitHub. Sem o
+       ContinuousIntegrationBuild (só ligado com CI/TF_BUILD), o SourceRoot da raiz ficava sem o MappedPath "/_/": a chave
+       do Source Link saía com o caminho local (que ia parar no PDB) e não casava com os documentos, já mapeados para "/_/"
+       pelo PathMap acima. O DeterministicSourcePaths dá o MappedPath aos SourceRoot e põe o mapeamento deles no PathMap;
+       sem .git não há SourceRoot, e vale só o PathMap acima. -->
+  <PropertyGroup Condition="'$(Configuration)' == 'Release' And Exists('$(MSBuildThisFileDirectory).git') And ($(BrymenRepoRelativeDirectory.StartsWith('src\')) Or $(BrymenRepoRelativeDirectory.StartsWith('src/')))">
+    <DeterministicSourcePaths>true</DeterministicSourcePaths>
   </PropertyGroup>
 
   <!-- Polyfills das bibliotecas multi-target (net8.0 e net10.0). O System.Threading.Lock só existe a partir do .NET 9:

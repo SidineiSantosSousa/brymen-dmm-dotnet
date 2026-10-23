@@ -51,9 +51,44 @@ public sealed record MeterDeviceDto(
 
 public sealed record MeterErrorDto(string Code, string Message, DateTimeOffset Timestamp);
 
+/// <summary>
+/// Modelo do medidor, pela família que o Model ID (bytes 20–23 do quadro de tempo real) identifica. O Model ID não
+/// distingue os modelos de uma mesma família.
+/// </summary>
+/// <param name="Family">"BM52x" ou "BM82x".</param>
+/// <param name="ModelId">Model ID e código do pedido de tempo real: "0x52" (pedido 52 66) ou "0x82" (pedido 82 66).</param>
+/// <param name="Name">Família com os modelos validados: "BM52x (BM525s / Minipa ET-2615A)" ou "BM82x (Minipa ET-2517A)".</param>
+/// <param name="SupportsDataLogger">
+/// Se o medidor tem datalogger (só a BM52x); false = <c>POST /api/v1/logger/imports</c> responde 409 com E9014.
+/// </param>
+public sealed record MeterModelDto(string Family, string ModelId, string Name, bool SupportsDataLogger);
+
+/// <summary>
+/// Contadores das consultas de tempo real desde a partida do serviço. Os pedidos perdidos e recuperados por reenvio (o
+/// ET-2517A descarta parte deles) não são falhas: não geram W7012 nem contam para o E9016 do polling.
+/// </summary>
+/// <param name="Queries">Consultas de tempo real terminadas, com ou sem resposta.</param>
+/// <param name="Requests">Pedidos 66 enviados: o 1º de cada consulta, os reenvios e o 52 66 de reserva da detecção.</param>
+/// <param name="Resends">Reenvios do mesmo pedido depois da janela do 1º relatório (Meter:RealTimeResendTimeout).</param>
+/// <param name="LostRequests">Pedidos sem resposta dentro da janela: os reenviados e os das consultas que falharam.</param>
+/// <param name="RecoveredQueries">Consultas que só tiveram resposta depois de ao menos um reenvio.</param>
+/// <param name="FailedQueries">Consultas sem resposta completa (cada uma é um W7012 do polling).</param>
+public sealed record RealTimeStatisticsDto(
+    long Queries,
+    long Requests,
+    long Resends,
+    long LostRequests,
+    long RecoveredQueries,
+    long FailedQueries);
+
 /// <summary>Estado do link, do cabo e do polling.</summary>
 /// <param name="Transport">"hid" ou "simulated".</param>
 /// <param name="Importing">Importação do datalogger em andamento (polling pausado).</param>
+/// <param name="Model">
+/// Modelo detectado pelo Model ID do tempo real (ou fixado em Meter:Family); null antes da 1ª detecção e depois de 3
+/// consultas seguidas sem resposta, até a próxima.
+/// </param>
+/// <param name="RealTimeStatistics">Pedidos, reenvios e perdas do tempo real desde a partida do serviço.</param>
 public sealed record MeterStatusDto(
     bool LinkEnabled,
     MeterConnectionState State,
@@ -64,7 +99,9 @@ public sealed record MeterStatusDto(
     bool Importing,
     long ReadingCount,
     DateTimeOffset? LastReadingAt,
-    double PollIntervalMs);
+    double PollIntervalMs,
+    MeterModelDto? Model,
+    RealTimeStatisticsDto RealTimeStatistics);
 
 /// <summary>Corpo de <c>PUT /api/v1/meter/link</c>.</summary>
 public sealed record LinkRequest(bool? Enabled);

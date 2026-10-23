@@ -129,7 +129,7 @@ public sealed record DisplayReading
 /// <param name="Byte18">Byte 18 do quadro.</param>
 /// <param name="Byte24LowNibble">Nibble baixo do byte 24 (o alto tem [H], [C], [R] e AUTO).</param>
 /// <param name="Bytes25To27">Bytes 25 a 27, em hexadecimal maiúsculo.</param>
-/// <param name="ModelBytes">Bytes 20 a 23 (Model ID), em hexadecimal maiúsculo: <c>52525252</c> no BM52x.</param>
+/// <param name="ModelBytes">Bytes 20 a 23 (Model ID), em hexadecimal maiúsculo: <c>52525252</c> no BM52x e <c>82828282</c> no BM82x.</param>
 public sealed record RealTimeDiagnostics(byte Byte2, byte Byte18, byte Byte24LowNibble, string Bytes25To27, string ModelBytes);
 
 /// <summary>Leitura completa de um quadro Cs_RTD.</summary>
@@ -146,6 +146,13 @@ public sealed record DmmReading
 
     /// <summary>Anunciadores globais acesos (nomes estáveis em <see cref="DmmFlagNames"/>).</summary>
     public DmmFlags Flags { get; init; }
+
+    /// <summary>
+    /// Família do medidor, pelo Model ID dos bytes 20–23 (<see cref="MeterFamily.Bm52x"/> ou
+    /// <see cref="MeterFamily.Bm82x"/>). O decodificador sempre a preenche; o padrão, <see cref="MeterFamily.Bm52x"/>, é o
+    /// das leituras de antes da família BM82x.
+    /// </summary>
+    public MeterFamily Family { get; init; } = MeterFamily.Bm52x;
 
     /// <summary>Os 27 bytes recebidos (com report IDs), em hexadecimal maiúsculo.</summary>
     public required string RawHex { get; init; }

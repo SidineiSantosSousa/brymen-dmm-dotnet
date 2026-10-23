@@ -17,9 +17,11 @@
 
   <ItemGroup>
     <!-- Capturas reais do BM525s, usadas pelo medidor simulado (SimulatedBm52xMeter): o dump da memória é a imagem
-         padrão, e os quadros de tempo real em ACV são os de CapturedRealTimeFrames. -->
+         padrão, e os quadros de tempo real em ACV são os de CapturedRealTimeFrames. A varredura do Minipa ET-2517A
+         (família BM82x) dá os quadros de CapturedEt2517aRealTimeFrames. -->
     <EmbeddedResource Include="..\..\docs\protocol\captures\memory-dump-1.txt" LogicalName="Brymen.Dmm.Hid.Simulation.memory-dump-1.txt" Link="Simulation\memory-dump-1.txt" />
     <EmbeddedResource Include="..\..\docs\protocol\captures\rtd-acv.txt" LogicalName="Brymen.Dmm.Hid.Simulation.rtd-acv.txt" Link="Simulation\rtd-acv.txt" />
+    <EmbeddedResource Include="..\..\docs\protocol\captures\et2517a-sweep-2026-10-23.txt" LogicalName="Brymen.Dmm.Hid.Simulation.et2517a-sweep-2026-10-23.txt" Link="Simulation\et2517a-sweep-2026-10-23.txt" />
   </ItemGroup>
 
 </Project>

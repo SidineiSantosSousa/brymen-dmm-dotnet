@@ -80,7 +80,10 @@ public class SimulatedBm52xMeterTests
     {
         var meter = new SimulatedBm52xMeter();
 
-        Assert.Null(meter.Respond(0x00, new byte[] { 0x00, 0x82, 0x66 }));
+        // O BM525s também aceita o 82 66, o tempo real comum às duas famílias (§8.1); da família 82h, só ele.
+        Assert.Equal(3, meter.Respond(0x00, new byte[] { 0x00, 0x82, 0x66 })?.Count);
+        Assert.Null(meter.Respond(0x00, new byte[] { 0x00, 0x82, 0x88 }));
+        Assert.Null(meter.Respond(0x00, new byte[] { 0x00, 0x83, 0x66 }));
         Assert.Null(meter.Respond(0x01, new byte[] { 0x00, 0x52, 0x66 }));
         Assert.Equal(3, meter.Respond(0x00, new byte[] { 0x00, 0x52, 0x66 })?.Count);
     }

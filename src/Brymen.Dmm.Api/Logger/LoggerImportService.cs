@@ -11,7 +11,8 @@ namespace Brymen.Dmm.Api.Logger;
 /// <summary>
 /// Importação do datalogger em segundo plano: pausa o polling com o acesso exclusivo da <see cref="MeterSession"/> e lê
 /// a memória com o <see cref="LoggerMemoryReader"/> da biblioteca Brymen.Dmm (<see cref="MeterExclusiveAccess.ReadLoggerImageAsync"/>),
-/// que confere o modelo (E9017) antes do <c>88</c>; guarda a imagem bruta em <c>&lt;DataDirectory&gt;/imports/{id}.bin</c>
+/// que confere o modelo (E9017, ou E9014 num BM82x) antes do <c>88</c>; um medidor sem datalogger já conhecido é recusado
+/// antes, sem job (<see cref="StartAsync"/>). Guarda a imagem bruta em <c>&lt;DataDirectory&gt;/imports/{id}.bin</c>
 /// e decodifica com <see cref="Bm52xMemory"/>. As imagens já gravadas são recarregadas na construção, que o
 /// <c>Program</c> faz na partida. Só as <c>Logger:ImportRetention</c> importações terminadas mais novas ficam guardadas.
 /// </summary>
@@ -42,9 +43,19 @@ internal sealed partial class LoggerImportService : IDisposable, IAsyncDisposabl
 
     public static bool IsValidId(string id) => JobId().IsMatch(id);
 
-    /// <summary>Inicia uma importação; falha na hora com E9015 sem cabo ou com conflito se outra estiver em andamento.</summary>
+    /// <summary>
+    /// Inicia uma importação; falha na hora, sem criar job, com E9015 sem cabo, com conflito se outra estiver em
+    /// andamento e com E9014 num medidor sem datalogger (família BM82x, como o Minipa ET-2517A). Com a família fixa
+    /// (<c>Meter:Family</c>) ou confirmada há pouco pelo polling (<see cref="MeterSession.IsFamilyConfirmed"/>), o E9014
+    /// sai sem nenhum comando; com ela desconhecida (link desativado desde a partida, por exemplo) ou conhecida há mais
+    /// tempo (o medidor pode ter sido trocado no cabo), a família é detectada aqui, com o polling pausado, por uma
+    /// consulta de tempo real (<c>82 66</c>, com reenvios, ou o código da família conhecida), sem nenhum comando de memória.
+    /// </summary>
     public async Task<(ImportJob? Job, ApiError? Error)> StartAsync(CancellationToken cancellationToken)
     {
+        if (_session.IsFamilyConfirmed && _session.DataLoggerNotSupportedError() is { } unsupported)
+            return (null, unsupported);
+
         MeterExclusiveAccess access;
         try
         {
@@ -57,6 +68,33 @@ internal sealed partial class LoggerImportService : IDisposable, IAsyncDisposabl
         catch (BrymenMeterException ex)
         {
             return (null, ex.ToApiError());
+        }
+
+        // A consulta do polling que o acesso exclusivo esperou pode ter acabado de confirmar a família; sem isso, a
+        // detecção é feita agora. Sem resposta, vale a família conhecida: um BM82x é recusado, e com a família desconhecida
+        // ou BM52x o job é criado, e a conferência do modelo dele decide (E9017 ou E9014).
+        ApiError? refusal;
+        try
+        {
+            if (!_session.IsFamilyConfirmed)
+                await access.DetectFamilyAsync(cancellationToken).ConfigureAwait(false);
+            refusal = _session.DataLoggerNotSupportedError();
+        }
+        catch (BrymenMeterException ex)
+        {
+            refusal = ex.ToApiError();
+        }
+        catch
+        {
+            await access.DisposeAsync().ConfigureAwait(false);
+            throw;
+        }
+        if (refusal is not null)
+        {
+            await access.DisposeAsync().ConfigureAwait(false);
+            if (refusal.Code == ErrorCodes.DataLoggerNotSupported)
+                _logger.LogInformation("Importação recusada: [{Code}] {Message}", refusal.Code, refusal.Message);
+            return (null, refusal);
         }
 
         var job = new ImportJob(Guid.NewGuid().ToString("N"), _time.GetUtcNow());

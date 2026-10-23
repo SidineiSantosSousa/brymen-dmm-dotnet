@@ -16,9 +16,9 @@
   <PropertyGroup>
     <IsPackable>true</IsPackable>
     <PackageId>Brymen.Dmm</PackageId>
-    <Title>Brymen.Dmm: multímetro Brymen BM52x pelo cabo USB BC-86X</Title>
-    <Description>Biblioteca .NET para o multímetro Brymen BM525s (= Minipa ET-2615A) e outros BM52x com datalogger, pelo cabo óptico USB BC-86X (kit BU-86X, HID VID 0820h/PID 0001h), no Windows e no Linux, sem driver e sem dependências nativas. Lê o tempo real (52 66) de forma avulsa, contínua ou por eventos, com reconexão automática, e importa a memória do datalogger (88/89/8A) com checksum e recuperação de erros. Inclui um medidor simulado com as capturas reais. Projeto independente, sem afiliação com a Brymen nem com a Minipa.</Description>
-    <PackageTags>brymen;bm525s;bm52x;bc-86x;bu-86x;minipa;et-2615a;multimeter;multimetro;dmm;datalogger;hid;hidraw;usb</PackageTags>
+    <Title>Brymen.Dmm: multímetros Brymen BM52x e BM82x pelo cabo USB BC-86X</Title>
+    <Description>Biblioteca .NET para os multímetros Brymen BM525s (= Minipa ET-2615A) e outros BM52x com datalogger, e BM82x (como o Minipa ET-2517A), pelo cabo óptico USB BC-86X (kit BU-86X, HID VID 0820h/PID 0001h), no Windows e no Linux, sem driver e sem dependências nativas. Detecta a família na 1ª leitura e lê o tempo real (52 66 ou 82 66, com o reenvio dos pedidos que o BM82x descarta) de forma avulsa, contínua ou por eventos, com reconexão automática, e importa a memória do datalogger do BM52x (88/89/8A) com checksum e recuperação de erros. Inclui medidores simulados com as capturas reais. Projeto independente, sem afiliação com a Brymen nem com a Minipa.</Description>
+    <PackageTags>brymen;bm525s;bm52x;bm82x;bm827s;bc-86x;bu-86x;minipa;et-2615a;et-2517a;multimeter;multimetro;dmm;datalogger;hid;hidraw;usb</PackageTags>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>

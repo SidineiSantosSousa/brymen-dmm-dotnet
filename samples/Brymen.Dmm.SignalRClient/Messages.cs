@@ -21,6 +21,12 @@ internal sealed record DeviceMessage(string Path, string? Manufacturer, string? 
 
 internal sealed record ErrorMessage(string Code, string Message, DateTimeOffset Timestamp);
 
+/// <summary>
+/// O medidor detectado (campo <c>model</c>): família <c>"BM52x"</c> ou <c>"BM82x"</c>, Model ID (<c>"0x52"</c> ou
+/// <c>"0x82"</c>), nome com os modelos validados e se tem datalogger. Nulo antes da detecção e num serviço 0.1.0.
+/// </summary>
+internal sealed record ModelMessage(string Family, string ModelId, string Name, bool SupportsDataLogger);
+
 /// <summary>Evento <c>status</c> e resultado de <c>GetStatus</c>: o DTO de <c>GET /api/v1/meter</c>.</summary>
 internal sealed record StatusMessage(
     bool LinkEnabled,
@@ -30,7 +36,8 @@ internal sealed record StatusMessage(
     DeviceMessage? Device,
     ErrorMessage? LastError,
     bool Importing,
-    long ReadingCount);
+    long ReadingCount,
+    ModelMessage? Model = null);
 
 /// <summary>Contexto gerado em compile-time para o protocolo JSON do cliente (sem reflexão).</summary>
 [JsonSourceGenerationOptions(JsonSerializerDefaults.Web)]

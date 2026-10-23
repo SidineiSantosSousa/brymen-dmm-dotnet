@@ -28,6 +28,12 @@ public static class ErrorCodes
     /// <summary>"Your meter is power off, disconnected or without built-in DATA LOGGING function."</summary>
     public const string NoDataLogger = BrymenErrorCodes.NoDataLogger;
 
+    /// <summary>
+    /// Próprio da biblioteca: a família do medidor não tem datalogger (BM82x, como o Minipa ET-2517A). A importação é
+    /// recusada sem nenhum comando de memória.
+    /// </summary>
+    public const string DataLoggerNotSupported = BrymenErrorCodes.DataLoggerNotSupported;
+
     /// <summary>"Hi Limit is lower than or equal to Low Limit !"</summary>
     public const string HiNotAboveLo = "W7010";
 

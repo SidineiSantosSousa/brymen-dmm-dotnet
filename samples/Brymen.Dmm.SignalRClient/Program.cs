@@ -4,7 +4,8 @@
 // (o endereço do hub, http://host:5080/hubs/meter, também serve)
 //
 // Conecta com reconexão automática (sem desistir), chama GetStatus e GetLatest e imprime uma linha por evento
-// "reading" (hora, display principal e secundário com unidade, anunciadores) e cada evento "status".
+// "reading" (hora, display principal e secundário com unidade, anunciadores) e cada evento "status" (com o medidor
+// detectado: BM52x ou BM82x).
 // Ctrl+C encerra.
 using System.Globalization;
 using System.Text;
@@ -150,6 +151,9 @@ internal static class Format
         if (status.Device is { } device)
             line.Append(" (").Append(device.Path).Append(')');
         line.Append(", transporte ").Append(status.Transport);
+        // O evento "status" também chega quando a família detectada muda (o medidor trocado no cabo).
+        if (status.Model is { } model)
+            line.Append(", medidor ").Append(model.Name).Append(model.SupportsDataLogger ? "" : " sem datalogger");
         if (status.Importing)
             line.Append(", importando o datalogger");
         line.Append(CultureInfo.InvariantCulture, $", {status.ReadingCount} leituras");

@@ -4,6 +4,8 @@ Especificação implementável do protocolo usado pelo software Windows *Bs82-52
 
 Data das medições: 2026-10-22. Medidor em ACV com Hz no display secundário, pontas abertas, faixa AUTO.
 
+**Acréscimo (2026-10-23):** a §8 estende a especificação à família **BM82x** (Model ID 0x82), medida com o **Minipa ET-2517A** no mesmo cabo BC-86X: comando `82 66`, ausência de memória, decodificação de quadros reais, pedidos descartados com o algoritmo de reenvio e detecção automática da família.
+
 ---
 
 ## 0. Convenções e legenda de evidências
@@ -16,6 +18,8 @@ Cada afirmação traz a sua evidência entre colchetes:
 | **[PDF-N pN]** | `10000count-professional-dual-display-DMMs-protocol.pdf` (série sem logging, BM82x), página N |
 | **[PDF-M pN]** | `Memory-Read-Allocation-Decoder.pdf`, página N |
 | **[CAP:nome]** | Captura real feita com o `probe.cs` (ver §7) |
+| **[CAP:et2517a-…]**, **[CAP:rate]**, **[CAP:rate2]** | Acréscimo (2026-10-23): capturas reais do Minipa ET-2517A, feitas com o `probe.cs` e com as ferramentas de `docs/protocol/tools/` (`sweep.cs`, `rate.cs`, `rate2.cs`); ver §8 |
+| **[USR]** | Acréscimo (2026-10-23): relato do usuário sem arquivo conferível nesta especificação (ex.: o manual da Minipa) |
 | **[RE 0x…]** | Engenharia reversa estática do executável original `Bs8252xV6009sA.exe` (endereço virtual, image base 0x00400000), desmontado com `dumpbin /DISASM`. O programa **não** foi executado. |
 | **[INF]** | Inferência (raciocínio a partir das evidências, sem prova direta) |
 | **[NC]** | Não confirmado: hipótese que precisa de captura adicional |
@@ -38,6 +42,7 @@ Cada afirmação traz a sua evidência entre colchetes:
 5. No LCD, o bit 4 de cada byte de dígito é o ponto decimal **à direita** daquele dígito.
 6. Na memória, os campos D3..D0 das amostras são os nibbles de um **inteiro binário de 16 bits little-endian**, e não BCD: `count = X_1 | X_2 << 8` (§4.9).
 7. Dump real: 1 sessão, ACV + Hz, intervalo de 0,05 s, 375 amostras, de 0,013 V a 0,006 V, Hz sempre 0,000 (§4.14).
+8. **Acréscimo (2026-10-23), família BM82x (§8):** o Minipa ET-2517A usa o mesmo cabo e o mesmo mapa de LCD, mas só responde a `00 00 82 66` (Model ID 0x82) e não tem memória. O BM525s também aceita `82 66`, então a detecção começa por ele. O ET-2517A descarta pedidos de tempo real, tanto mais quanto maior o intervalo entre eles; a recuperação é reenviar o mesmo pedido depois de ≈ 300 ms sem resposta, sem fechar o cabo, dentro de um orçamento de ≈ 2 s (§8.5).
 
 ---
 
@@ -82,10 +87,12 @@ Mapeamento entre a numeração Windows e o payload Linux: para o byte `n` (1-bas
 | Cs_HMD (início da memória) | `00 00 52 88` | 4 relatórios = 36 bytes (“27 bytes + 9 bytes”) | [PDF-L p1], [PDF-M p1]; [CAP:dump] |
 | Cs_NMD (próximo bloco) | `00 00 52 89` | 4 relatórios = 36 bytes | idem |
 | Cs_CMD (bloco atual de novo) | `00 00 52 8A` | 4 relatórios = 36 bytes | idem |
+| Cs_RTD da família BM82x (acréscimo, 2026-10-23) | `00 00 82 66` | 3 relatórios = 27 bytes; Model ID 0x82 no BM82x e 0x52 no BM52x | [PDF-N p1]; [CAP:et2517a-commands]; [CAP:cmd-sequences]; §8.1 |
 
 - Byte 1 = report ID (00), byte 2 = “Command 1” (00), byte 3 = “Command 2” (0x52), byte 4 = “Command 3” [PDF-L p1].
 - O 0x52 coincide com o “Model ID” devolvido nos bytes 20–23 do RTD do BM52x. Na série BM82x o comando é `00 00 82 66` e o Model ID é 0x82 [PDF-N p1]. Conclusão [INF]: “Command 2” é o código de família do medidor. O software original monta o relatório como `{00, 00, dl, cl}` com `dl = 0x52` fixo [RE 0x00426AC0..0x00426B00, 0x00426CE0].
 - **Restrição desta especificação**: só os códigos 66, 88, 89 e 8A são usados. Nenhum outro código foi testado nem deve ser enviado.
+  - **Acréscimo (2026-10-23):** o “Command 2” pode ser 0x52 ou 0x82, mas o 0x82 só com o “Command 3” = 66 (`82 66`, §8.1). Os comandos de memória continuam `52 88`, `52 89` e `52 8A`, e só para o Model ID 0x52.
 
 ### 2.4 Leitura das respostas
 
@@ -231,7 +238,7 @@ Evidências:
 | 17 | R2 | 14 | ① u | ① m | ① V | ① A | ① n | ① D% | ① S | ① F |
 | 18 | R2 | 15 | don't care (obs. 06; ver §3.8) |||||||||
 | 19 | R3 | — | report ID III = 00 |||||||||
-| 20–23 | R3 | 16–19 | 0x52 0x52 0x52 0x52 (Model ID; BM82x = 0x82 [PDF-N p1]) |||||||||
+| 20–23 | R3 | 16–19 | 0x52 0x52 0x52 0x52 (Model ID; BM82x = 0x82 [PDF-N p1]; 82 82 82 82 no ET-2517A [CAP:et2517a-sweep], §8) |||||||||
 | 24 | R3 | 20 | [H] | [C] | [R] | [AUTO] | don't care | don't care | don't care | don't care |
 | 25–27 | R3 | 21–23 | don't care (obs. 00) |||||||||
 
@@ -296,7 +303,9 @@ Regras:
   - Evidências: [PDF-L p1, FIG 1] (1P desenhado entre os dígitos 1 e 2, 4P entre 5 e 6); [PDF-L p1, Example] (“380.1”: o bit 4 está no byte 7 = 3º dígito; “50.12”: no byte 12 = 6º dígito); [CAP:RTD#1] “0.287” com o bit 4 no byte 5; [RE 0x00425379..0x0042542A] `and 0EFh` antes da conversão de cada dígito.
 - **Sinal**: o “-” não é segmento de dígito. Principal = `b4.7`, secundário = `b9.5` [PDF-L p1, FIG 1, retângulos ① e ②]. Não confundir com o caractere `-` (chave 0x40), que aparece em mensagens como “----”.
 - **Temperatura**: se o 4º dígito do principal (byte 8) ou do secundário (byte 14) decodifica como `C` ou `F`, o display está em °C ou °F e o valor numérico são os 3 dígitos anteriores [RE 0x00425477..0x004254BC compara o caractere com 0x43/0x46 e liga as flags 0x20/0x40]. [NC] Não há captura de temperatura.
+  - **Atualização (2026-10-23):** o ET-2517A em °F sem termopar mostra `---F` (bytes 5–8 = `40 40 40 4E`) com T1 (`b4.0`) e nenhum bit de unidade nos bytes 15–17 [CAP:et2517a-sweep, §8.4.6]. Isso confirma a posição do C/F no 4º dígito. Os 3 primeiros caracteres são traços, então o valor é `null`, sem overload. Continua sem captura uma temperatura numérica.
 - **OL / overload** [NC no padrão exato]: o LCD de overload dos Brymen usa os caracteres “0” e “L” (ex.: `0.L`, ` 0L `). A Table 1 não descreve OL. Regra proposta: se os 4 caracteres do display pertencem a {espaço, `0`, `L`} e há ao menos um `L`, é overload. O valor fica `null` (ou ±∞ na API) e `overload = true`. Registre o texto bruto para refinar a regra com capturas reais.
+  - **Atualização (2026-10-23):** a regra vale nos quatro padrões reais capturados, todos com os caracteres ` 0L ` e o ponto onde a faixa o põe: `0.L` (BM525s, MΩ, pontas abertas [CAP:rtd-ohm-open]); `0L.` (continuidade), `.0L` (diodo, com o ponto 1p num dígito apagado) e `0L` (V em faixa manual, sem ponto), no ET-2517A [CAP:et2517a-sweep, §8.4]. Continua sem captura um OL com o sinal aceso ou no secundário.
 - **Display apagado**: os 4 dígitos com chave 0x00 → display inativo (ex.: secundário desligado).
 - Qualquer `?` ou letra fora dos casos acima → leitura não numérica. Exponha o texto e deixe o valor `null`.
 
@@ -347,6 +356,7 @@ Entrada: 27 bytes no estilo Windows (no Linux, prefixe 00 em cada relatório de 
    - comprimento 27;
    - `b1 = b10 = b19 = 0x00`;
    - `b20..b23 = 52 52 52 52`.
+     - **Acréscimo (2026-10-23):** ou `82 82 82 82` na família BM82x. Os quatro bytes devem ser iguais e iguais ao código da família esperada; na detecção, aceite 0x52 e 0x82 (§8.6).
    - Opcional, como o original: rejeitar se `b15` bits 7–6 = 11 ou `b17` bits 7–6 = 11 (m e µ juntos) [RE 0x00425016..0x00425057].
    - O software original aceita no byte 23 os valores {82, 52, FF, F7, F3, F1, F0, E0, C0, 80, 00} e rejeita quadros com `b9.4` (@) aceso [RE 0x00424F75..0x00424FFD]. Motivo desconhecido [NC].
 2. **Para cada display** (principal: dígitos nos bytes 5–8, sinal `b4.7`; secundário: bytes 11–14, sinal `b9.5`):
@@ -445,6 +455,8 @@ ED = 1110 1101 → a b c d f g = “9”. Resultado: **0.090 V AC** / **0.000 Hz
 | 18 | 06 (todas as capturas reais em ACV) | “don't care” no PDF, mas o software original testa `b18.3` quando o código de função do principal é 5 (V AC) ou 6 (V DC) e liga a flag 0x01000000 [RE 0x0042520B..0x0042523F]. Significado desconhecido [NC]. Talvez faixa ou LoZ. |
 | 24 bits 3–0 | 1 (RTD#1), 0 (RTD#2 e #3) | “don't care” [PDF-L p1]. Varia entre leituras [NC]. |
 | 25–27 | 00 | “don't care” |
+
+**Acréscimo (2026-10-23):** no BM525s em Ω com as pontas abertas, `b18` = FC e o nibble baixo de `b24` = F [CAP:rtd-ohm-open]. No ET-2517A, `b18` vale 00, 06 ou F6 e o nibble baixo de `b24` vale 0 ou F; os bytes 2 e 25–27 vieram 00 nos 30 quadros distintos da varredura (§8.4.14).
 
 ---
 
@@ -808,13 +820,18 @@ A lista completa (count por amostra, primeiras e últimas 3 decodificadas) está
 8. **“Model ID” do RTD**: os bytes 20–23 (0x52) são o código da família e coincidem com o “Command 2” do pedido. No BM82x ambos são 0x82 [PDF-N p1].
 9. **Software original**: é Borland C++ Builder (VCL), não Delphi (string no offset 0x000C3240; **Correção (revisão):** antes 0x000C323F, deslocado em 1 byte).
 10. **Report IDs**: os bytes “00h (Report ID)” existem só na API do Windows. No fio (e no hidraw do Linux) cada relatório de entrada tem 8 bytes [INF forte].
+11. **Acréscimo (2026-10-23), PDF-N × PDF-L:** o PDF-N tem a Table 1 com os bytes 10/11 certos e chama os bytes 20–23 de “Model ID0..3 = 0x82”, mas o exemplo dele repete o erro dos bytes 10/11 e o fluxograma repete o `Vendor_ID: 0x82`. Fora o código da família e a lista de comandos, as duas especificações são idênticas: a FIG 1 é a mesma imagem e o resto da Table 1 é igual bit a bit (§8.2).
 
 ## 6. Questões em aberto
 
 1. Padrão exato do LCD em OL (`0.L`, ` 0L `, posição do DP) e se o “-” do OL acende o sinal. Faltam capturas em Ω com pontas abertas e em V acima da faixa.
+   - **Atualização (2026-10-23):** respondida em parte. Há quatro padrões reais (`0.L`, `0L.`, `.0L` e `0L`) e a regra da §3.4 vale em todos. Faltam um OL com o sinal aceso e um OL no secundário.
 2. Temperatura: casas decimais na memória (o RE indica 0) e formato no RTD (3 dígitos + ‘C’/‘F’?). Faltam sessão e RTD em °C/°F.
+   - **Atualização (2026-10-23):** o RTD do ET-2517A sem termopar confirma “3 caracteres + F” (`---F`, §8.4.6). Faltam uma temperatura numérica (o ponto decimal, se houver) e uma sessão de temperatura na memória do BM52x.
 3. Significado de `b18` (obs. 06; o original testa o bit 3 em V AC/DC), do nibble baixo de `b24` (0/1) e dos símbolos @, [H], [C], [R].
+   - **Atualização (2026-10-23):** no ET-2517A, o [R] (`b24.5`) acende com o REC, junto de MIN, MAX e AVG (§8.4.10), o que apoia “R = gravação de MAX/MIN/AVG”. Valores novos: `b18` = 00, 06, F6 (ET-2517A) e FC (BM525s em Ω); nibble baixo de `b24` = F.
 4. Por que o software original rejeita RTD com `b9.4` (@) aceso e aceita no byte 23 os valores {82, 52, FF, F7, F3, F1, F0, E0, C0, 80, 00}.
+   - **Atualização (2026-10-23):** o ET-2517A devolve 82 nos quatro bytes. Nenhum dos outros valores foi visto; o `HidReadModel` do original os converte em 0x82 [RE 0x424B5A..0x424BE4], o que sugere outros firmwares BM82x [INF, NC].
 5. Significado de Model_Id = 00 × 01.
 6. Mapeamento de endereço para as páginas A2/A3 (> 64 KiB de log). Validar com um log grande ou várias sessões.
 7. Encadeamento real com várias sessões (PS/NS, single display de 3 bytes). Só há 1 sessão dual no dump.
@@ -822,16 +839,468 @@ A lista completa (count por amostra, primeiras e últimas 3 decodificadas) está
 9. Se o cabo responde com o medidor desligado ou fora do modo de comunicação, e com o quê. Não testado.
 10. **Correção (revisão), nova questão:** o que o medidor faz com um `89` cuja resposta não chegou (0 relatórios)? O ponteiro avança ou não? Isso decide se o `8A` de recuperação é seguro (§4.11). É preciso testar com desconexão ou interferência óptica proposital.
 11. **Nova questão (2026-10-22):** por que o 1º `66` depois do último bloco da memória leva ≈ 2 s e volta em traços (§2.7)? A demora cresce com memórias maiores, com várias sessões ou depois de um `89` além do fim? Os 3 s de espera da port cobrem o dump de 2272 bytes medido.
+12. **Nova questão (2026-10-23):** por que o ET-2517A descarta pedidos de tempo real, e por que a taxa cresce com o intervalo entre consultas (§8.5)? Hipótese [INF, NC]: o receptor óptico do medidor só fica atento logo depois de uma troca e passa a amostrar o pedido de tempos em tempos quando ocioso.
+13. **Nova questão (2026-10-23):** com o orçamento de ≈ 2 s da §8.5, ainda sobra algum pedido sem resposta? Não foi medido. Com 4 tentativas (≈ 1,2 s), 1 a 5 de 40 consultas falharam [CAP:rate2].
+14. **Nova questão (2026-10-23):** o que o BM525s faz com um `66` reenviado enquanto ainda prepara a resposta lenta do 1º `66` depois da memória (≈ 2 s, §2.7): ignora, enfileira ou responde duas vezes? Não testado. Por isso a §8.5 não reenvia nesse caso quando a família já é BM52x, e faz o drain de recuperação depois de qualquer reenvio.
+15. **Nova questão (2026-10-23):** o secundário do ET-2517A em faixa manual de ACV vem com só o ponto 5p e o ② Hz acesos e os 4 dígitos apagados (§8.4.9). O que o LCD mostra? A regra da §3.6 o trata como apagado (`null`).
+16. **Nova questão (2026-10-23):** algum BM52x ignora o `82 66`? Só o BM525s foi testado; o fallback para `52 66` da §8.6 cobre esse caso. E outros modelos BM82x: algum devolve no byte 23 um dos valores que o original converte em 0x82 (questão 4)?
+17. **Nova questão (2026-10-23):** o ET-2517A responde a `82 66` com o medidor em APO, em modo de configuração ou com o dial em OFF, e com o quê? Não testado (é o caso da questão 9 para o BM82x).
 
 ## 7. Arquivos
 
 | Arquivo | Conteúdo |
 |---|---|
 | `docs/protocol/bm52x-usb-protocol.md` | este documento |
-| `docs/protocol/test-vectors.json` | vetores de teste (RTD: exemplo do PDF corrigido, exemplo literal como vetor negativo, 3 capturas reais, 2 sintéticos marcados; memória: HMD, NMD, CMD, último bloco e dump completo decodificado). **Correção (revisão):** 2 vetores `8A` com captura salva foram acrescentados (§2.7), e o `cmd-current-again-after-hmd` foi marcado como sem log salvo |
+| `docs/protocol/test-vectors.json` | vetores de teste (RTD: exemplo do PDF corrigido, exemplo literal como vetor negativo, 3 capturas reais, 2 sintéticos marcados; memória: HMD, NMD, CMD, último bloco e dump completo decodificado). **Correção (revisão):** 2 vetores `8A` com captura salva foram acrescentados (§2.7), e o `cmd-current-again-after-hmd` foi marcado como sem log salvo. **Acréscimo (2026-10-23):** 13 vetores reais do ET-2517A e o exemplo do PDF-N corrigido, com `command` `"8266"`, `family` `"BM82x"` e `modelBytes` `"82828282"` (§8.4) |
 | `docs/protocol/captures/memory-dump-1.txt` | dump bruto: 1 × 88 + 94 × 89 (+ linha de timeout do 96º); formato `<cmd> <hex 36 bytes>`, `#` = comentário |
 | `docs/protocol/captures/memory-dump-2.txt` | dump de controle: 88 + 94 × 89 + 8A + 88 |
 | `docs/protocol/captures/rtd-acv.txt` | RTD#1, RTD#2 e 12 leituras novas (ACV + Hz); formato `<cmd> <hex 27 bytes>` |
 | `docs/protocol/captures/cmd-sequences-2026-10-22.txt` | `82 66` × `52 66` (quadros idênticos), sequência `88`, `8A`, `89`, `8A` e o `52 82` sem resposta (§2.7); formato `<Command2 Command3> <hex>` |
+| `docs/protocol/captures/rtd-ohm-open.txt` | Acréscimo (2026-10-23): BM525s em Ω com as pontas abertas (`0.L` MΩ, §3.4) |
+| `docs/protocol/captures/et2517a-commands-2026-10-23.txt` | Acréscimo (2026-10-23): ET-2517A com o `probe.cs`: `52 66` sem resposta, `82 66` com Model ID 82, `52 88` e `82 88` sem resposta, e as medições de pedidos descartados do `rate.cs` e do `rate2.cs` (§8.1, §8.5); formato `<Command2 Command3> <hex>` |
+| `docs/protocol/captures/et2517a-sweep-2026-10-23.txt` | Acréscimo (2026-10-23): varredura do ET-2517A com o `sweep.cs` (`82 66` a cada ≈ 120 ms, uma linha por quadro diferente do anterior, `TIMEOUT` nos pedidos perdidos) com a decodificação feita trocando os bytes de modelo para 52; 30 quadros distintos (§8.4); formato `<tempo> <hex 27 bytes> <decodificação>` |
+| `docs/protocol/tools/sweep.cs`, `rate.cs`, `rate2.cs` | Acréscimo (2026-10-23): apps .NET 10 de arquivo único que geraram as capturas do ET-2517A (`dotnet run sweep.cs -- <s> <arquivo>`, `dotnet run rate.cs -- [n] [intervalos] [família]`, idem `rate2.cs`); usam o cabo real |
+| `C:\Users\pc-eng\AppData\Local\Temp\claude\C--dev-Brymen-BU-86X-USB-kit\290f1ca3-cacf-4f39-8e71-e9d122aff040\scratchpad\scripts-n\bm82x_ref.py` (área temporária) | Acréscimo (2026-10-23): decodificador de referência das duas famílias, escrito do zero a partir da §3.2 e da §3.4. `sweep` confere os 30 quadros distintos da varredura com a coluna da captura (0 divergências), `gen` gera os 14 vetores novos e `verify` confere os 21 vetores RTD do `test-vectors.json` e que os 14 vetores anteriores não mudaram (0 falhas). Uso: `python -I bm82x_ref.py verify <docs/protocol> <test-vectors do HEAD>` |
+| `…\scratchpad\scripts-n\render_n.py`, `crop_n.py`, `compare_images.py`, `diff_flowchart.py` e `…\scratchpad\protocol\png-n\` (área temporária) | Acréscimo (2026-10-23): renderização do PDF-N e do PDF-L com PyMuPDF (200 dpi e recortes a 300 dpi), comparação das imagens embutidas por SHA-256 e diff pixel a pixel dos fluxogramas (§8.2) |
 | `C:\Users\pc-eng\AppData\Local\Temp\claude\C--dev-Brymen-BU-86X-USB-kit\290f1ca3-cacf-4f39-8e71-e9d122aff040\scratchpad\scripts\bm52x_ref.py` e `gen_vectors.py` (área temporária) | decodificador de referência em Python e gerador dos vetores; servem de base para os testes .NET |
 | `C:\Users\pc-eng\AppData\Local\Temp\claude\C--dev-Brymen-BU-86X-USB-kit\290f1ca3-cacf-4f39-8e71-e9d122aff040\scratchpad\scripts-verify\verify_bm52x.py` (área temporária) | **Correção (revisão):** verificador independente, escrito sem reaproveitar código do autor. Decodifica todos os vetores, as 14 RTDs de `rtd-acv.txt` e os dois dumps, simulando o ponteiro do medidor para 88/89/8A. Também confere a lista RLE da §4.14 e as latências dos logs brutos. Uso: `python -I verify_bm52x.py <docs/protocol> [<scratchpad>]`. Resultado na revisão: 1956 verificações e nenhuma falha. |
+
+---
+
+## 8. Família BM82x (Model ID 0x82) e o Minipa ET-2517A
+
+Medições de 2026-10-23, no Windows, com o **Minipa ET-2517A** no mesmo cabo BC-86X do BM525s. O ET-2517A pertence à família **BM82x** do PDF-N: responde ao comando do PDF-N e devolve o Model ID 0x82 [PDF-N p1; CAP:et2517a-commands]. O modelo Brymen equivalente não foi identificado [NC].
+
+### 8.1 Identificação, comando `82 66` e ausência de memória
+
+| Item | ET-2517A (BM82x) | BM525s (BM52x) | Evidência |
+|---|---|---|---|
+| Cabo | BC-86X: VID 0x0820, PID 0x0001, bcdDevice 0x8603, `Brymen` / `Superior DMM`, usage page 0xFF00, relatórios de 9 (in) e 4 (out) bytes | o mesmo | [CAP:et2517a-commands], cabeçalho; §2.1 |
+| `00 00 52 66` | **sem resposta** (timeout de 1,5 s) | 27 bytes, Model ID 52 52 52 52 | [CAP:et2517a-commands]; [CAP:rtd] |
+| `00 00 82 66` | 27 bytes, **Model ID 82 82 82 82** | 27 bytes **idênticos** aos do `52 66`, Model ID 52 52 52 52 | [CAP:et2517a-commands]; [CAP:cmd-sequences] |
+| `00 00 52 88` / `00 00 82 88` | sem resposta / sem resposta | 36 bytes (cabeçalho da memória, §4.13.1) / não testado | [CAP:et2517a-commands]; [CAP:dump1] |
+| Datalogger | não tem | tem | [USR] manual da Minipa; [PDF-N p1] lista só o `82 66` |
+| Latência até o 1º relatório | 36–237 ms | 50–103 ms (§2.5) | [CAP:rate]; [CAP:rtd] |
+| Pedidos de tempo real perdidos | sim, tanto mais quanto maior o intervalo (§8.5) | nunca observado: 4,9 leituras/s com `PollInterval` de 200 ms, sem lacunas por minutos | [CAP:rate]; [CAP:rate2]; §2.7; [USR] |
+
+- O “Command 2” `0x82` é o código da família BM82x, como o `0x52` é o da BM52x (§2.3): o mesmo valor volta nos bytes 20–23 [PDF-N p1, Table 1, “Model ID0..3: 0x82”].
+- **O BM525s também aceita o `82 66`** e devolve o seu Model ID 0x52 [CAP:cmd-sequences]. O ET-2517A **não** aceita o `52 66`. Conclusão [INF]: o `82 66` é o pedido de tempo real comum às duas famílias.
+- **O software original usa `82 66` em todo o tempo real** (`HidReadModel`, `HidReadRtd` e a thread de aquisição) e `52 88`/`52 89`/`52 8A` na memória [RE 0x00424955, 0x00424C40, 0x004355E9; 0x00426CE0, 0x00426E84]. Antes de importar, ele consulta o modelo com `82 66` e mostra E9017 se o Model ID não for 0x52 [RE 0x0042EC99..0x0042ECBA]. Ou seja, o original lê o tempo real de um BM82x, mas recusa a importação.
+- **Sem memória.** `52 88` e `82 88` ficaram sem resposta, e o manual da Minipa diz que o ET-2517A não tem data logging [USR]. A port deve se comportar como o original: com Model ID 0x82, a importação falha com **E9017** sem enviar nenhum comando de memória.
+- **Restrição desta especificação** (completa a §2.3): para o BM82x, envie só `00 00 82 66`. Não envie `82 88`, `82 89` nem `82 8A` (o `82 88` foi enviado uma vez neste teste, sem resposta) nem `52 66` (só gera timeout).
+
+### 8.2 PDF-N × PDF-L: comparação célula a célula
+
+Método: as duas páginas de cada PDF foram renderizadas com PyMuPDF 1.27.2 a 200 dpi e recortadas a 300 dpi (Table 1, FIG 1, exemplo e fluxograma), em `C:\Users\pc-eng\AppData\Local\Temp\claude\C--dev-Brymen-BU-86X-USB-kit\290f1ca3-cacf-4f39-8e71-e9d122aff040\scratchpad\protocol\png-n\`. Além da leitura visual, foram comparados o texto extraído, as imagens embutidas (SHA-256) e os fluxogramas pixel a pixel (§7).
+
+| # | Elemento | PDF-L (BM52x, com logging) | PDF-N (BM82x, sem logging) | Consequência |
+|---|---|---|---|---|
+| 1 | Título | “Protocol for 10000-count professional dual display mobile logging DMM series” | “Protocol for 10000-count professional dual display DMM series” | — |
+| 2 | Tabela de comandos | 4 comandos (`00h 00h 52h 66h/88h/89h/8Ah`), com as colunas “Returned bytes” (27; 27 + 9) e “Remark” (remete ao *Memory-Read-Allocation-Decoder*) | 1 comando, `0x00 0x00 0x82 0x66`, sob “Commands to get read-time reading data” (sic) | o BM82x não tem comandos de memória |
+| 3 | Frase “Real-time download” | termina com “- 00h, 00h, 52h, 66h” | sem os bytes do comando | — |
+| 4 | Table 1, bytes 10 e 11 | byte 10 = `5b 5g 5c 4p 5a 5f 5e 5d`, byte 11 = report ID II (**errado**) | byte 10 = “0x00 (Report ID= II)”, byte 11 = `5b 5g 5c 4p 5a 5f 5e 5d` (**certo**) | é a evidência 2 da §3.1 |
+| 5 | Table 1, bytes 20–23 | “0x52”, sem rótulo | “Model ID0: 0x82” … “Model ID3: 0x82”, em vermelho | origem do nome “Model ID” |
+| 6 | Table 1, report IDs | “00h (Report ID= I/II/III)” | “0x00 (Report ID= I/II/III)” | só notação |
+| 7 | Table 1, demais células (bytes 2–9, 12–18 e 24–27) | — | **idênticas bit a bit**: Hi, Lo, ①DC, ①AC, MIN, ⑤, AVG, MAX; ①sinal, Δ, %, LoZ, ①T2, LPF, ④, ①T1; dígitos 1–8 com 1p–6p, dB e %4~20mA; ②DC, ②AC, ②sinal, @, bateria, ②T1, ②T2, •))); unidades dos bytes 15–17; [H], [C], [R], [AUTO] | mesmo mapa (§3.2) |
+| 8 | FIG 1 e o LCD do exemplo | 16 imagens embutidas na p1 (os dois LCDs de 1860 × 1271 e os ícones das tabelas) | **as mesmas 16 imagens, byte a byte** (mesmos SHA-256), só em outra posição e escala | mesmo LCD, inclusive o rótulo “1g” no 4º dígito (§3.3) |
+| 9 | Exemplo, bytes 20–23 | `52h` (célula “0x52”) | `82h` (célula “0x82h”, sic) | — |
+| 10 | Exemplo, bytes 10/11 | `6Dh` / `00h (Report ID= II)` (erro) | `6Dh` / `00h (Report ID= II)`: **o mesmo erro**, que contradiz a Table 1 do próprio PDF-N | a correção da §3.1 vale para os dois exemplos |
+| 11 | Exemplo, demais bytes e realces | — | idênticos: `00 xx 10 00 E9 EF BF A0 00 6D 00 BF A0 CB 00 01 20 xx 00 … 1x xx xx xx`, com as mesmas células realçadas | — |
+| 12 | Fluxograma (p2) | “Send out **0x00, 0x00, 0x52, 0x66** commands” | “Send out **0x00, 0x00, 0x82, 0x66** commands” | resto idêntico (abaixo) |
+| 13 | Paginação | as linhas 26–27 do exemplo e a base do LCD do exemplo passam para a p2 | tudo na p1 | só leiaute |
+| 14 | Metadados | CreationDate 2008-12-23 17:48:49 +08:00 | 2008-12-23 17:04:42 +08:00 | ambos do Acrobat Distiller 5.0.5 |
+
+- **Fluxogramas**: são imagens de 2171 × 3195 pixels. O diff pixel a pixel (limiar de 48 níveis) acusou 7810 pixels em duas regiões: a caixa do comando (5971 pixels, a troca de `0x52` por `0x82`) e o texto “> 4 Seconds” (1839 pixels, o mesmo texto rasterizado de novo). O resto é idêntico nos dois: `Vendor_ID: 0x82` / `Product_ID: 0x01` (o mesmo erro, §2.1), 3 relatórios de entrada (27 bytes), timeout de 4 s com fechar e reabrir, fechar o HID depois de cada leitura e ciclo de 0,5 s.
+- **Conclusão**: fora o código da família (comando e Model ID) e a lista de comandos, o PDF-N e o PDF-L descrevem o mesmo quadro. A única diferença de conteúdo do mapa é a numeração dos bytes 10/11, em que o PDF-N está certo. Nenhuma diferença bit a bit foi encontrada na Table 1 nem na FIG 1.
+
+### 8.3 Mapa e validação do quadro BM82x
+
+- O ET-2517A usa o mapa da §3.2, a tabela de segmentos da §3.4 e o algoritmo da §3.6 sem mudança. Nos 30 quadros distintos da varredura, fora os bits “don't care” (byte 18 e nibble baixo do 24), todo bit aceso é um segmento ou anunciador da Table 1, e os bytes 2 e 25–27 vieram 00 (§8.4.14).
+- **Validação** (substitui o passo 1 da §3.6 para as duas famílias):
+  1. comprimento 27 e `b1 = b10 = b19 = 0x00`;
+  2. `b20 = b21 = b22 = b23`, com valor 0x52 (BM52x) ou 0x82 (BM82x);
+  3. depois da detecção (§8.6), o Model ID deve ser o da família da conexão. Um quadro válido com o Model ID da outra família indica troca de medidor no mesmo cabo (§8.6).
+- **Nota sobre as capturas**: o `IHidDevice` entrega cada relatório sem o report ID, e o `sweep.cs` remonta o quadro no estilo Windows pondo 00 nos bytes 1, 10 e 19, como o `Bu86xLink`. Na varredura do ET-2517A, portanto, esses 00 não são observação do fio.
+
+### 8.4 Decodificação comentada de quadros reais do ET-2517A
+
+Fonte: `captures/et2517a-sweep-2026-10-23.txt` [CAP:et2517a-sweep]. Cada quadro foi decodificado à mão pelo mapa da §3.2, sem usar a coluna de texto da captura, e depois conferido pelo decodificador de referência (§7). Em todos os quadros abaixo: bytes 1, 10 e 19 = 00 (report IDs), byte 2 = 00, bytes 20–23 = `82 82 82 82` (Model ID BM82x) e bytes 25–27 = 00. As tabelas mostram os outros bytes; bits de dígito no formato `b g c p a f e d`.
+
+#### 8.4.1 ACV + Hz em AUTO (0,2 s)
+
+`00 00 10 00 BF AF A0 E9 00 | 00 BF AF AF AF 00 01 20 06 | 00 82 82 82 82 10 00 00 00`
+
+| Byte | Hex | Bits | Leitura |
+|---|---|---|---|
+| 3 | 10 | bit 4 | ① AC |
+| 4 | 00 | — | sinal +; sem Δ, LoZ, LPF, T1/T2 |
+| 5 | BF | 1011 1111 → a b c d e f, p = 1 | “0.” |
+| 6 | AF | 1010 1111 → a b c d e f | “0” |
+| 7 | A0 | 1010 0000 → b c | “1” |
+| 8 | E9 | 1110 1001 → a b c d g; dB = 0 | “3” |
+| 9 | 00 | — | sem anunciadores ② |
+| 11 | BF | 4p = 1 | “0.” |
+| 12–14 | AF AF AF | 5p = 6p = 0; %4~20mA = 0 | “000” |
+| 15 | 00 | — | sem unidade ② no byte 15 |
+| 16 | 01 | bit 0 | ② Hz |
+| 17 | 20 | bit 5 | ① V |
+| 18 | 06 | — | não documentado (06, como no BM525s em ACV) |
+| 24 | 10 | bit 4 | AUTO; nibble baixo 0 |
+
+Resultado: **0.013 V AC / 0.000 Hz**, AUTO. É o mesmo quadro das consultas de `et2517a-commands-2026-10-23.txt`. Vetor `et2517a-acv-0.013V-hz-0.000Hz-auto`.
+
+#### 8.4.2 DCV + ACV (110,4 s)
+
+`00 00 20 00 BF AF AF AF 40 | 00 BF E9 E9 A8 10 00 20 00 | 00 82 82 82 82 10 00 00 00`
+
+| Byte | Hex | Bits | Leitura |
+|---|---|---|---|
+| 3 | 20 | bit 5 | ① DC |
+| 5–8 | BF AF AF AF | “0.” “0” “0” “0” | 0.000 |
+| 9 | 40 | bit 6 | ② AC |
+| 11–14 | BF E9 E9 A8 | “0.” “3” “3” “7” (A8 = 1010 1000 → a b c) | 0.337 |
+| 15 | 10 | bit 4 | ② V |
+| 16 | 00 | — | — |
+| 17 | 20 | bit 5 | ① V |
+| 18 | 00 | — | não documentado |
+| 24 | 10 | bit 4 | AUTO |
+
+Resultado: **0.000 V DC / 0.337 V AC**, AUTO: DCV no principal e ACV no secundário (o Bfunction 02 / Bselect 01 da Table 3 do BM52x). Vetor `et2517a-dcv-0.000V-acv-0.337V`.
+
+#### 8.4.3 Hz + mV AC, 60 Hz da rede (94,7 s)
+
+`00 00 00 00 6F BF AF A0 40 | 00 6F BF AF 6F 90 10 00 00 | 00 82 82 82 82 10 00 00 00`
+
+| Byte | Hex | Bits | Leitura |
+|---|---|---|---|
+| 3 | 00 | — | principal sem AC/DC |
+| 5 | 6F | 0110 1111 → a c d e f g | “6” |
+| 6 | BF | p = 1 | “0.” |
+| 7, 8 | AF A0 | — | “0” “1” |
+| 9 | 40 | bit 6 | ② AC |
+| 11 | 6F | 4p = 0 | “6” |
+| 12 | BF | 5p = 1 | “0.” |
+| 13, 14 | AF 6F | %4~20mA = 0 | “0” “6” |
+| 15 | 90 | 1001 0000 → bits 7 e 4 | ② m + ② V |
+| 16 | 10 | bit 4 | ① Hz |
+| 17 | 00 | — | sem unidade ① no byte 17 |
+| 18 | 00 | — | não documentado |
+| 24 | 10 | bit 4 | AUTO |
+
+Resultado: **60.01 Hz / 60.06 mV AC** (siValue 0.06006 V), AUTO. As pontas abertas captam os 60 Hz da rede. Vetor `et2517a-hz-60.01Hz-acmv-60.06mV`.
+
+#### 8.4.4 Hz + mV AC, ponto num “8” (95,1 s)
+
+`00 00 00 00 6F BF AF A0 40 | 00 6D FF ED E9 90 10 00 00 | 00 82 82 82 82 10 00 00 00`
+
+Igual ao anterior, exceto os bytes 11–14: `6D` = 0110 1101 → a c d f g = “5”; `FF` = 1111 1111 → chave `EF` = “8” com 5p = 1 → “8.”; `ED` = 1110 1101 → a b c d f g = “9”; `E9` = “3”. Resultado: **60.01 Hz / 58.93 mV AC** (siValue 0.05893 V). O caso mostra que o ponto se separa do caractere pela máscara `& 0xEF`. Vetor `et2517a-hz-60.01Hz-acmv-58.93mV`.
+
+#### 8.4.5 Continuidade com as pontas abertas (96,2 s)
+
+`00 00 00 00 00 AF 17 00 01 | 00 00 00 00 00 00 20 00 00 | 00 82 82 82 82 00 00 00 00`
+
+| Byte | Hex | Bits | Leitura |
+|---|---|---|---|
+| 3, 4 | 00 00 | — | sem AC/DC, sinal + |
+| 5 | 00 | — | “ ” (apagado) |
+| 6 | AF | p = 0 | “0” |
+| 7 | 17 | 0001 0111 → d e f, p = 1 | “L.” |
+| 8 | 00 | dB = 0 | “ ” |
+| 9 | 01 | bit 0 | •))) (bipe de continuidade) |
+| 11–14 | 00 00 00 00 | — | secundário apagado |
+| 15, 17 | 00 00 | — | — |
+| 16 | 20 | bit 5 | ① Ω |
+| 18 | 00 | — | não documentado |
+| 24 | 00 | — | sem AUTO; nibble baixo 0 |
+
+Resultado: dígitos `" 0L "` com o ponto 3p → texto **`0L.`**, **overload**, Ω sem prefixo; flag CONTINUITY_BEEP; secundário `null`. O ponto fica onde ficaria em “600.0”, a faixa de continuidade da Table 6 [INF]. Vetor `et2517a-continuity-open-0L.-ohm`.
+
+#### 8.4.6 Temperatura sem termopar (99,0 s)
+
+`00 00 00 01 40 40 40 4E 00 | 00 00 00 00 00 00 00 00 00 | 00 82 82 82 82 00 00 00 00`
+
+| Byte | Hex | Bits | Leitura |
+|---|---|---|---|
+| 3 | 00 | — | — |
+| 4 | 01 | bit 0 | ① T1 |
+| 5–7 | 40 40 40 | 0100 0000 → g | “-” “-” “-” |
+| 8 | 4E | 0100 1110 → a e f g; dB = 0 | “F” |
+| 9 | 00 | — | — |
+| 11–14 | 00 00 00 00 | — | secundário apagado |
+| 15–17 | 00 00 00 | — | nenhuma unidade nos bytes de unidade |
+| 24 | 00 | — | sem AUTO |
+
+Resultado: **`---F`**: o “F” do 4º dígito dá a unidade °F, e os 3 primeiros caracteres (“---”) não são número, então `value = null`, sem overload; flag MAIN_T1. É o aviso de sensor aberto, que não deve ser confundido com OL [INF]. Confirma a regra de temperatura da §3.4. Vetor `et2517a-temperature-no-probe-dashes-F`.
+
+#### 8.4.7 Diodo com as pontas abertas (100,8 s)
+
+`00 00 00 00 10 AF 07 00 00 | 00 E3 20 63 E3 00 00 20 00 | 00 82 82 82 82 00 00 00 00`
+
+| Byte | Hex | Bits | Leitura |
+|---|---|---|---|
+| 3, 4 | 00 00 | — | sem AC/DC, sinal + |
+| 5 | 10 | 0001 0000 → só p (1p) | “ .” |
+| 6 | AF | — | “0” |
+| 7 | 07 | 0000 0111 → d e f, p = 0 | “L” |
+| 8 | 00 | — | “ ” |
+| 9 | 00 | — | — |
+| 11 | E3 | 1110 0011 → b c d e g | “d” |
+| 12 | 20 | 0010 0000 → c | “i” |
+| 13 | 63 | 0110 0011 → c d e g | “o” |
+| 14 | E3 | %4~20mA = 0 | “d” |
+| 15, 16 | 00 00 | — | sem unidade ② |
+| 17 | 20 | bit 5 | ① V |
+| 24 | 00 | — | sem AUTO |
+
+Resultado: principal **`.0L` V**, overload (o ponto de “2.000”, a faixa de diodo, num 1º dígito apagado [INF]); secundário com o texto **`diod`**, sem unidade, `value = null`. Vetor `et2517a-diode-open-.0L-V-diod`.
+
+#### 8.4.8 ACV em faixa manual, secundário em traços (111,6 s)
+
+`00 00 10 00 BF A0 A0 6D 00 | 00 50 40 40 40 00 01 20 06 | 00 82 82 82 82 00 00 00 00`
+
+| Byte | Hex | Bits | Leitura |
+|---|---|---|---|
+| 3 | 10 | bit 4 | ① AC |
+| 5–8 | BF A0 A0 6D | “0.” “1” “1” “5” | 0.115 |
+| 11 | 50 | 0101 0000 → g, 4p = 1 | “-.” |
+| 12–14 | 40 40 40 | g | “---” |
+| 16 | 01 | bit 0 | ② Hz |
+| 17 | 20 | bit 5 | ① V |
+| 18 | 06 | — | não documentado |
+| 24 | 00 | — | **sem AUTO** |
+
+Resultado: **0.115 V AC / `-.---` Hz** (secundário não numérico, `value = null`). O AUTO apagou: é a 1ª faixa manual depois do RANGE, 9.999 V [INF]. Vetor `et2517a-acv-manual-0.115V-hz-dashes`.
+
+#### 8.4.9 ACV em faixa manual 99.99 V, secundário só com o ponto (114,6 s)
+
+`00 00 10 00 AF BF E4 6F 00 | 00 00 10 00 00 00 01 20 00 | 00 82 82 82 82 00 00 00 00`
+
+| Byte | Hex | Bits | Leitura |
+|---|---|---|---|
+| 3 | 10 | bit 4 | ① AC |
+| 5 | AF | p = 0 | “0” (zero à esquerda aceso) |
+| 6 | BF | p = 1 | “0.” |
+| 7 | E4 | 1110 0100 → b c f g | “4” |
+| 8 | 6F | — | “6” |
+| 11 | 00 | — | “ ” |
+| 12 | 10 | só p (5p) | “ .” |
+| 13, 14 | 00 00 | — | “  ” |
+| 16 | 01 | bit 0 | ② Hz |
+| 17 | 20 | bit 5 | ① V |
+| 18 | 00 | — | não documentado (06 no quadro de 125,1 s, com o mesmo 00.46 no principal) |
+| 24 | 00 | — | sem AUTO |
+
+Resultado: **00.46 V AC** (`digits` = `"0046"`, `value` = 0.46). No secundário, os 4 caracteres são espaços, então o display é `null` pela regra da §3.6, **embora o ponto 5p e o ② Hz estejam acesos** (§8.4.14, item 3). Vetor `et2517a-acv-manual-00.46V-secondary-point-only`.
+
+#### 8.4.10 REC com MIN, MAX e AVG (115,3 s)
+
+`00 00 1B 00 AF BF 6F A8 00 | 00 00 10 00 00 00 01 20 06 | 00 82 82 82 82 20 00 00 00`
+
+| Byte | Hex | Bits | Leitura |
+|---|---|---|---|
+| 3 | 1B | 0001 1011 → bits 4, 3, 1 e 0 | ① AC, MIN, AVG, MAX (o traço ⑤ de “MAX-MIN”, bit 2, apagado) |
+| 5–8 | AF BF 6F A8 | “0” “0.” “6” “7” | 00.67 |
+| 12 | 10 | só 5p | secundário sem dígitos (como em §8.4.9) |
+| 16 | 01 | bit 0 | ② Hz |
+| 17 | 20 | bit 5 | ① V |
+| 18 | 06 | — | não documentado |
+| 24 | 20 | 0010 0000 → bit 5 | **[R]**; sem AUTO |
+
+Resultado: **00.67 V AC**, flags MIN, MAX, AVG e R_BOX. Com o REC, o ET-2517A acende MIN, MAX e AVG juntos e mostra a leitura atual; os quadros seguintes (115,5 e 115,8 s) mostram 00.63 e 00.58 com as mesmas flags. Vetor `et2517a-rec-min-max-avg-00.67V`.
+
+#### 8.4.11 REC mostrando o MAX (116,0 s)
+
+`00 00 11 00 AF BF 6F A8 00 | 00 00 10 00 00 00 01 20 06 | 00 82 82 82 82 20 00 00 00`
+
+Igual ao anterior, exceto o byte 3 = `11` (0001 0001 → ① AC e MAX). Resultado: **00.67 V AC**, flags MAX e R_BOX. O 00.67 é o maior dos valores vistos durante o REC (00.67, 00.63, 00.58), o que confere com o MAX. Vetor `et2517a-rec-max-00.67V`.
+
+#### 8.4.12 Overload em faixa manual (121,3 s)
+
+`00 00 10 00 00 AF 07 00 00 | 00 50 40 40 40 00 01 20 06 | 00 82 82 82 82 00 00 00 00`
+
+Bytes 5–8 = `00 AF 07 00` → “ ” “0” “L” “ ”, sem nenhum ponto → texto **`0L`**, overload, V AC (b3 = 10, b17 = 20). Secundário `-.---` Hz como em §8.4.8; sem AUTO. Parece um quadro de transição ao sair do REC ou trocar de faixa, porque o quadro seguinte já mostra 001.9 V [INF]. Vetor `et2517a-acv-manual-0L-V-hz-dashes`.
+
+#### 8.4.13 ACV na faixa 999.9 V, bytes 18 = F6 e 24 = 0F (121,5 s)
+
+`00 00 10 00 AF AF B0 ED 00 | 00 50 40 40 40 00 01 20 F6 | 00 82 82 82 82 0F 00 00 00`
+
+| Byte | Hex | Bits | Leitura |
+|---|---|---|---|
+| 3 | 10 | bit 4 | ① AC |
+| 5, 6 | AF AF | — | “0” “0” |
+| 7 | B0 | 1011 0000 → b c, p = 1 | “1.” |
+| 8 | ED | 1110 1101 → a b c d f g | “9” |
+| 11–14 | 50 40 40 40 | — | “-.---” |
+| 16 | 01 | bit 0 | ② Hz |
+| 17 | 20 | bit 5 | ① V |
+| 18 | F6 | 1111 0110 | não documentado (valor novo) |
+| 24 | 0F | bits 3–0 | sem [H], [C], [R] nem AUTO; **nibble baixo F** |
+
+Resultado: **001.9 V AC / `-.---` Hz** (`value` = 1.9). É o único quadro da varredura com `b18` = F6 e nibble baixo de `b24` = F. Vetor `et2517a-acv-manual-001.9V-byte24-0F`.
+
+#### 8.4.14 Divergências e observações
+
+1. **Nenhuma divergência de valor.** A captura tem 43 linhas com quadro e 30 quadros distintos. A decodificação manual (e a do decodificador de referência) dá, nos 30, exatamente o texto, a unidade, o modo, o overload e as flags da coluna da captura.
+2. A coluna da captura foi gerada trocando os bytes 20–23 para 52. O quadro real é **rejeitado pelo decodificador atual** (`bytes 20..23 = 82828282, esperado 52525252`): é a mudança de validação da §8.3.
+3. **Semântica do secundário só com ponto**: nos quadros de 114,6 s a 116,0 s, o secundário tem o ponto 5p (`b12.4`) e o ② Hz (`b16.0`) acesos e os 4 dígitos apagados. A regra da §3.6 dá `null` (display apagado) e ignora o ponto e a unidade. É uma simplificação, não um erro de bits; o LCD deve mostrar só “.” e “Hz” [INF, NC; §6, questão 15].
+4. Os caracteres `d`, `i` e `o` do texto `diod` (chaves E3, 20 e 63) estão na tabela da §3.4, que veio do original. Nenhum quadro teve caractere inválido (`?`).
+5. **Bytes não documentados**: `b18` = 06 em ACV, exceto em dois quadros de ACV manual (00 aos 114,6 s e F6 aos 121,5 s), e 00 em DCV, Hz/mV, Ω, temperatura e diodo; nibble baixo de `b24` = 0, exceto F no quadro de 121,5 s. Os bytes 2 e 25–27 vieram 00 em todos.
+6. **Zeros à esquerda**: em faixa manual o ET-2517A acende os zeros à esquerda da faixa (`00.46` na de 99.99 V, `001.9` na de 999.9 V). O `text` os mantém, porque segue o LCD, e o `value` não muda.
+
+#### 8.4.15 Exemplo do PDF-N corrigido
+
+Bytes como impressos [PDF-N p1, Example]: `00 xx 10 00 E9 EF BF A0 00 6D 00 BF A0 CB 00 01 20 xx 00 82 82 82 82 1x xx xx xx`. Com os bytes 10/11 trocados, como manda a Table 1 do próprio PDF-N (`xx` = 00, `1x` = 10):
+
+`00 00 10 00 E9 EF BF A0 00 | 00 6D BF A0 CB 00 01 20 00 | 00 82 82 82 82 10 00 00 00`
+
+A decodificação é a da §3.7.1 byte a byte, com o Model ID 0x82: **380.1 V AC / 50.12 Hz**, AUTO. Vetor `pdfn-example-ac380.1V-50.12Hz-corrected`.
+
+#### 8.4.16 Vetores acrescentados ao `test-vectors.json`
+
+Todos com `kind` `"rtd"`, `command` `"8266"`, `family` `"BM82x"`, `modelBytes` `"82828282"` e `synthetic` `false`, e com o `expected` no formato dos vetores anteriores. Os 14 vetores anteriores não mudaram.
+
+| Vetor | Quadro | Principal | Secundário | Flags |
+|---|---|---|---|---|
+| `et2517a-acv-0.013V-hz-0.000Hz-auto` | §8.4.1 (0,2 s) | 0.013 V AC | 0.000 Hz | AUTO |
+| `et2517a-dcv-0.000V-acv-0.337V` | §8.4.2 (110,4 s) | 0.000 V DC | 0.337 V AC | AUTO |
+| `et2517a-hz-60.01Hz-acmv-60.06mV` | §8.4.3 (94,7 s) | 60.01 Hz | 60.06 mV AC | AUTO |
+| `et2517a-hz-60.01Hz-acmv-58.93mV` | §8.4.4 (95,1 s) | 60.01 Hz | 58.93 mV AC | AUTO |
+| `et2517a-continuity-open-0L.-ohm` | §8.4.5 (96,2 s) | `0L.` Ω, overload | `null` | CONTINUITY_BEEP |
+| `et2517a-temperature-no-probe-dashes-F` | §8.4.6 (99,0 s) | `---F` °F, `value` `null` | `null` | MAIN_T1 |
+| `et2517a-diode-open-.0L-V-diod` | §8.4.7 (100,8 s) | `.0L` V, overload | `diod` | — |
+| `et2517a-acv-manual-0.115V-hz-dashes` | §8.4.8 (111,6 s) | 0.115 V AC | `-.---` Hz | — |
+| `et2517a-acv-manual-00.46V-secondary-point-only` | §8.4.9 (114,6 s) | 00.46 V AC | `null` | — |
+| `et2517a-rec-min-max-avg-00.67V` | §8.4.10 (115,3 s) | 00.67 V AC | `null` | MIN, MAX, AVG, R_BOX |
+| `et2517a-rec-max-00.67V` | §8.4.11 (116,0 s) | 00.67 V AC | `null` | MAX, R_BOX |
+| `et2517a-acv-manual-0L-V-hz-dashes` | §8.4.12 (121,3 s) | `0L` V AC, overload | `-.---` Hz | — |
+| `et2517a-acv-manual-001.9V-byte24-0F` | §8.4.13 (121,5 s) | 001.9 V AC | `-.---` Hz | — |
+| `pdfn-example-ac380.1V-50.12Hz-corrected` | §8.4.15 | 380.1 V AC | 50.12 Hz | AUTO |
+
+### 8.5 Pedidos descartados
+
+O ET-2517A **descarta** uma parte dos pedidos `82 66`: nenhum relatório chega, nem esperando mais. O BM525s nunca mostrou isso (§2.7).
+
+#### 8.5.1 Medições
+
+Todas com o ET-2517A sozinho no cabo, 40 pedidos por intervalo [CAP:et2517a-commands]. O “intervalo” é a pausa depois do fim de cada consulta; antes de cada pedido há um descarte de 5 ms.
+
+**Taxa de pedidos sem resposta** (`rate.cs`: espera de 1 s pelo 1º relatório; na falta de resposta, um único reenvio, logo depois do timeout):
+
+| Intervalo entre consultas | Sem resposta | Recuperados pelo reenvio |
+|---|---|---|
+| 0 ms | **0/40** | — |
+| 100 ms | 2/40 (5 %) | 2 de 2 |
+| 200 ms | 11/40 (27,5 %) | 9 de 11 |
+| 300 ms | 11/40 (27,5 %) | 5 de 11 |
+| 500 ms | 19/40 (47,5 %) | 9 de 19 |
+
+Latência normal até o 1º relatório: **36 a 237 ms**.
+
+**Reenvio rápido** (`rate2.cs`: 1º relatório em até 300 ms; senão, o mesmo pedido de novo, até 3 reenvios = 4 tentativas):
+
+| Intervalo | Na 1ª tentativa | Depois de 1 / 2 / 3 reenvios | Falhas depois de 3 reenvios | Tempo até o quadro (mediana / máximo) |
+|---|---|---|---|---|
+| 100 ms | 28/40 (70 %) | 1 / 1 / 7 | 3/40 | 91 / 1090 ms |
+| 200 ms | 32/40 (80 %) | 0 / 0 / 7 | 1/40 | 187 / 1174 ms |
+| 500 ms | 24/40 (60 %) | 1 / 9 / 2 | 4/40 | 95 / 1252 ms |
+| 1000 ms | 16/40 (40 %) | 6 / 10 / 3 | 5/40 | 552 / 1168 ms |
+
+**Varredura** (`sweep.cs`: espera de 2,5 s por relatório e, depois de um timeout, novo pedido logo em seguida) [CAP:et2517a-sweep]:
+- de 0,2 s a 24,2 s, nenhum pedido se perdeu (da ordem de 100 consultas, pelo ritmo de ≈ 120 ms mais a latência [INF]);
+- a partir daí houve 23 eventos de `TIMEOUT` em 124 s. Em 9, o pedido seguinte, enviado depois de ≈ 2,5 s sem tráfego, respondeu. Em 12, ele também se perdeu (2 perdas seguidas, ≈ 5 s sem leitura). Em 2 houve 3 perdas ou mais (5,2 e 6,2 s sem leitura), durante as trocas de função [INF];
+- esperar 2,5 s não recuperou nenhum pedido: o pedido se perde, e só um novo envio resolve.
+
+#### 8.5.2 Interpretação
+
+- O pedido perdido não recebe resposta atrasada: durante as esperas de 1 s (`rate.cs`) e de 2,5 s (`sweep.cs`) nenhum relatório chegou. Esperar mais não adianta, e a espera longa ainda **aumenta** o tempo ocioso antes do pedido seguinte, que fica mais sujeito à perda (tabela do `rate.cs` e a sequência da varredura) [INF].
+- As perdas se agrupam: com o reenvio a cada 300 ms, a 200 ms de intervalo 7 dos 8 pedidos perdidos só responderam no 3º reenvio e o 8º não respondeu; a 100 ms, 7 de 12 responderam no 3º reenvio e 3 não responderam [CAP:rate2]. O 3º reenvio sai ≈ 0,9 s depois do 1º envio: há janelas de ≈ 1 s em que o medidor não atende [INF].
+- Hipótese [INF, NC; §6, questão 12]: o receptor óptico do ET-2517A fica atento logo depois de uma troca e, ocioso, só amostra o pedido de tempos em tempos. Com consultas sem pausa (0 ms), 0 de 40 se perderam.
+- O original consulta sem pausa nenhuma (`T8252xThread`, “não há Sleep: consulta contínua”, §6.5 de `docs/re/bs8252x-reverse-engineering.md`) e espera 4 s pelo 1º relatório [RE 0x004355A0..0x00436088]. Isso explica por que ele funciona com o ET-2517A apesar da espera longa [INF].
+- **Comportamento atual da port** (até esta especificação): `52 66` fixo, que o ET-2517A ignora. Com o `82 66`, a política atual (espera de 1 s, `W7012` a cada perda, fechar e reabrir o cabo, `PollInterval` de 200 ms) transformaria ≈ 27 % das consultas em `W7012`, e as perdas agrupadas chegariam à 3ª falha seguida (`E9016`) [INF, pela tabela do `rate.cs`]. No teste com o ET-2517A, isso apareceu como uma enxurrada de erros [USR].
+
+#### 8.5.3 Algoritmo recomendado
+
+```text
+JANELA       = 300 ms   # espera pelo 1º relatório antes de reenviar
+ORÇAMENTO    = 2 s      # tempo total de uma consulta, com os reenvios
+ESPERA_LONGA = 3 s      # 1º 66 depois de abrir o cabo ou de comandos de memória (RealTimeAfterMemoryTimeout, §2.7)
+SILÊNCIO     = 100 ms   # drain de recuperação (RecoveryDrainTimeout)
+
+consulta_rtd(cmd2, família, primeira):          # cmd2 = 0x82 ou 0x52; família = BM52x, BM82x ou desconhecida
+    prazo   = agora + (primeira ? max(ORÇAMENTO, ESPERA_LONGA) : ORÇAMENTO)
+    reenvia = not (primeira and família == BM52x)          # exceção da §8.5.4
+    descartar residuais (DrainTimeout; SILÊNCIO se houver recuperação pendente)
+    enviar {00, 00, cmd2, 66}; tentativas = 1
+    laço:
+        espera = reenvia ? min(JANELA, prazo − agora) : prazo − agora
+        r1 = ler o 1º relatório (até espera)
+        se r1 chegou:
+            r2, r3 = ler 2 relatórios (ReportTimeout cada)
+            se os 3 chegaram e o quadro é válido (§8.3: report IDs 00; Model ID da família, ou 52/82 na detecção):
+                se tentativas > 1: recuperação pendente     # a resposta de outro envio pode chegar atrasada
+                devolver o quadro
+            recuperação pendente                            # relatório parcial ou quadro alheio
+            descartar residuais (SILÊNCIO)
+        se agora ≥ prazo: recuperação pendente; falhar com W7012
+        se reenvia: enviar {00, 00, cmd2, 66}; tentativas += 1   # o mesmo pedido, sem fechar nem reabrir o cabo
+```
+
+Regras:
+
+1. **Janela de ≈ 300 ms pelo 1º relatório.** Fica acima das latências normais das duas famílias: 36–237 ms no ET-2517A e 50–200 ms no BM525s em tempo real contínuo (§2.5, §2.7). No BM525s em tempo real contínuo a janela não dispara reenvios [INF]; os casos lentos são os da §8.5.4.
+2. **Reenviar o mesmo pedido sem fechar o cabo.** Fechar e reabrir não recupera nada e acrescenta tempo ocioso, o que piora a perda (§8.5.2).
+3. **Orçamento de ≈ 2 s por consulta**, com até ≈ 6 tentativas. `W7012` só sai quando o orçamento acaba, e não a cada pedido perdido; os reenvios não são erro (convém contá-los num diagnóstico). Com 4 tentativas (≈ 1,2 s) ainda falharam 1 a 5 de 40 consultas; o efeito do orçamento de 2 s não foi medido [NC; §6, questão 13].
+4. **Aceitar o 1º quadro válido de qualquer um dos envios.** Os pedidos são iguais, então qualquer resposta é uma leitura com menos de ≈ 2 s.
+5. **Drain de recuperação depois de qualquer reenvio.** Antes do próximo comando, descarte relatórios até ≈ 100 ms de silêncio, para que a resposta atrasada de um envio anterior não seja tomada como a resposta do comando seguinte. É o mesmo mecanismo que a port já usa depois de abrir o cabo e de uma troca interrompida (`RecoveryDrainTimeout`). Limite conhecido [INF]: uma resposta duplicada que chegue depois dos 100 ms de silêncio seria lida pelo comando seguinte. Se ele for outro `82 66`, ela é um quadro válido e só um pouco mais antigo; se for o `88`, o bloco falha na contagem de relatórios ou no checksum e o `88` é reenviado (§4.11).
+6. **Validar report IDs e Model ID** de todo quadro recebido (§8.3). Isso recusa um resto de outra troca (por exemplo, os 3 primeiros relatórios de um bloco de memória) e detecta a troca de medidor.
+7. Os comandos de memória (`88`, `89`, `8A`) não mudam: vale a §4.11.
+
+#### 8.5.4 Exceção: o 1º `66` depois da abertura ou da memória
+
+No BM525s, o 1º `66` depois do último bloco da memória responde em **≈ 2 s, sem perda** (2056–2068 ms até o último relatório, §2.7), e o 1º depois de abrir o cabo leva 221–308 ms até o último relatório. O reenvio **não pode encurtar essa espera longa**:
+
+- **Prazo**: no 1º `66` depois de abrir o cabo ou de qualquer comando de memória, o prazo da consulta é `max(ORÇAMENTO, ESPERA_LONGA)` = 3 s. Com ou sem reenvios, a resposta lenta do BM525s ao 1º envio continua aceita.
+- **Família BM52x já conhecida** (comandos de memória só existem no BM52x, ou o Model ID 0x52 já foi visto nesta conexão): **não reenvie** durante a espera longa. O BM525s nunca perdeu pedidos, e um reenvio no meio dos ≈ 2 s de preparo poderia gerar uma resposta duplicada [NC; §6, questão 14].
+- **Família desconhecida** (o 1º `66` depois de abrir o cabo, que faz a detecção da §8.6) **ou BM82x**: reenvie a cada 300 ms até o prazo de 3 s. O ET-2517A pode descartar justamente esse pedido. Aceite o 1º quadro válido e faça o drain de recuperação em seguida.
+
+#### 8.5.5 Consequências para a leitura contínua
+
+- Com a janela de 300 ms e reenvios, 70–80 % das consultas saem na 1ª tentativa a 100–200 ms de intervalo, e quase todas em até ≈ 1,25 s (§8.5.1).
+- **Intervalo entre consultas**: quanto menor, menos perdas (0 ms: 0 de 40). Para o BM82x, um `PollInterval` curto (≤ 100 ms) reduz os reenvios, mas não os elimina [INF]. O reenvio continua obrigatório.
+- **Política de falhas**: as “3 falhas seguidas” que levam ao `E9016` (§6.5 de `docs/re/bs8252x-reverse-engineering.md`; `docs/library.md`, “Erros e códigos”) devem contar consultas com o orçamento esgotado, não pedidos perdidos. Com o orçamento de 2 s, o `E9016` sai depois de ≈ 6 s sem leitura.
+
+### 8.6 Detecção automática de família
+
+```text
+detectar_família():                                    # logo depois de abrir o cabo
+    q = consulta_rtd(cmd2 = 0x82, família = desconhecida, primeira = sim)    # funciona nas duas famílias
+    se q:
+        devolver {0x52: BM52x, 0x82: BM82x}[Model ID de q], q               # q já é uma leitura válida
+    q = consulta_rtd(cmd2 = 0x52, família = desconhecida, primeira = não)   # fallback
+    se q e Model ID de q = 0x52:
+        devolver BM52x, q
+    falhar (W7012; na leitura contínua, conta como falha seguida)
+```
+
+- **`82 66` primeiro**: funciona nas duas famílias [CAP:et2517a-commands; CAP:cmd-sequences], e o quadro da detecção já é uma leitura, sem consulta extra.
+- **Model ID**: os bytes 20–23, os quatro iguais. 0x52 → BM52x; 0x82 → BM82x. Qualquer outro valor é `W8011`, com os bytes no diagnóstico. Não adote o mapa do original (FF, F7, F3, F1, F0, E0, C0, 80 e 00 → 0x82 [RE 0x00424B5A..0x00424BE4]), que nenhum medidor deste kit confirmou (§6, questão 4).
+- **Fallback para `52 66`**: cobre um BM52x que ignore o `82 66`. Isso não foi observado; só o BM525s foi testado (§6, questão 16).
+- **Comando de tempo real depois da detecção**: use como “Command 2” o código da família detectada, `52 66` no BM52x (o comando validado no Windows e no Orange Pi 5) e `82 66` no BM82x. O `82 66` também funciona no BM525s, com quadros idênticos, e é o que o original usa nas duas famílias. Adotá-lo para as duas é uma opção válida, com menos horas de validação no BM52x [INF].
+- **Memória**: só com a família BM52x, sempre com `52 88`/`52 89`/`52 8A`. Com BM82x, a importação falha com `E9017` sem enviar comandos de memória, como no original [RE 0x0042EC99..0x0042ECBA]. **Na port (0.2.0)**, o código é o `E9014` (`BrymenErrorCodes.DataLoggerNotSupported`, 409 na API), próprio da biblioteca: o medidor respondeu e a família é conhecida, só não tem datalogger, o que não é o “desligado, desconectado ou sem datalogger” do `E9017` (503). O motivo está em `docs/architecture.md`, “Divergências deliberadas em relação ao original”. A recusa não envia comandos de memória: é imediata com a família fixa ou confirmada por um quadro de tempo real há menos de 2 s, e vem depois de uma consulta de tempo real com a família conhecida há mais tempo.
+- **Quando detectar de novo**:
+  - a cada abertura do cabo, porque o medidor é óptico e pode ser trocado sem que o USB perceba. **Na port (0.2.0)**, a família continua depois de fechar e reabrir o cabo, e a troca de medidor é detectada pelos dois itens seguintes; a leitura da memória confirma a família conhecida há mais de 2 s antes de recusar um BM82x;
+  - quando chega um quadro válido com o Model ID da outra família: adote a nova família;
+  - depois de um `E9016`, porque o medidor pode ter sido trocado enquanto estava sem resposta. Por exemplo, um BM525s trocado pelo ET-2517A numa conexão BM52x não responde mais ao `52 66`.
+- A família é uma propriedade da conexão e convém expô-la no diagnóstico (`"BM52x"` ou `"BM82x"`).
+
+### 8.7 Resumo para a implementação
+
+O estado de cada item na versão 0.2.0 da port está entre colchetes; as diferenças estão também no `CHANGELOG.md`, “Diferenças da especificação”.
+
+1. **Decodificador**: aceitar o Model ID 0x52 ou 0x82, com os quatro bytes iguais (§8.3), e expor a família. A mensagem de erro do Model ID deixa de ser só “esperado 52525252”. [Feito: `MeterFamily`, `DmmReading.Family`.]
+2. **Transporte**: o “Command 2” passa a ser escolhido por consulta (0x52 ou 0x82). Até a 0.1.0, o `Bu86xLink` enviava sempre `00 52 cc`. [Feito: sobrecargas de `Bu86xLink.ExecuteAsync` com a família; as sem família continuam com `52`.]
+3. **Tempo real**: o algoritmo da §8.5.3, com a exceção da §8.5.4 e a política de falhas da §8.5.5. [Feito, com uma diferença: o BM52x conhecido não usa a janela de 300 ms, e cada consulta é um envio com o `ReportTimeout`.]
+4. **Detecção**: a da §8.6, a cada abertura do cabo. [Alterado: a 1ª consulta da conexão detecta, e a família continua depois de fechar e reabrir o cabo; ela troca com o Model ID da outra família, volta a ser desconhecida depois de 3 consultas seguidas sem resposta, e a memória a confirma quando o último quadro tem mais de 2 s.]
+5. **Memória**: só para o BM52x; `E9017` para o BM82x. [Alterado: `E9014` para o BM82x, 409 na API; veja a §8.6.]
+6. **Vetores**: o `test-vectors.json` passou de 14 para 28 vetores. Os 14 novos (BM82x) falham no decodificador atual até o item 1, e o teste que confere a quantidade de vetores precisa ser atualizado. [Feito.]
+7. **Simulação** (sugestão): um medidor BM82x simulado que descarte pedidos com probabilidade crescente com o tempo ocioso, para testar a §8.5 sem o hardware. [Feito: `SimulatedBm52xMeter.FromEt2517aCaptures` e `CreateEt2517aRequestDropper`.]

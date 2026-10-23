@@ -16,9 +16,18 @@ public sealed class BrymenMeterOptions
     public string? DevicePath { get; set; }
 
     /// <summary>
-    /// Intervalo entre o início de duas consultas <c>52 66</c> na leitura contínua (<see cref="BrymenMeter.Start"/> e
+    /// Família do medidor: <see cref="MeterFamilySelection.Auto"/> (padrão) a detecta pelo Model ID do 1º quadro de tempo
+    /// real depois da abertura (o pedido é o <c>82 66</c>, que as duas famílias aceitam); <see cref="MeterFamilySelection.Bm52x"/>
+    /// e <see cref="MeterFamilySelection.Bm82x"/> a fixam, e um quadro com o Model ID da outra família vira
+    /// <see cref="BrymenErrorCodes.InvalidFrame"/>.
+    /// </summary>
+    public MeterFamilySelection Family { get; set; } = MeterFamilySelection.Auto;
+
+    /// <summary>
+    /// Intervalo entre o início de duas consultas de tempo real na leitura contínua (<see cref="BrymenMeter.Start"/> e
     /// <see cref="BrymenMeter.ReadContinuouslyAsync"/> sem intervalo). Padrão: 200 ms, cerca de 5 leituras/s;
-    /// <see cref="TimeSpan.Zero"/> consulta sem pausa, como o software original.
+    /// <see cref="TimeSpan.Zero"/> consulta sem pausa, como o software original. No BM82x, um intervalo menor perde menos
+    /// pedidos (§8.5.5 da especificação).
     /// </summary>
     public TimeSpan PollInterval { get; set; } = TimeSpan.FromMilliseconds(200);
 
@@ -26,11 +35,31 @@ public sealed class BrymenMeterOptions
     public TimeSpan ReportTimeout { get; set; } = TimeSpan.FromSeconds(1);
 
     /// <summary>
-    /// Espera pelo 1º relatório do primeiro <c>52 66</c> depois da abertura e depois de comandos de memória, quando maior
-    /// que <see cref="ReportTimeout"/>. Padrão: <see cref="MeterConnection.DefaultRealTimeAfterMemoryTimeout"/> (3 s): no
-    /// BM525s real, o <c>66</c> seguinte à leitura do último bloco da memória leva ≈ 2,06 s.
+    /// Prazo da espera longa do 1º <c>66</c> depois da abertura e depois de comandos de memória, quando maior que
+    /// <see cref="ReportTimeout"/>. Padrão: <see cref="MeterConnection.DefaultRealTimeAfterMemoryTimeout"/> (3 s): no
+    /// BM525s real, o <c>66</c> seguinte à leitura do último bloco da memória leva ≈ 2,06 s. Com a família BM52x
+    /// conhecida (ou depois de um comando de memória respondido), é a espera pelo 1º relatório de um envio só; com a
+    /// família desconhecida (a detecção) ou BM82x, é o prazo dos reenvios de <see cref="RealTimeResendTimeout"/> (ou
+    /// <see cref="RealTimeResendBudget"/>, se maior), porque o ET-2517A pode descartar esse pedido (§8.5.4).
     /// </summary>
     public TimeSpan RealTimeAfterMemoryTimeout { get; set; } = MeterConnection.DefaultRealTimeAfterMemoryTimeout;
+
+    /// <summary>
+    /// Espera pelo 1º relatório de cada envio de uma consulta de tempo real do BM82x (e da detecção da família) antes de
+    /// reenviar o mesmo pedido, sem fechar o cabo: o ET-2517A descarta parte dos pedidos, e esperar mais não adianta.
+    /// Padrão: <see cref="MeterConnection.DefaultRealTimeResendTimeout"/> (300 ms), acima das latências normais (36 a
+    /// 237 ms). Vale também na espera longa do 1º <c>66</c> depois da abertura e da memória, até o prazo de
+    /// <see cref="RealTimeAfterMemoryTimeout"/>, menos com a família BM52x conhecida (ou depois de um comando de memória
+    /// respondido), em que a consulta é um envio só: o BM52x nunca descartou pedidos.
+    /// </summary>
+    public TimeSpan RealTimeResendTimeout { get; set; } = MeterConnection.DefaultRealTimeResendTimeout;
+
+    /// <summary>
+    /// Tempo total de uma consulta de tempo real com reenvios (<see cref="RealTimeResendTimeout"/>); só quando ele acaba
+    /// sem resposta a consulta falha com <see cref="BrymenErrorCodes.NoDataReceived"/>. Padrão:
+    /// <see cref="MeterConnection.DefaultRealTimeResendBudget"/> (2 s).
+    /// </summary>
+    public TimeSpan RealTimeResendBudget { get; set; } = MeterConnection.DefaultRealTimeResendBudget;
 
     /// <summary>Espera antes de reabrir o cabo depois de uma falha persistente, na reconexão automática. Padrão: 2 s.</summary>
     public TimeSpan ReconnectDelay { get; set; } = TimeSpan.FromSeconds(2);
@@ -48,8 +77,10 @@ public sealed class BrymenMeterOptions
     public TimeSpan DrainTimeout { get; set; } = TimeSpan.FromMilliseconds(5);
 
     /// <summary>
-    /// Silêncio exigido no descarte depois de abrir o cabo e depois de uma troca interrompida
-    /// (<see cref="Bu86xLinkOptions.RecoveryDrainTimeout"/>). Padrão: 100 ms.
+    /// Silêncio exigido no descarte depois de abrir o cabo e depois de uma troca interrompida ou com reenvios
+    /// (<see cref="Bu86xLinkOptions.RecoveryDrainTimeout"/>). Padrão: 100 ms. Depois de uma consulta com reenvios que não
+    /// terminou com o quadro inteiro (cancelada ou com o orçamento esgotado), o próximo comando no mesmo cabo aberto exige
+    /// pelo menos <see cref="RealTimeResendTimeout"/> de silêncio, que cobre a latência do ET-2517A.
     /// </summary>
     public TimeSpan RecoveryDrainTimeout { get; set; } = TimeSpan.FromMilliseconds(100);
 
@@ -75,6 +106,10 @@ public sealed class BrymenMeterOptions
         RequireAtLeast(PollInterval, TimeSpan.Zero, nameof(PollInterval));
         RequirePositive(ReportTimeout, nameof(ReportTimeout));
         RequirePositive(RealTimeAfterMemoryTimeout, nameof(RealTimeAfterMemoryTimeout));
+        RequirePositive(RealTimeResendTimeout, nameof(RealTimeResendTimeout));
+        RequirePositive(RealTimeResendBudget, nameof(RealTimeResendBudget));
+        if (!Enum.IsDefined(Family))
+            throw new ArgumentOutOfRangeException("options", Family, $"{nameof(BrymenMeterOptions)}.{nameof(Family)} inválida.");
         RequireAtLeast(ReconnectDelay, TimeSpan.Zero, nameof(ReconnectDelay));
         RequireAtLeast(DrainTimeout, TimeSpan.Zero, nameof(DrainTimeout));
         RequireAtLeast(RecoveryDrainTimeout, TimeSpan.Zero, nameof(RecoveryDrainTimeout));
@@ -86,9 +121,12 @@ public sealed class BrymenMeterOptions
         return new BrymenMeterOptions
         {
             DevicePath = string.IsNullOrWhiteSpace(DevicePath) ? null : DevicePath,
+            Family = Family,
             PollInterval = PollInterval,
             ReportTimeout = ReportTimeout,
             RealTimeAfterMemoryTimeout = RealTimeAfterMemoryTimeout,
+            RealTimeResendTimeout = RealTimeResendTimeout,
+            RealTimeResendBudget = RealTimeResendBudget,
             ReconnectDelay = ReconnectDelay,
             AutoReconnect = AutoReconnect,
             DrainTimeout = DrainTimeout,
@@ -104,6 +142,7 @@ public sealed class BrymenMeterOptions
         ReportTimeout = ReportTimeout,
         DrainTimeout = DrainTimeout,
         RecoveryDrainTimeout = RecoveryDrainTimeout,
+        TimeProvider = TimeProvider,
     };
 
     internal static void RequirePositive(TimeSpan value, string name)
@@ -126,8 +165,10 @@ public sealed class BrymenMeterOptions
 public sealed class LoggerReadOptions
 {
     /// <summary>
-    /// Confere o modelo antes de ler a memória, como o original: um <c>52 66</c> (até 2 tentativas) com o Model ID
-    /// (bytes 20–23) igual a <c>52h</c>; senão, <see cref="BrymenErrorCodes.NoDataLogger"/>. Padrão: <see langword="true"/>.
+    /// Confere o modelo antes de ler a memória, como o original: uma consulta de tempo real (até 2 tentativas) com o
+    /// Model ID (bytes 20–23) igual a <c>52h</c>; com <c>82h</c> (BM82x), <see cref="BrymenErrorCodes.DataLoggerNotSupported"/>;
+    /// senão, <see cref="BrymenErrorCodes.NoDataLogger"/>. Pelo <see cref="MeterConnection"/>, a consulta segue a família da
+    /// conexão (o <c>82 66</c> da detecção, se ela ainda não é conhecida). Padrão: <see langword="true"/>.
     /// </summary>
     public bool VerifyModel { get; set; } = true;
 

@@ -108,22 +108,23 @@ public sealed class MeterConnectionTests
         setup.Options.DeviceProvider = recording;
         setup.Options.ReportTimeout = TimeSpan.FromMilliseconds(250);
         setup.Options.RealTimeAfterMemoryTimeout = TimeSpan.FromSeconds(3);
+        setup.Options.RealTimeResendTimeout = TimeSpan.FromMilliseconds(400);
         using var connection = new MeterConnection(setup.Options);
 
         Assert.True(connection.IsNextRealTimeSlow);
-        await connection.ExecuteRealTimeAsync();                     // 1º depois da criação: 3 s
+        await connection.ExecuteRealTimeAsync();                     // 1º depois da criação, a detecção: reenvios até 3 s
         Assert.False(connection.IsNextRealTimeSlow);
-        await connection.ExecuteRealTimeAsync();                     // ReportTimeout
+        await connection.ExecuteRealTimeAsync();                     // BM52x: ReportTimeout
         await connection.ExecuteAsync(Bm52xCommands.MemoryHead, 4);  // memória: ReportTimeout
         Assert.True(connection.IsNextRealTimeSlow);
-        await connection.ExecuteRealTimeAsync();                     // 1º depois da memória: 3 s
+        await connection.ExecuteRealTimeAsync();                     // 1º depois da memória, BM52x: um envio, 3 s
         await connection.ExecuteRealTimeAsync();                     // ReportTimeout
         connection.Close();
         await connection.ExecuteRealTimeAsync();                     // reabrir não deixa o medidor lento: ReportTimeout
 
-        TimeSpan slow = TimeSpan.FromSeconds(3), normal = TimeSpan.FromMilliseconds(250);
+        TimeSpan slow = TimeSpan.FromSeconds(3), normal = TimeSpan.FromMilliseconds(250), window = TimeSpan.FromMilliseconds(400);
         Assert.Equal(
-            [(0x66, slow), (0x66, normal), (0x88, normal), (0x66, slow), (0x66, normal), (0x66, normal)],
+            [(0x66, window), (0x66, normal), (0x88, normal), (0x66, slow), (0x66, normal), (0x66, normal)],
             recording.FirstReportTimeouts.Select(t => ((int)t.Command, t.Timeout)));
     }
 

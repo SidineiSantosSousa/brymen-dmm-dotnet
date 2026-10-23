@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text.Json.Serialization;
 using Brymen.Dmm.Api.Configuration;
 using Brymen.Dmm.Api.Errors;
@@ -39,6 +40,10 @@ internal sealed record MeterError(string Code, string Message, DateTimeOffset Ti
 /// Falha ainda não superada por uma leitura boa do polling: explica a falta de leitura atual. Uma falha antiga, de antes
 /// da última leitura boa, fica só em <paramref name="LastError"/>.
 /// </param>
+/// <param name="Family">
+/// Família do medidor (<see cref="MeterConnection.Family"/>): a de <c>Meter:Family</c>, quando fixa, ou a detectada pelo
+/// Model ID do último quadro de tempo real; null antes da 1ª detecção e depois de 3 consultas seguidas sem resposta.
+/// </param>
 internal sealed record MeterSnapshot(
     bool LinkEnabled,
     MeterConnectionState State,
@@ -47,21 +52,27 @@ internal sealed record MeterSnapshot(
     MeterError? LastError,
     bool Importing,
     MeterError? LinkFailure = null,
-    MeterError? CurrentFault = null);
+    MeterError? CurrentFault = null,
+    MeterFamily? Family = null);
 
 /// <summary>
 /// Estado do link com o medidor (o botão Link do original) sobre os blocos da biblioteca Brymen.Dmm:
 /// <list type="bullet">
 ///   <item><description>
 ///     <see cref="MeterConnection"/>: procura e abre o cabo (<c>Meter:DevicePath</c> ou o primeiro VID 0820/PID 0001,
-///     E9015 sem ele), aplica a política de timeout do 1º <c>52 66</c> lento e decodifica o tempo real (W7012, W8011);
+///     E9015 sem ele), detecta a família do medidor (BM52x ou BM82x, <c>Meter:Family</c>), aplica a política de timeout
+///     do 1º <c>66</c> lento e a de reenvio do BM82x (<c>Meter:RealTimeResendTimeout</c> e
+///     <c>Meter:RealTimeResendBudget</c>: os pedidos que o ET-2517A descarta são reenviados sem fechar o cabo, e só o
+///     orçamento esgotado é W7012) e decodifica o tempo real (W7012, W8011);
 ///   </description></item>
 ///   <item><description>
-///     <see cref="LoggerMemoryReader"/>: a leitura robusta da memória, sobre o <see cref="MeterExclusiveAccess"/>.
+///     <see cref="LoggerMemoryReader"/>: a leitura robusta da memória, sobre o <see cref="MeterExclusiveAccess"/>, com a
+///     conferência do modelo pelo tempo real da família da conexão (E9014 num BM82x, que não tem datalogger).
 ///   </description></item>
 /// </list>
 /// A sessão guarda o que é da API: o link ativo ou não, a pausa do polling durante a importação do datalogger, o
-/// último erro e a falha atual, e o sinal de mudança de estado (evento <c>status</c> do SignalR).
+/// último erro e a falha atual, e o sinal de mudança de estado (evento <c>status</c> do SignalR), que também avisa
+/// quando a família muda.
 /// </summary>
 internal sealed class MeterSession : IDisposable
 {
@@ -93,8 +104,12 @@ internal sealed class MeterSession : IDisposable
     private MeterError? _lastError;
     private MeterError? _linkFailure;
     private MeterError? _currentFault;
-    // Consulta 52 66 em andamento (protegido por _sync): o unlink a cancela em vez de esperar até 3 × ReportTimeout.
+    // Consulta de tempo real em andamento (protegido por _sync): o unlink a cancela em vez de esperar o timeout ou o
+    // orçamento dos reenvios.
     private CancellationTokenSource? _pollCancellation;
+    // A família anunciada (em log e no evento "status"); escrita só sob _io.
+    private MeterFamily? _announcedFamily;
+    private volatile bool _disposed;
 
     public MeterSession(IHidDeviceProvider provider, IOptions<MeterOptions> options, TimeProvider time, ILogger<MeterSession> logger)
     {
@@ -102,14 +117,18 @@ internal sealed class MeterSession : IDisposable
         _time = time;
         _logger = logger;
         IsSimulated = provider is SimulatedHidDeviceProvider;
-        // Só as opções do cabo: o intervalo do polling e a reconexão são do MeterPollingService.
+        // Só as opções do cabo e do medidor: o intervalo do polling e a reconexão são do MeterPollingService.
         _connection = new MeterConnection(new BrymenMeterOptions
         {
             DevicePath = _options.DevicePath,
+            Family = _options.Family,
             ReportTimeout = _options.ReportTimeout,
+            RealTimeResendTimeout = _options.RealTimeResendTimeout,
+            RealTimeResendBudget = _options.RealTimeResendBudget,
             DeviceProvider = provider,
             TimeProvider = time,
         });
+        _announcedFamily = _connection.Family;
     }
 
     public bool IsSimulated { get; }
@@ -117,6 +136,37 @@ internal sealed class MeterSession : IDisposable
     public string TransportName => IsSimulated ? "simulated" : "hid";
 
     public MeterOptions Options => _options;
+
+    /// <summary>
+    /// Família do medidor (<see cref="MeterConnection.Family"/>): a de <c>Meter:Family</c>, quando fixa, ou a detectada
+    /// pelo Model ID do último quadro de tempo real; null antes da 1ª detecção.
+    /// </summary>
+    public MeterFamily? Family => _connection.Family;
+
+    /// <summary>Se o medidor pode ter datalogger: false só com a família conhecida e sem datalogger (BM82x).</summary>
+    public bool SupportsDataLogger => _connection.SupportsDataLogger;
+
+    /// <summary>
+    /// Se a família vale sem consulta (<see cref="MeterConnection.IsFamilyConfirmed"/>): a de <c>Meter:Family</c>, quando
+    /// fixa, ou a detectada por um quadro de tempo real há menos de <see cref="MeterConnection.FamilyConfirmationWindow"/>
+    /// (o polling rodando). Fora disso, o medidor pode ter sido trocado no cabo, e a importação a confirma antes.
+    /// </summary>
+    public bool IsFamilyConfirmed => _connection.IsFamilyConfirmed;
+
+    /// <summary>Contadores do tempo real desde a partida: consultas, pedidos, reenvios e perdas (<see cref="MeterConnection.RealTimeStatistics"/>).</summary>
+    public RealTimeStatistics RealTimeStatistics => _connection.RealTimeStatistics;
+
+    /// <summary>
+    /// O erro E9014 quando a família conhecida não tem datalogger (BM82x): a importação é recusada sem nenhum comando de
+    /// memória; null quando o medidor pode ter datalogger (BM52x ou família ainda desconhecida).
+    /// </summary>
+    public ApiError? DataLoggerNotSupportedError()
+    {
+        if (Family is not { } family || family.HasDataLogger())
+            return null;
+        return new ApiError(ErrorCodes.DataLoggerNotSupported, string.Create(CultureInfo.InvariantCulture,
+            $"{Messages.DataLoggerNotSupported} Medidor: {family.Describe()}, Model ID {family.Code():X2}h."));
+    }
 
     /// <summary>Completa na próxima mudança de estado (link, importação, falha, reconexão).</summary>
     public Task Changed
@@ -134,7 +184,7 @@ internal sealed class MeterSession : IDisposable
     public MeterSnapshot GetSnapshot()
     {
         lock (_sync)
-            return new MeterSnapshot(_linkEnabled, _state, _connection.Device, _connection.IsOpen, _lastError, _exclusive, _linkFailure, _currentFault);
+            return new MeterSnapshot(_linkEnabled, _state, _connection.Device, _connection.IsOpen, _lastError, _exclusive, _linkFailure, _currentFault, _connection.Family);
     }
 
     /// <summary>Liga o link sem abrir o cabo agora; o polling abre e reconecta sozinho (<c>Meter:AutoLink</c>).</summary>
@@ -233,13 +283,15 @@ internal sealed class MeterSession : IDisposable
     }
 
     /// <summary>
-    /// Uma consulta <c>52 66</c> do polling, decodificada pelo <see cref="MeterConnection"/>. Devolve null quando o
-    /// polling não deve rodar agora (link desativado ou importação em andamento), inclusive quando o link é desativado
-    /// durante a consulta, que então é cancelada.
+    /// Uma consulta de tempo real do polling (<c>82 66</c> na detecção da família, depois <c>52 66</c> no BM52x ou
+    /// <c>82 66</c> no BM82x), decodificada pelo <see cref="MeterConnection"/>. No BM82x, os pedidos sem resposta são
+    /// reenviados dentro da consulta, sem fechar o cabo: uma perda recuperada não é falha. Devolve null quando o polling
+    /// não deve rodar agora (link desativado ou importação em andamento), inclusive quando o link é desativado durante a
+    /// consulta, que então é cancelada.
     /// </summary>
     /// <exception cref="BrymenMeterException">
-    /// E9015 (cabo ausente), W7012 (sem resposta completa ou falha de E/S; o cabo é fechado, e a próxima consulta o
-    /// reabre) ou W8011 (quadro inválido; o cabo continua aberto).
+    /// E9015 (cabo ausente), W7012 (sem resposta completa, no BM82x depois de esgotado o orçamento dos reenvios, ou falha
+    /// de E/S; o cabo é fechado, e a próxima consulta o reabre) ou W8011 (quadro inválido; o cabo continua aberto).
     /// </exception>
     public async Task<DmmReading?> PollRealTimeAsync(CancellationToken cancellationToken)
     {
@@ -270,6 +322,10 @@ internal sealed class MeterSession : IDisposable
                 // Unlink durante a consulta: a resposta interrompida ainda pode chegar, e o cabo é fechado de qualquer forma.
                 _connection.Close();
                 return null;
+            }
+            finally
+            {
+                AnnounceFamilyChange();
             }
         }
         finally
@@ -352,14 +408,66 @@ internal sealed class MeterSession : IDisposable
     internal Task<LoggerMemoryImage> ReadLoggerImageAsync(MeterExclusiveAccess access, IProgress<LoggerReadProgress>? progress, CancellationToken cancellationToken)
         => new LoggerMemoryReader(access, progress: progress, timeProvider: _time).ReadAsync(cancellationToken);
 
-    /// <summary>Um comando da importação; uma falha de comunicação volta no resultado, com os relatórios recebidos.</summary>
+    /// <summary>
+    /// Um comando da importação; uma falha de comunicação volta no resultado, com os relatórios recebidos. A consulta de
+    /// tempo real (<c>66</c>, 3 relatórios: a conferência do modelo do <see cref="LoggerMemoryReader"/>) segue a família da
+    /// conexão, como a do <see cref="MeterConnection.ReadLoggerImageAsync"/>: <c>82 66</c> com reenvios na detecção e no
+    /// BM82x, que não responde ao <c>52 66</c>, e <c>52 66</c> no BM52x. Os comandos de memória são sempre <c>52 88</c>,
+    /// <c>52 89</c> e <c>52 8A</c>.
+    /// </summary>
     internal async Task<MeterCommandResult> ExecuteExclusiveAsync(byte command, int reportCount, CancellationToken cancellationToken)
     {
         await _io.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
             OpenAndSignal();
-            return await _connection.TryExecuteAsync(command, reportCount, cancellationToken).ConfigureAwait(false);
+            if (command != Bm52xCommands.RealTime || reportCount != Bm52xCommands.RealTimeReportCount)
+                return await _connection.TryExecuteAsync(command, reportCount, cancellationToken).ConfigureAwait(false);
+            try
+            {
+                return await TryExecuteRealTimeCoreAsync(cancellationToken).ConfigureAwait(false);
+            }
+            finally
+            {
+                AnnounceFamilyChange();
+            }
+        }
+        finally
+        {
+            _io.Release();
+        }
+    }
+
+    /// <summary>
+    /// Detecção (ou confirmação) da família no início da importação, com o acesso exclusivo: uma consulta de tempo real,
+    /// se a família não for fixa nem tiver sido confirmada há pouco (<see cref="IsFamilyConfirmed"/>; a consulta do
+    /// polling que o acesso exclusivo esperou pode tê-la confirmado). Com a família desconhecida, ou depois de um comando
+    /// de memória, é a espera longa do 1º <c>66</c>, com os reenvios até 3 s, que cobrem um pedido descartado pelo
+    /// ET-2517A. Uma falha de comunicação não é erro aqui: a família continua a conhecida (ou desconhecida), e a
+    /// conferência do modelo da importação decide.
+    /// </summary>
+    /// <returns>A família, ou null se ela continua desconhecida (o medidor não respondeu).</returns>
+    /// <exception cref="BrymenMeterException">O cabo não foi encontrado ao reabri-lo (E9015); a falha fica registrada.</exception>
+    internal async Task<MeterFamily?> DetectFamilyExclusiveAsync(CancellationToken cancellationToken)
+    {
+        await _io.WaitAsync(cancellationToken).ConfigureAwait(false);
+        try
+        {
+            if (!_connection.IsFamilyConfirmed)
+            {
+                try
+                {
+                    OpenAndSignal();
+                }
+                catch (BrymenMeterException ex)
+                {
+                    ReportFault(ex.ToApiError(), reconnecting: false);
+                    throw;
+                }
+                await TryExecuteRealTimeCoreAsync(cancellationToken).ConfigureAwait(false);
+                AnnounceFamilyChange();
+            }
+            return _connection.Family;
         }
         finally
         {
@@ -399,6 +507,42 @@ internal sealed class MeterSession : IDisposable
         finally
         {
             _io.Release();
+        }
+        Signal();
+    }
+
+    // Chamado sob _io: a consulta de tempo real da família da conexão, com a falha de comunicação no resultado (como o
+    // TryExecuteAsync). O cabo fechado no meio (unlink, ResetDevice) também é falha de comunicação, menos no descarte da
+    // sessão.
+    private async Task<MeterCommandResult> TryExecuteRealTimeCoreAsync(CancellationToken cancellationToken)
+    {
+        try
+        {
+            byte[] frame = await _connection.ExecuteRealTimeAsync(cancellationToken).ConfigureAwait(false);
+            return new MeterCommandResult(frame, null, Bm52xCommands.RealTimeReportCount);
+        }
+        catch (Exception ex) when ((ex is TimeoutException or IOException or ObjectDisposedException) && !_disposed)
+        {
+            return new MeterCommandResult(null, ex, _connection.LastCommandReportsReceived);
+        }
+    }
+
+    // Chamado sob _io (ou na construção): registra em log e avisa no evento "status" quando a família muda (detecção, troca
+    // do medidor no cabo ou nova detecção depois de 3 consultas seguidas sem resposta).
+    private void AnnounceFamilyChange()
+    {
+        var family = _connection.Family;
+        if (family == _announcedFamily)
+            return;
+        _announcedFamily = family;
+        if (family is { } known)
+        {
+            _logger.LogInformation("Família do multímetro: {Family}, {DataLogger}.", known.Describe(),
+                known.HasDataLogger() ? "com datalogger" : "sem datalogger");
+        }
+        else
+        {
+            _logger.LogInformation("Família do multímetro desconhecida: será detectada de novo na próxima consulta.");
         }
         Signal();
     }
@@ -449,6 +593,7 @@ internal sealed class MeterSession : IDisposable
 
     public void Dispose()
     {
+        _disposed = true;
         _connection.Dispose();
         _io.Dispose();
     }
@@ -464,10 +609,10 @@ internal sealed class MeterExclusiveAccess(MeterSession session) : ILoggerMemory
     private int _disposed;
 
     /// <summary>
-    /// Lê a imagem da memória do datalogger: confere o modelo (E9017), envia o <c>88</c>, espera 200 ms e lê os
-    /// <c>89</c>, com checksum, <c>8A</c> e recomeços (veja <see cref="LoggerMemoryReader"/>).
+    /// Lê a imagem da memória do datalogger: confere o modelo (E9017, ou E9014 num BM82x), envia o <c>88</c>, espera
+    /// 200 ms e lê os <c>89</c>, com checksum, <c>8A</c> e recomeços (veja <see cref="LoggerMemoryReader"/>).
     /// </summary>
-    /// <exception cref="BrymenMeterException">E9015, E9016, E9017 ou W8011.</exception>
+    /// <exception cref="BrymenMeterException">E9014, E9015, E9016, E9017 ou W8011.</exception>
     public Task<LoggerMemoryImage> ReadLoggerImageAsync(IProgress<LoggerReadProgress>? progress, CancellationToken cancellationToken)
         => session.ReadLoggerImageAsync(this, progress, cancellationToken);
 
@@ -478,6 +623,13 @@ internal sealed class MeterExclusiveAccess(MeterSession session) : ILoggerMemory
 
     /// <summary>Fecha o cabo; o próximo comando o reabre.</summary>
     public Task ResetAsync(CancellationToken cancellationToken) => session.ResetDeviceAsync(cancellationToken);
+
+    /// <summary>
+    /// Detecta (ou confirma) a família, se ela não estiver confirmada, antes de criar o job da importação (veja
+    /// <see cref="MeterSession.DetectFamilyExclusiveAsync"/>); devolve a família, ou null se ela continua desconhecida.
+    /// </summary>
+    /// <exception cref="BrymenMeterException">O cabo não foi encontrado ao reabri-lo (E9015).</exception>
+    public Task<MeterFamily?> DetectFamilyAsync(CancellationToken cancellationToken) => session.DetectFamilyExclusiveAsync(cancellationToken);
 
     public async ValueTask DisposeAsync()
     {

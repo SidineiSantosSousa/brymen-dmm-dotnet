@@ -2,12 +2,25 @@ namespace Brymen.Dmm.Protocol;
 
 /// <summary>
 /// Comandos do protocolo BM52x (família 0x52) via cabo BC-86X. O relatório de saída é
-/// <c>[00h | 00h 52h cmd]</c>; veja <c>docs/protocol/bm52x-usb-protocol.md</c> §2.3.
+/// <c>[00h | 00h 52h cmd]</c>; veja <c>docs/protocol/bm52x-usb-protocol.md</c> §2.3. A família BM82x (§8) usa o mesmo
+/// quadro de tempo real com o “Command 2” <see cref="Bm82xFamily"/> (<c>82 66</c>) e não tem comandos de memória.
 /// </summary>
 public static class Bm52xCommands
 {
-    /// <summary>Código de família do BM52x (Command 2) e Model ID dos bytes 20–23 do tempo real.</summary>
+    /// <summary>
+    /// Código de família do BM52x (Command 2) e Model ID dos bytes 20–23 do tempo real. Mantido por compatibilidade:
+    /// é o mesmo valor de <see cref="Bm52xFamily"/>.
+    /// </summary>
     public const byte Family = 0x52;
+
+    /// <summary>Código da família BM52x (<see cref="MeterFamily.Bm52x"/>): Command 2 e Model ID <c>52h</c>.</summary>
+    public const byte Bm52xFamily = (byte)MeterFamily.Bm52x;
+
+    /// <summary>
+    /// Código da família BM82x (<see cref="MeterFamily.Bm82x"/>): Command 2 e Model ID <c>82h</c>. Só com o
+    /// <see cref="RealTime"/> (<c>82 66</c>), que o BM52x também aceita (§8.1).
+    /// </summary>
+    public const byte Bm82xFamily = (byte)MeterFamily.Bm82x;
 
     /// <summary>Cs_RTD: leitura em tempo real (3 relatórios / 27 bytes).</summary>
     public const byte RealTime = 0x66;

@@ -17,7 +17,7 @@ internal sealed class MeterHub(MeterSession session, ReadingBroadcaster broadcas
     /// <summary>Cada leitura nova, com o DTO de <c>GET /api/v1/readings/latest</c>.</summary>
     public const string ReadingEvent = "reading";
 
-    /// <summary>Mudança do link ou do cabo, com o DTO de <c>GET /api/v1/meter</c>.</summary>
+    /// <summary>Mudança do link, do cabo ou da família detectada (objeto <c>model</c>), com o DTO de <c>GET /api/v1/meter</c>.</summary>
     public const string StatusEvent = "status";
 
     /// <summary>Cada amostra gravada, com o DTO de <c>GET /api/v1/acquisition/samples</c>.</summary>

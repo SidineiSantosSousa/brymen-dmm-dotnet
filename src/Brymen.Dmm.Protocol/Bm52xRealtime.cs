@@ -3,10 +3,17 @@ using System.Globalization;
 
 namespace Brymen.Dmm.Protocol;
 
-/// <summary>Decodificador do quadro Cs_RTD de 27 bytes (§3 da especificação).</summary>
+/// <summary>Decodificador do quadro Cs_RTD de 27 bytes (§3 da especificação), das famílias BM52x e BM82x (§8).</summary>
 /// <remarks>
+/// <para>
 /// Os números de byte nos comentários são 1-based e incluem os report IDs (bytes 1, 10 e 19), como no PDF corrigido.
 /// Ao contrário do original, quadros com "@" aceso (<c>b9.4</c>) não são rejeitados: a flag <see cref="DmmFlags.At"/> é exposta.
+/// </para>
+/// <para>
+/// As duas famílias usam o mesmo mapa (§8.3): o Model ID dos bytes 20–23 precisa ter os quatro bytes iguais, com
+/// <c>52h</c> (<see cref="MeterFamily.Bm52x"/>) ou <c>82h</c> (<see cref="MeterFamily.Bm82x"/>), e vai em
+/// <see cref="DmmReading.Family"/>.
+/// </para>
 /// </remarks>
 public static class Bm52xRealtime
 {
@@ -43,15 +50,65 @@ public static class Bm52xRealtime
     public static DmmReading Decode(ReadOnlySpan<byte> frame, DateTimeOffset timestamp)
         => TryDecode(frame, timestamp, out var reading, out var error) ? reading : throw new Bm52xFrameException(error);
 
+    /// <summary>
+    /// Decodifica o quadro e confere a família; lança <see cref="Bm52xFrameException"/> se ele for inválido ou se o Model ID
+    /// for o de outra família.
+    /// </summary>
+    /// <param name="frame">Os 27 bytes, com os report IDs.</param>
+    /// <param name="timestamp">Instante da leitura.</param>
+    /// <param name="expectedFamily">A família esperada (a da conexão).</param>
+    public static DmmReading Decode(ReadOnlySpan<byte> frame, DateTimeOffset timestamp, MeterFamily expectedFamily)
+        => TryDecode(frame, timestamp, expectedFamily, out var reading, out var error) ? reading : throw new Bm52xFrameException(error);
+
     /// <summary>Decodifica o quadro sem lançar exceção; em caso de quadro inválido, <paramref name="error"/> diz o motivo.</summary>
     public static bool TryDecode(
         ReadOnlySpan<byte> frame,
         DateTimeOffset timestamp,
         [NotNullWhen(true)] out DmmReading? reading,
         [NotNullWhen(false)] out string? error)
+        => TryDecodeCore(frame, timestamp, null, out reading, out error);
+
+    /// <summary>
+    /// Como <see cref="TryDecode(ReadOnlySpan{byte}, DateTimeOffset, out DmmReading?, out string?)"/>, e recusa também um
+    /// quadro válido com o Model ID de outra família (a troca do medidor no mesmo cabo, §8.3).
+    /// </summary>
+    /// <param name="frame">Os 27 bytes, com os report IDs.</param>
+    /// <param name="timestamp">Instante da leitura.</param>
+    /// <param name="expectedFamily">A família esperada (a da conexão).</param>
+    /// <param name="reading">A leitura, quando o retorno é <see langword="true"/>.</param>
+    /// <param name="error">O motivo da recusa, quando o retorno é <see langword="false"/>.</param>
+    public static bool TryDecode(
+        ReadOnlySpan<byte> frame,
+        DateTimeOffset timestamp,
+        MeterFamily expectedFamily,
+        [NotNullWhen(true)] out DmmReading? reading,
+        [NotNullWhen(false)] out string? error)
+        => TryDecodeCore(frame, timestamp, expectedFamily, out reading, out error);
+
+    /// <summary>
+    /// A família do quadro pelo Model ID (bytes 20–23), sem decodificar o resto: os quatro bytes iguais, com <c>52h</c> ou
+    /// <c>82h</c>. Não confere os report IDs.
+    /// </summary>
+    /// <param name="frame">Os 27 bytes, com os report IDs.</param>
+    /// <param name="family">A família, quando o retorno é <see langword="true"/>.</param>
+    public static bool TryGetFamily(ReadOnlySpan<byte> frame, out MeterFamily family)
+    {
+        family = default;
+        if (frame.Length != Bm52xCommands.RealTimeFrameLength)
+            return false;
+        var model = frame.Slice(19, 4);
+        return model.IndexOfAnyExcept(model[0]) < 0 && MeterFamilies.TryFromModelId(model[0], out family);
+    }
+
+    private static bool TryDecodeCore(
+        ReadOnlySpan<byte> frame,
+        DateTimeOffset timestamp,
+        MeterFamily? expectedFamily,
+        [NotNullWhen(true)] out DmmReading? reading,
+        [NotNullWhen(false)] out string? error)
     {
         reading = null;
-        error = ValidateFrame(frame);
+        error = ValidateFrame(frame, expectedFamily);
         if (error is not null)
             return false;
 
@@ -68,6 +125,7 @@ public static class Bm52xRealtime
             Main = BuildDisplay(frame.Slice(4, 4), main),
             Secondary = BuildDisplay(frame.Slice(10, 4), secondary),
             Flags = DecodeFlags(frame),
+            Family = (MeterFamily)At(frame, 20),
             RawHex = Convert.ToHexString(frame),
             Diagnostics = new RealTimeDiagnostics(
                 Byte2: At(frame, 2),
@@ -82,7 +140,7 @@ public static class Bm52xRealtime
     /// <summary>Caractere do LCD para um byte de dígito, pela tabela do original (§3.4). O bit 4 (ponto) é ignorado; '?' = inválido.</summary>
     public static char DecodeSegments(byte value) => SevenSegment.ToChar(value);
 
-    private static string? ValidateFrame(ReadOnlySpan<byte> frame)
+    private static string? ValidateFrame(ReadOnlySpan<byte> frame, MeterFamily? expectedFamily)
     {
         if (frame.Length != Bm52xCommands.RealTimeFrameLength)
             return Invariant($"comprimento {frame.Length}, esperado {Bm52xCommands.RealTimeFrameLength} bytes");
@@ -95,12 +153,33 @@ public static class Bm52xRealtime
                 (errors ??= []).Add(Invariant($"byte {n} (report ID) = {At(frame, n):X2}, esperado 00"));
         }
 
-        var model = frame.Slice(19, 4);
-        if (model.IndexOfAnyExcept(Bm52xCommands.Family) >= 0)
-            (errors ??= []).Add($"bytes 20..23 = {Convert.ToHexString(model)}, esperado 52525252");
+        if (ValidateModel(frame.Slice(19, 4), expectedFamily) is { } modelError)
+            (errors ??= []).Add(modelError);
 
         return errors is null ? null : string.Join("; ", errors);
     }
+
+    // Os quatro bytes iguais, com o código de uma das famílias (§8.3). O "esperado" da mensagem é o da família que o
+    // quadro parece ter (a maioria dos bytes), ou as duas quando não dá para dizer.
+    private static string? ValidateModel(ReadOnlySpan<byte> model, MeterFamily? expectedFamily)
+    {
+        bool uniform = model.IndexOfAnyExcept(model[0]) < 0;
+        if (uniform && MeterFamilies.TryFromModelId(model[0], out var family))
+        {
+            if (expectedFamily is not { } expected || expected == family)
+                return null;
+            return Invariant($"bytes 20..23 = {Convert.ToHexString(model)} ({family.Name()}), esperado {ModelBytes(expected)} ({expected.Name()})");
+        }
+
+        int bm52x = model.Count(Bm52xCommands.Bm52xFamily), bm82x = model.Count(Bm52xCommands.Bm82xFamily);
+        string wanted = expectedFamily is { } e ? ModelBytes(e)
+            : bm52x > bm82x ? ModelBytes(MeterFamily.Bm52x)
+            : bm82x > bm52x ? ModelBytes(MeterFamily.Bm82x)
+            : $"{ModelBytes(MeterFamily.Bm52x)} ({MeterFamily.Bm52x.Name()}) ou {ModelBytes(MeterFamily.Bm82x)} ({MeterFamily.Bm82x.Name()})";
+        return $"bytes 20..23 = {Convert.ToHexString(model)}, esperado {wanted}";
+    }
+
+    private static string ModelBytes(MeterFamily family) => family == MeterFamily.Bm52x ? "52525252" : "82828282";
 
     private static DisplayAnnunciators DecodeMainAnnunciators(ReadOnlySpan<byte> frame, out string? error)
     {

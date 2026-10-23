@@ -38,9 +38,10 @@ internal static class ServiceCollectionExtensions
         services.AddSingleton(sp => DataDirectory.FromConfiguration(sp.GetRequiredService<IConfiguration>(), sp.GetRequiredService<IHostEnvironment>()));
         services.AddSingleton(TimeProvider.System);
 
-        // Medidor simulado com as capturas reais (Brymen.Dmm.Hid); reproduz também o 8A que, logo depois do 88, avança
-        // como um 89.
-        services.AddSingleton(sp => SimulatedBm52xMeter.FromCaptures(sp.GetRequiredService<TimeProvider>()));
+        // Medidor simulado com as capturas reais (Brymen.Dmm.Hid), conforme Meter:SimulatedModel: o BM525s (reproduz
+        // também o 8A que, logo depois do 88, avança como um 89) ou o ET-2517A (com o descarte de pedidos de tempo real).
+        services.AddSingleton(sp => MeterTransportFactory.CreateSimulatedMeter(
+            sp.GetRequiredService<IOptions<MeterOptions>>().Value.SimulatedModel, sp.GetRequiredService<TimeProvider>()));
         services.AddSingleton<IHidDeviceProvider>(MeterTransportFactory.Create);
         services.AddSingleton<MeterSession>();
         services.AddSingleton(sp =>

@@ -37,7 +37,16 @@ internal static class DtoMapper
         snapshot.Importing,
         broadcaster.Count,
         broadcaster.Latest?.Reading.Timestamp,
-        session.Options.PollInterval.TotalMilliseconds);
+        session.Options.PollInterval.TotalMilliseconds,
+        ToDto(snapshot.Family),
+        ToDto(session.RealTimeStatistics));
+
+    public static MeterModelDto? ToDto(MeterFamily? family) => family is { } f
+        ? new MeterModelDto(f.Name(), "0x" + f.Code().ToString("X2", CultureInfo.InvariantCulture), f.Describe(), f.HasDataLogger())
+        : null;
+
+    public static RealTimeStatisticsDto ToDto(RealTimeStatistics s) => new(
+        s.Queries, s.Requests, s.Resends, s.LostRequests, s.RecoveredQueries, s.FailedQueries);
 
     public static MeterDeviceDto? ToDto(HidDeviceInfo? info) => info is null ? null : new MeterDeviceDto(
         info.Path, Hex(info.VendorId), Hex(info.ProductId), info.ReleaseNumber is { } r ? Hex(r) : null,

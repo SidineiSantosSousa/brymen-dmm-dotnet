@@ -8,7 +8,8 @@
 </head>
 <body>
   <header class="topbar">
-    <h1>Brymen BM525s <span class="muted">· BC-86X</span></h1>
+    <!-- Modelo detectado pelo Model ID (model de GET /api/v1/meter); "Brymen DMM" antes da detecção. -->
+    <h1><span id="meter-model" title="Medidor ainda não identificado">Brymen DMM</span> <span class="muted">· BC-86X</span></h1>
     <div class="topbar-actions">
       <span id="link-state" class="badge" title="Estado do link">—</span>
       <button id="link-toggle" type="button">Link</button>
@@ -82,6 +83,7 @@
       <div class="row">
         <button id="log-import" type="button" class="primary">Importar do medidor</button>
       </div>
+      <p id="log-unsupported" class="muted small" hidden>Este medidor não tem datalogger.</p>
       <progress id="log-progress" max="100" value="0" hidden></progress>
       <p id="log-status" class="muted small">—</p>
       <ul id="log-sessions" class="sessions"></ul>

@@ -48,7 +48,8 @@ internal static class ApiProblems
     {
         ErrorCodes.CableNotFound or ErrorCodes.TransmissionTimeout or ErrorCodes.NoDataReceived
             or ErrorCodes.NoDataLogger or ErrorCodes.InvalidFrame => StatusCodes.Status503ServiceUnavailable,
-        ErrorCodes.NotLinked or ErrorCodes.Conflict => StatusCodes.Status409Conflict,
+        // E9014: o medidor responde, mas a família não tem datalogger; a importação não é possível no estado atual.
+        ErrorCodes.NotLinked or ErrorCodes.Conflict or ErrorCodes.DataLoggerNotSupported => StatusCodes.Status409Conflict,
         ErrorCodes.InvalidValue or ErrorCodes.InvalidLimit or ErrorCodes.HiNotAboveLo or ErrorCodes.Validation => StatusCodes.Status400BadRequest,
         ErrorCodes.Forbidden => StatusCodes.Status403Forbidden,
         ErrorCodes.NotFound => StatusCodes.Status404NotFound,
@@ -62,6 +63,7 @@ internal static class ApiProblems
         ErrorCodes.TransmissionTimeout => "Tempo esgotado na transmissão de dados",
         ErrorCodes.NoDataReceived => "Nenhum dado recebido",
         ErrorCodes.NoDataLogger => "Medidor sem resposta ou sem datalogger",
+        ErrorCodes.DataLoggerNotSupported => "Medidor sem datalogger",
         ErrorCodes.InvalidFrame => "Quadro inválido recebido do medidor",
         ErrorCodes.NotLinked => "Link com o multímetro desativado",
         ErrorCodes.BackupFile => "Falha no arquivo de backup",

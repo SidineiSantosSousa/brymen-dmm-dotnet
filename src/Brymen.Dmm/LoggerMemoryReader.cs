@@ -122,8 +122,9 @@ public sealed class LoggerMemoryImage
 /// <remarks>
 /// Uma instância faz uma leitura (<see cref="ReadAsync"/>). As falhas viram <see cref="BrymenMeterException"/>:
 /// <see cref="BrymenErrorCodes.TransmissionTimeout"/> (tentativas esgotadas), <see cref="BrymenErrorCodes.InvalidFrame"/>
-/// (cabeçalho inválido ou que mudou durante a leitura), <see cref="BrymenErrorCodes.NoDataLogger"/> (modelo) e, do
-/// transporte, <see cref="BrymenErrorCodes.CableNotFound"/>.
+/// (cabeçalho inválido ou que mudou durante a leitura), <see cref="BrymenErrorCodes.NoDataLogger"/> (modelo),
+/// <see cref="BrymenErrorCodes.DataLoggerNotSupported"/> (o Model ID <c>82h</c> da família BM82x, que não tem datalogger,
+/// sem nenhum comando de memória) e, do transporte, <see cref="BrymenErrorCodes.CableNotFound"/>.
 /// </remarks>
 public sealed class LoggerMemoryReader
 {
@@ -216,7 +217,8 @@ public sealed class LoggerMemoryReader
         }
     }
 
-    // O original lê o Model ID (bytes 20–23 do tempo real) antes de importar e recusa medidores sem datalogger.
+    // O original lê o Model ID (bytes 20–23 do tempo real) antes de importar e recusa medidores sem datalogger. O BM82x
+    // (Model ID 82h) tem o código próprio, E9014: a família é conhecida e não tem memória.
     private async Task VerifyModelAsync(CancellationToken cancellationToken)
     {
         for (int attempt = 0; attempt < ModelCheckAttempts; attempt++)
@@ -224,6 +226,8 @@ public sealed class LoggerMemoryReader
             var result = await _transport.ExecuteAsync(Bm52xCommands.RealTime, Bm52xCommands.RealTimeReportCount, cancellationToken).ConfigureAwait(false);
             if (result.Frame is { Length: Bm52xCommands.RealTimeFrameLength } frame)
             {
+                if (Bm52xRealtime.TryGetFamily(frame, out var family) && !family.HasDataLogger())
+                    throw MeterConnection.NoDataLoggerFamily(family);
                 if (frame.AsSpan(19, 4).ContainsAnyExcept(Bm52xCommands.Family))
                     break;
                 return;

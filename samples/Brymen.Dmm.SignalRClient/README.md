@@ -14,17 +14,22 @@ também é aceito. O cliente:
   conexão a cada 5 s enquanto o serviço não responde;
 - chama `GetStatus` e `GetLatest` ao conectar e a cada reconexão;
 - imprime uma linha por evento `reading` (hora local, número da leitura, display principal e secundário
-  com unidade e modo, anunciadores e o resultado do comparador, quando ligado) e cada evento `status`;
+  com unidade e modo, anunciadores e o resultado do comparador, quando ligado) e cada evento `status`, com o
+  medidor detectado (campo `model`: BM52x ou BM82x, e se tem datalogger);
 - encerra com Ctrl+C.
 
 ```text
 Conectando a http://localhost:5080/hubs/meter (Ctrl+C encerra)...
 18:18:14 conectado (Pz1-VjshrPMkHzPSCmwTvA).
-18:18:14 [GetStatus] connected, link ativo, cabo aberto (sim://bu86x/0), transporte simulated, 45 leituras
+18:18:14 [GetStatus] connected, link ativo, cabo aberto (sim://bu86x/0), transporte simulated, medidor BM52x (BM525s / Minipa ET-2615A), 45 leituras
 18:18:14.314 [GetLatest] #45         0.090 V AC | 0.000 Hz        AUTO
 18:18:14.521 #46         0.090 V AC | 0.000 Hz        AUTO
-18:18:16 [status] unlinked, link desativado, cabo fechado (sim://bu86x/0), transporte simulated, 54 leituras
+18:18:16 [status] unlinked, link desativado, cabo fechado (sim://bu86x/0), transporte simulated, medidor BM52x (BM525s / Minipa ET-2615A), 54 leituras
 ```
+
+Com o ET-2517A (ou `Meter:SimulatedModel=Et2517a` no serviço), o medidor aparece como
+`medidor BM82x (Minipa ET-2517A) sem datalogger`. Antes da 1ª leitura, e com um serviço 0.1.0, que não manda o campo
+`model`, a parte do medidor não aparece.
 
 ## Contrato do hub `/hubs/meter`
 
@@ -33,8 +38,8 @@ compatíveis com trimming/Native AOT.
 
 | Direção | Nome | Payload |
 |---|---|---|
-| servidor → cliente | `reading` | Cada leitura nova decodificada (cada quadro `52 66` válido), com o mesmo JSON de `GET /api/v1/readings/latest` |
-| servidor → cliente | `status` | Mudança do link ou do cabo (conectado, desconectado, importação, erro com `code`), com o mesmo JSON de `GET /api/v1/meter` |
+| servidor → cliente | `reading` | Cada leitura nova decodificada (cada quadro de tempo real válido: `52 66` no BM52x, `82 66` no BM82x), com o mesmo JSON de `GET /api/v1/readings/latest` |
+| servidor → cliente | `status` | Mudança do link, do cabo ou da família detectada (conectado, desconectado, importação, erro com `code`, `model`), com o mesmo JSON de `GET /api/v1/meter` |
 | servidor → cliente | `acquisitionSample` | Cada amostra gravada pela aquisição, com o mesmo JSON de um item de `GET /api/v1/acquisition/samples` |
 | cliente → servidor | `GetLatest()` | A leitura atual, ou `null` quando `GET /api/v1/readings/latest` responderia erro (link desativado, importação, cabo em falha) |
 | cliente → servidor | `GetStatus()` | O estado, como `GET /api/v1/meter` |

@@ -19,6 +19,7 @@ ponta com o BM525s e o cabo BC-86X reais, no Windows.
 | Biblioteca NuGet (2026-10-23) | Solução com 788 aprovados e 0 falhas; pacotes `Brymen.Dmm` (sem dependências) e `Brymen.Dmm.Extensions.Hosting`; consumidores `net8.0`, `net10.0` e trimmed; hardware e regressão da API com o cabo real sem diferenças ([§8](#8-biblioteca-nuget)) |
 | Revisão da biblioteca (2026-10-23) | 17 achados: 17 procedem e foram corrigidos (o 16 repete o 7); solução com 816 aprovados e 0 falhas; consumidores `net8.0`/`net10.0` e dois do hosting com os `Microsoft.Extensions.*` 8.0.0/10.0.0 recompilados contra os pacotes novos; hardware 4/4 nos dois alvos; publish Linux com 0 avisos ([§9](#9-revisão-da-biblioteca)) |
 | Linux arm64 real, Orange Pi 5 (2026-10-23) | Build no Pi com 0 avisos; testes `net10.0`: 727 aprovados, 0 falhas; hardware pelo hidraw 7/7 + 4/4; uhid como root 5/5 (3 execuções); `install.sh`, udev, `modules-load.d` e unit `Type=notify` funcionando; API pela LAN com importação idêntica byte a byte ao dump; reconexão por unbind/bind do `usbhid`; pacote NuGet em `net10.0` e `net8.0` com o cabo real. Docker interrompido por decisão do usuário, depois de uma execução do contêiner com o cabo ([§10](#10-linux-arm64-real-orange-pi-5)). Na reverificação independente, um teste da API se mostrou instável no Pi (corrida na retenção das importações, [§10.12](#1012-reverificação-independente)). **Correções** ([§10.13](#1013-correções)): `Dockerfile` compila no builder legado, `install.sh`/`uninstall.sh` disparam o udev só no hidraw do cabo, painel servido com `br`/`gzip` pelo `MapStaticAssets` e retenção aplicada antes do estado final; PC com 820 aprovados e 0 falhas; no Pi, `Brymen.Dmm.Api.Tests` 178/0/0 em 3 rodadas e a retenção 20/20; serviço reinstalado e lendo, sem evento no `hidraw0` |
+| Minipa ET-2517A, família BM82x (2026-10-23) | 0.2.0 no Windows com o ET-2517A real: solução com 1008 aprovados e 0 falhas (um teste de tempo do simulador falhou em 1 de 4 execuções); testes de hardware adaptados à família, 6/6 no Hid e 5/5 em `net10.0` e `net8.0`; leitura contínua de 3 min a 200 ms (4,89/s) e de 1 min a 500 ms (1,98/s) sem nenhum reenvio, `W7012`, `E9016`, lacuna acima de 1 s ou reabertura do cabo; o descarte de pedidos da medição da manhã não se repetiu (`rate.cs`: 0/40 de 0 a 2000 ms), e o reenvio foi exercitado com descartes injetados no host (perdas recuperadas sem erro nem reabertura); API com `model` BM82x, SSE a 4,85/s e SignalR a 4,89/s sem lacunas, `POST` de importação → 409 `E9014` e painel sem o botão de importação; pacotes 0.2.0 e consumidor isolado com o cabo real. BM525s e Linux não retestados com a 0.2.0 ([§11](#11-minipa-et-2517a-família-bm82x)) |
 
 ## Ambiente
 
@@ -1083,3 +1084,354 @@ Estado final do Pi, igual ao de antes da instalação:
 O `docker.service`, ativado pelo socket no 1º diagnóstico ([§10.9](#109-limpeza-e-linha-de-base)), foi parado a pedido do
 usuário (`systemctl stop docker.service`). Voltou ao estado de antes: `inactive` e `disabled`, com o `docker.socket`
 ativo.
+
+## 11. Minipa ET-2517A (família BM82x)
+
+Validação no hardware de 2026-10-23 da versão 0.2.0, que acrescentou a família BM82x: detecção pelo Model ID, `82 66`
+no tempo real, reenvio dos pedidos sem resposta e `E9014` na memória (§8 de
+[bm52x-usb-protocol.md](protocol/bm52x-usb-protocol.md#8-família-bm82x-model-id-0x82-e-o-minipa-et-2517a)). O medidor
+foi o Minipa ET-2517A, ligado ao mesmo cabo BC-86X das seções anteriores. Nenhum código de `src/` mudou nesta etapa: só
+os testes de hardware foram adaptados ([§11.3](#113-testes-de-hardware)). A revisão que veio depois
+([§11.10](#1110-revisão)) mudou o código (a espera longa do 1º `66`, o descarte de recuperação, os contadores do
+`Bu86xLink` e o `E9014` com a família antiga), o build dos pacotes e a documentação, e refez os testes de hardware, os
+pacotes e a publicação.
+
+### 11.1 Ambiente
+
+| Item | Valor |
+|---|---|
+| Máquina | Windows 11 Pro 10.0.26300 (x64) |
+| .NET | SDK 10.0.401; runtimes 10.0.12 e 8.0.32; ASP.NET Core 10.0.12; PowerShell 7.6.8 |
+| Cabo | BC-86X, `\\?\hid#vid_0820&pid_0001#9&2e0db096&0&0000#{4d1e55b2-f16f-11cf-88cb-001111000030}`, VID 0x0820, PID 0x0001, bcdDevice 0x8603, `Brymen` / `Superior DMM`, usage page FF00 |
+| Medidor | Minipa ET-2517A, Model ID `82828282`, em **ACV** e `AUTO` durante toda a sessão: 0,001 V AC e 0,000 Hz em todas as leituras (`rawHex` `00001000BFAFAFA00000BFAFAFAF00012006008282828210000000`). O BM525s não estava ligado |
+| Software original | Fechado: nenhum processo `Bs8*` durante os testes |
+| Comandos enviados ao medidor | Só `82 66` e `52 66`. O `52 66` saiu uma vez por execução do teste `RealTimeAndMemoryFramesThroughBu86xLink`, sempre sem resposta. Nenhum `88`, `89` ou `8A`: o `E9014` vem da família, sem tentativa de memória |
+| Processos no cabo | Um de cada vez. Antes de cada etapa, um `Get-CimInstance Win32_Process` confirmou que nenhum processo de teste (`testhost`, `dotnet run`, API, consumidor) continuava rodando; os nós do MSBuild e os servidores de linguagem do VS Code não abrem o cabo |
+| Ferramentas | `.../scratchpad/hw/soak.cs` (leitura contínua com o `BrymenMeter`; o provider registra aberturas, pedidos e quadros e pode injetar descartes), `.../scratchpad/hw/probe.cs` e o `docs/protocol/tools/rate.cs` sem mudanças |
+
+### 11.2 Build e testes
+
+```powershell
+dotnet build BrymenDmm.slnx -c Release --no-incremental
+dotnet test BrymenDmm.slnx                        # 4 execuções
+$env:BRYMEN_HW_TESTS = '1'; dotnet test tests/Brymen.Dmm.Hid.Tests --filter "FullyQualifiedName~HardwareTests"
+$env:BRYMEN_HW_TESTS = '1'; dotnet test tests/Brymen.Dmm.Tests --filter "FullyQualifiedName~HardwareTests"
+```
+
+| Projeto de teste | Aprovados | Falhas | Ignorados |
+|---|---|---|---|
+| `Brymen.Dmm.Protocol.Tests` | 411 | 0 | 0 |
+| `Brymen.Dmm.Hid.Tests` | 155 | 0 | 12 (7 de hardware, 5 do uhid) |
+| `Brymen.Dmm.Tests` (`net10.0` / `net8.0`) | 88 / 88 | 0 | 5 / 5 (hardware) |
+| `Brymen.Dmm.Extensions.Hosting.Tests` (`net10.0` / `net8.0`) | 28 / 28 | 0 | 0 |
+| `Brymen.Dmm.Api.Tests` | 210 | 0 | 0 |
+| **Total** | **1008** | **0** | **22** |
+
+- Build Release, também com `--no-incremental`: 0 avisos e 0 erros. Nenhuma quebra de integração entre o núcleo, a API e
+  a documentação: o código de `src/` não precisou de correção.
+- Em 1 das 4 execuções da solução, o `SimulatedHidDeviceTests.ResponseLatencyDelaysTheFirstReport` falhou (365
+  ms). É um teste de tempo do cabo simulado, que esta etapa não tocou. As outras 3 execuções da solução e 4 do
+  `Brymen.Dmm.Hid.Tests` sozinho passaram.
+
+### 11.3 Testes de hardware
+
+Os testes de hardware supunham o BM525s: `52 66` com o Model ID `52525252` e a importação comparada com o
+`memory-dump-1.txt`. Agora eles detectam a família:
+
+- `tests/Brymen.Dmm.Hid.Tests/HardwareTests.cs`:
+  - cada teste começa com um `82 66` reenviado a cada 300 ms (pelo `Bu86xLink`, até 3 s) ou a cada 400 ms (pelo dispositivo
+    cru, até 8 envios) e confere os report IDs e os quatro bytes do Model ID, 52h ou 82h;
+  - depois, usa o código da família: no BM52x, o `52 66` de um envio só, como antes; no BM82x, o `82 66` com reenvio;
+  - no BM82x, o `RealTimeAndMemoryFramesThroughBu86xLink` confere que o `52 66` fica sem nenhum relatório e não envia
+    `88`/`89`/`8A`;
+  - o `LateReportsOfACancelledCommandAreDrainedBeforeTheNextOne` usa um descarte de recuperação de 300 ms, que cobre a
+    latência do ET-2517A (até ≈ 260 ms até o quadro inteiro).
+- `tests/Brymen.Dmm.Tests/HardwareTests.cs`:
+  - a abertura confere o Model ID da família detectada, `Family`, `SupportsDataLogger`, `ModelDescription` e os pedidos
+    no cabo (o 1º é `8266`, e o último, o código da família);
+  - a leitura contínua e os eventos aceitam menos leituras no BM82x (7 em 3 s e 4 em 2 s), porque cada pedido descartado
+    custa a janela de 300 ms;
+  - na importação, o BM82x tem de dar `E9014` sem nenhum `88`/`89`/`8A`, sem mudar `State` nem `LastError` e sem
+    `ErrorOccurred`; a 2ª tentativa recusa na hora, sem nenhum pedido, e o tempo real continua. O BM52x segue o caminho
+    de antes;
+  - teste novo `Reads_continuously_at_500_ms_without_reopening_the_cable_for_recoverable_losses`, de 10 s: nenhum `E9016`,
+    só `W7012` de consultas com o orçamento esgotado e uma reabertura do cabo por consulta falha (`Opens = 1 +
+    FailedQueries`); no BM52x, nenhum reenvio.
+- `RequestRecordingProvider` (`tests/Brymen.Dmm.Tests/TestSupport.cs`) conta as aberturas e registra os pedidos escritos.
+
+| Execução com o ET-2517A | Resultado |
+|---|---|
+| `Brymen.Dmm.Hid.Tests` (`net10.0`) | 6/6 (o 7º, `CableIsFoundAndOpenedByPathWithoutSysfs`, só roda no Linux). Todas as detecções responderam no 1º envio; `52 66` sem resposta em 1009 ms; `Dispose` com a leitura pendente falhou em 1 ms |
+| `Brymen.Dmm.Tests` (`net10.0` e `net8.0`, um depois do outro) | 5/5 nos dois alvos |
+| Abertura e leitura | 1ª leitura em 273 / 344 ms, 2ª em 193 / 183 ms; pedidos `8266 8266`; `BM82x (Minipa ET-2517A), sem datalogger` |
+| Importação | `E9014` em 345 / 173 ms, com um único pedido (`8266`, a conferência do modelo); 2ª tentativa em 5 / 3 ms, sem pedido; leitura normal depois |
+| Leitura contínua por 3 s / eventos por 2 s | 15 leituras (5,0/s) / 9 leituras; 0 reenvios |
+| 500 ms por 10 s | 20 leituras, 20 pedidos, 0 reenvios, 1 abertura do cabo |
+
+### 11.4 Leitura contínua com o `BrymenMeter`
+
+`dotnet run soak.cs -- <s> <PollInterval ms> <log>`, com as opções padrão (`Family` `Auto`, janela de 300 ms e orçamento
+de 2 s). A latência é a da escrita do pedido até o quadro inteiro, tirada do log.
+
+| Medida | 3 min, `PollInterval` 200 ms (padrão) | 1 min, 500 ms |
+|---|---|---|
+| Leituras | 880 em 180,0 s | 119 em 60,0 s |
+| Leituras por segundo | **4,89** | **1,98** |
+| 1ª leitura depois da abertura | 0,339 s | 0,266 s |
+| Intervalo entre leituras: mediana / maior | 0,200 / 0,408 s | 0,552 / 0,672 s |
+| Lacunas maiores que 1 s | **0** | **0** |
+| `RealTimeStatistics` | `Queries` 880, `Requests` 880, `Resends` 0, `LostRequests` 0, `RecoveredQueries` 0, `FailedQueries` 0 | 119, 120 (o último, cancelado no fim), 0, 0, 0, 0 |
+| `W7012` / `E9016` / `ErrorOccurred` | 0 / 0 / 0 | 0 / 0 / 0 |
+| Aberturas do cabo / `StateChanged` | 1 / nenhum | 1 / nenhum |
+| Latência: mín. / mediana / p95 / máx. | 51 / 116 / 198 / 258 ms | 52 / 142 / 235 / 251 ms |
+| Pedidos | Só `82 66`, a partir da detecção | Só `82 66` |
+
+**Critério atendido**: 0 `E9016` e nenhuma reabertura do cabo. Nenhum pedido se perdeu, então as medições não dão base
+para mudar os padrões da política de reenvio, e eles ficaram como estavam: 300 ms e 2 s. A maior latência (258 ms até o
+quadro inteiro, com o 1º relatório antes disso) fica abaixo da janela de 300 ms: nenhum reenvio desnecessário em 999
+consultas.
+
+### 11.5 Pedidos descartados não se repetiram
+
+O `docs/protocol/tools/rate.cs` (o mesmo programa da §8.5.1 da especificação), com o ET-2517A em ACV, deu:
+
+| Intervalo entre consultas | Sem resposta | Latência até o 1º relatório: mín. / mediana / máx. |
+|---|---|---|
+| 0 ms | 0/40 | 50 / 163 / 228 ms |
+| 200 ms | 0/40 | 37 / 155 / 225 ms |
+| 500 ms | 0/40 | 39 / 55 / 175 ms |
+| 1000 ms | 0/40 | 44 / 142 / 204 ms |
+| 2000 ms | 0/40 | 57 / 129 / 202 ms |
+
+Na medição da manhã, o mesmo programa perdeu 11 de 40 a 200 ms e 19 de 40 a 500 ms. Nesta sessão, nenhum dos mais de
+3100 pedidos `82 66` escritos no cabo se perdeu: os do `rate.cs`, os da leitura contínua (inclusive os escritos nas
+execuções com descarte injetado da [§11.6](#116-reenvio-com-descarte-injetado-no-host)), os dos testes, os da API e os
+do consumidor. Também responderam no 1º envio as ≈ 26 primeiras consultas depois de cada abertura do cabo, inclusive as
+que vieram depois de minutos sem tráfego. A causa da diferença não foi identificada. Ela pode estar na função do medidor, nas trocas de função
+da varredura, no alinhamento da janela óptica do cabo ou na bateria; nada disso foi medido. Por isso, a curva da §8.5.1
+continua sendo a referência do simulador.
+
+### 11.6 Reenvio com descarte injetado no host
+
+Como o medidor não descartou pedidos, o reenvio foi exercitado no hardware com descartes injetados. O provider do
+`soak.cs` deixa de escrever um pedido `66` quando o `SimulatedBm52xMeter.CreateEt2517aRequestDropper(2517, sem limite de
+perdas seguidas)` sorteia a perda. É a curva da §8.5.1, com o tempo ocioso contado do último relatório recebido, e um pedido
+descartado nunca tem resposta, como no medidor. As respostas aos pedidos escritos são reais.
+
+| Medida | 60 s a 200 ms | 60 s a 500 ms |
+|---|---|---|
+| Leituras / por segundo | 261 / 4,35 | 106 / 1,77 |
+| Pedidos descartados (injetados) | 22 de 284 | 51 de 158 |
+| `Resends` / `RecoveredQueries` / `FailedQueries` | 22 / 12 / 0 | 50 / 30 / 1 |
+| Envios por leitura | 1: 249, 2: 8, 4: 2, 5: 2 | 1: 75, 2: 20, 3: 7, 4: 2, 5: 1, 8: 1 (o 8 inclui os 7 da consulta falha) |
+| Lacunas maiores que 1 s / maior lacuna | 4 / 1,848 s | 9 / 2,752 s |
+| `W7012` / `E9016` | 0 / 0 | 1 / 0 |
+| Aberturas do cabo | 1 | 2 |
+
+- Nenhuma perda recuperada gerou erro, `StateChanged` ou reabertura do cabo; a resposta ao reenvio foi aceita, e o
+  descarte de recuperação seguinte não deixou quadro duplicado.
+- A única falha a 500 ms foi uma sequência de 7 envios em 2 s, todos descartados pelo sorteio (com o tempo ocioso de 415 a
+  2238 ms). Ela gerou um `W7012`: estado `Faulted`, o cabo fechado e reaberto 21 ms depois, e a consulta seguinte respondeu
+  no 1º envio. É o comportamento esperado para uma perda não recuperável.
+- Com o limite padrão do simulador (3 perdas seguidas), toda perda seria recuperada no orçamento de 2 s.
+
+### 11.7 API com o cabo real
+
+A API foi publicada framework-dependent (`dotnet publish src/Brymen.Dmm.Api -c Release -o .../scratchpad/api-publish`) e
+executada com `--Urls=http://127.0.0.1:5797 --Meter:Transport=Hid --DataDirectory=.../scratchpad/e2e-bm82x`. O
+`samples/Brymen.Dmm.SignalRClient` e o SSE (`curl -N`) ficaram conectados ao mesmo tempo por 30 s.
+
+| Verificação | Resultado |
+|---|---|
+| Partida | `Cabo BC-86X aberto: \\?\hid#vid_0820&pid_0001#...` e `Família do multímetro: BM82x (Minipa ET-2517A), sem datalogger.` |
+| `GET /api/v1/meter` | `connected`, `hid`, `deviceOpen: true`, 0x0820/0x0001/0x8603, `lastError: null`, `"model":{"family":"BM82x","modelId":"0x82","name":"BM82x (Minipa ET-2517A)","supportsDataLogger":false}`, `realTimeStatistics` sem reenvios |
+| `GET /api/v1/readings/latest` | 200: `0.001` V `AC`, secundário `0.000` Hz, `AUTO`, `rawHex` com `82828282` nos bytes 20–23 |
+| SSE, 30 s | 146 eventos `reading` (`sequence` 55..200, nenhuma faltando) em 29,9 s: **4,85/s**; intervalo mediano 0,200 s, maior 0,392 s, nenhum acima de 1 s; 1 `heartbeat` |
+| SignalR, 30 s | `GetStatus` com `medidor BM82x (Minipa ET-2517A) sem datalogger`; 150 eventos `reading` (`sequence` 57..206, nenhum faltando) em 30,7 s: **4,89/s**; maior intervalo 0,392 s; nenhum evento `status` (nada mudou) |
+| `POST /api/v1/logger/imports` | **409** `application/problem+json`, `code` `E9014`, título `Medidor sem datalogger`, `detail` com a família e o Model ID 82h; nenhum `Location`. `GET /api/v1/logger/imports` → `[]`; `importing: false`; o `DataDirectory` continuou vazio |
+| Painel `/` (browser do app) | Cabeçalho `BM82x (Minipa ET-2517A) · BC-86X`, título da aba `BM82x (Minipa ET-2517A) · Brymen DMM`; `#log-import` com `hidden` e `display: none`; aviso visível “BM82x (Minipa ET-2517A) não tem datalogger: não há memória para importar.”; nenhum erro no console. HTML e `app.js` servidos com `#meter-model`, `#log-unsupported`, `model.name` e `supportsDataLogger`, e `[hidden] { display: none !important; }` no CSS. `/` com 4074 B sem compressão, 1363 B com `gzip` e 1093 B com `br` |
+| Estatísticas no fim | 398 consultas, 398 pedidos, 0 reenvios, 0 falhas; `lastError: null` |
+| Log do servidor | Nenhum `warn`, `fail` ou `crit`; stderr vazio |
+| Encerramento | Processo encerrado; porta 5797 livre; nenhum processo de teste rodando |
+
+Uma 1ª execução, direto do `bin/Release/net10.0` com a raiz de conteúdo em `src/Brymen.Dmm.Api`, deu os mesmos
+resultados de REST, SSE (148 eventos, 4,91/s) e SignalR (4,89/s), com 791 consultas sem reenvio. Mas o painel veio
+**vazio** no browser, e o log mostrou 7 avisos `StaticAssetsInvoker[17]` (“not running against the published output”):
+com `Accept-Encoding: gzip`, `/` e `/js/app.js` respondiam 200 com 0 bytes, porque os `.gz` só existem no publish.
+Nada mudou na 0.2.0 aqui: é o mesmo caso da raiz de conteúdo errada da [§10.13](#1013-correções). O painel precisa do
+publish, ou do `dotnet run` com o perfil de desenvolvimento.
+
+### 11.8 Pacotes 0.2.0 e consumidor isolado
+
+> Os pacotes desta seção foram **substituídos** pelos da revisão ([§11.10.4](#11104-pacotes)): eles tinham o Source Link
+> inoperante (a chave era o caminho local) e o caminho da máquina nos 8 PDBs, e não podem ser publicados.
+
+`dotnet pack src/Brymen.Dmm -c Release -o artifacts/packages` e o mesmo para `src/Brymen.Dmm.Extensions.Hosting`: 0
+avisos. Os pacotes foram refeitos depois da última mudança do `src/Brymen.Dmm/README.md`, que vai no pacote (a
+ressalva de validação da 0.2.0), e o consumidor rodou de novo contra eles, com um cache isolado novo. A tabela é a dos
+pacotes que ficaram em `artifacts/packages`.
+
+| Pacote | Tamanho | SHA-256 | Conteúdo e dependências |
+|---|---|---|---|
+| `Brymen.Dmm.0.2.0.nupkg` | 313 458 B | `412a21a527e37382a2a94a530683e5f08124e5988b3555669e98796127b080e6` | `lib/net8.0` e `lib/net10.0` com `Brymen.Dmm`, `Brymen.Dmm.Protocol` e `Brymen.Dmm.Hid` (DLL e XML), `README.md` de 12 705 B; nenhuma dependência |
+| `Brymen.Dmm.0.2.0.snupkg` | 103 564 B | — | Os PDBs |
+| `Brymen.Dmm.Extensions.Hosting.0.2.0.nupkg` | 66 216 B | `f343a10afde323d3c1d5447f8f5af0315dc97b7e677b1af51682bcd95231bcab` | `lib/net8.0` e `lib/net10.0`; `README.md` de 7 692 B; `Brymen.Dmm` 0.2.0 e `Microsoft.Extensions.Configuration.Binder`, `.Hosting.Abstractions`, `.Logging.Abstractions` e `.Options` 10.0.0 (`net10.0`) ou 8.0.0 (`net8.0`) |
+| `Brymen.Dmm.Extensions.Hosting.0.2.0.snupkg` | 38 257 B | — | Os PDBs |
+
+Os dois nuspecs têm a versão 0.2.0, a licença MIT, `Sidinei Santos Sousa` em `authors`, o repositório no GitHub e as tags
+`bm82x`, `et-2517a` e `bm827s`. As DLLs têm a `InformationalVersion` `0.2.0+3b024c73…`. Esse commit é o `HEAD`, que
+ainda é a 0.1.0: as mudanças da 0.2.0 não estavam versionadas (veja a [§11.10.4](#11104-pacotes)).
+
+O consumidor `net10.0` (`.../scratchpad/consumer-bm82x`) fica fora da solução. Ele tem `Directory.Build.props` e
+`Directory.Build.targets` vazios, `TreatWarningsAsErrors` e os analisadores de trimming, AOT e single-file. O
+`nuget.config` tem `<clear />`, o feed `artifacts/packages` só para `Brymen.Dmm*` e o nuget.org para o resto, com o cache
+do usuário como `fallbackPackageFolders`. `NUGET_PACKAGES` apontou para o `.../scratchpad/nuget-cache-bm82x`, novo e vazio.
+
+| Verificação | Resultado |
+|---|---|
+| Restore e build Release | 0 avisos. O cache isolado recebeu só `brymen.dmm` e `brymen.dmm.extensions.hosting` 0.2.0, com o SHA-512 igual ao dos pacotes de `artifacts/packages`. Os `Microsoft.Extensions.*` vieram do cache do usuário, sem nenhum download |
+| `BrymenMeter`, 10 s a 200 ms (1ª / 2ª execução) | 48 leituras em 10,007 / 9,994 s (**4,80/s**), 1ª em 0,331 / 0,275 s, maior intervalo 0,392 / 0,384 s; `Family` `Bm82x`, Model ID `82828282`; `Queries` 48, `Requests` 49 (o último, cancelado no fim), 0 reenvios; nenhum erro |
+| `ReadLoggerMemoryAsync` | `E9014` em 4 ms, com `State` `Connected` e `LastError` nulo |
+| Generic Host (`AddBrymenMeter` e `IBrymenMeterAccessor`), 5 s | Log 1 (“Multímetro aberto...”) e log 8 (“Família do multímetro: BM82x (Minipa ET-2517A), sem datalogger.”); 24 / 23 leituras por `ReadingsAsync`; `accessor.Family` `Bm82x`; `E9014` pelo `accessor.Meter`; parada com o log 7 |
+| Saída | `TUDO OK`, código 0, nas duas execuções |
+
+### 11.9 Pendências
+
+- **BM525s não retestado no hardware com a 0.2.0**, porque não estava ligado. Faltam a detecção (`82 66` e depois
+  `52 66`), a importação idêntica ao `memory-dump-1.txt` com a conferência do modelo pelo `82 66`, o 1º `66` depois da
+  memória (≈ 2,06 s) e o `POST /api/v1/logger/imports` completo. Os testes de hardware já cobrem o caminho do BM52x.
+- **Linux não retestado** com a 0.2.0 (Orange Pi 5, hidraw): nem os testes de hardware nem a API nem o pacote.
+- **Descarte real de pedidos não reproduzido** ([§11.5](#115-pedidos-descartados-não-se-repetiram)): o reenvio foi
+  exercitado no hardware só com descartes injetados no host. Falta medir de novo com o ET-2517A em outras funções (Hz,
+  Ω, diodo, temperatura, faixa manual, REC), durante trocas de função e com o cabo em outra posição, para achar a
+  condição dos descartes da §8.5.1. O efeito do orçamento de 2 s com perdas reais continua sem medição (questão 13 da
+  especificação).
+- ~~A espera longa da 1ª consulta depois da abertura continua com um envio só~~: resolvido na revisão
+  ([§11.10](#1110-revisão), achado 1). A espera longa reenvia o pedido com a família desconhecida e no BM82x, e um 1º
+  pedido descartado (injetado no host) foi recuperado no 4º envio, sem `W7012`. Um descarte real nela continua sem ser
+  visto.
+- Só a função ACV foi lida nesta sessão. As outras funções do ET-2517A são conferidas pelas capturas da varredura, nos
+  testes do decodificador.
+- Teste instável `SimulatedHidDeviceTests.ResponseLatencyDelaysTheFirstReport`: 1 falha em 8 execuções, com a solução
+  inteira rodando em paralelo ([§11.2](#112-build-e-testes)).
+
+### 11.10 Revisão
+
+Revisão final da 0.2.0, depois das §11.1 a §11.9, com os achados de dois revisores (correção e compatibilidade; API,
+documentação e pacote). Cada achado foi conferido no código, nos artefatos ou no hardware antes da correção. O cabo
+continuou com o ET-2517A em ACV (`AUTO`, 0,001 a 0,002 V), com um processo de cada vez e só `82 66` e `52 66`.
+
+#### 11.10.1 Achados e vereditos
+
+| # | Achado | Veredito | O que mudou |
+|---|---|---|---|
+| 1 | A espera longa do 1º `66` era um envio só também com a família desconhecida e no BM82x; um 1º pedido descartado custava ≈ 4,1 s, um `W7012` e uma reabertura do cabo a cada abertura | **Real** (médio). A curva da §8.5.1 dá 60 % de perda na 1ª tentativa depois de 1 s ocioso, e o 1º pedido depois da abertura é o de maior ócio. A validação não o exercitou: o simulador começa o ócio na construção, e o 1º sorteio das execuções com injeção não descartou | `MeterConnection`: na espera longa, com a família desconhecida ou BM82x, o pedido é reenviado a cada `RealTimeResendTimeout` até `max(RealTimeResendBudget, RealTimeAfterMemoryTimeout)` (§8.5.4); com a família BM52x conhecida, ou depois de um comando de memória respondido, continua um envio só. O `52 66` de reserva continua depois. Na API, a detecção da importação passou a ser uma consulta só (a 2ª tentativa contornava o envio único). Testes novos com o 1º pedido descartado depois de 10 s ocioso e com o medidor mudo até o prazo |
+| 2 | Testes de hardware do `Brymen.Dmm` contradiziam a própria nova tentativa e só passavam no BM82x sem perdas | **Real** (baixo) | `Opens_the_real_cable...` confere `1 + falhas` aberturas; `AssertNoDataLoggerAsync` aceita a reabertura do `ResetAsync` da conferência do modelo (1 ou 2) e confere que a recusa e a leitura seguinte não reabrem; a leitura contínua de 3 s e os eventos de 2 s aceitam, no BM82x, `W7012` isolados (nenhum `E9016`, erros = `FailedQueries`), com limites de 4 e 2 leituras |
+| 3 | `Bu86xLink`: contadores zerados antes do `_gate` decidiam o descarte de recuperação e os números das exceções | **Real** (baixo): um 2º chamador zerava `_lastCommandAttempts` no meio da troca do 1º | Cada troca conta os seus envios e relatórios (`ExchangeCounters`), que decidem o `_recoveryPending` e preenchem `Bu86xTimeoutException.Attempts`/`ReportsReceived`; os campos voláteis só publicam. Dois testes novos com um chamador concorrente; os dois falham com a lógica antiga |
+| 4 | O `RecoveryDrainTimeout` de 100 ms não cobre a latência do ET-2517A (até ≈ 260 ms) | **Real em parte** (baixo). O caso real é a troca interrompida (cancelada, orçamento esgotado): a resposta do último envio pode chegar de 100 a 260 ms depois. Depois de uma troca com reenvios bem-sucedida, os outros envios foram descartados, e um pedido descartado nunca é respondido (§8.5.2) | Depois de uma troca com `Bu86xResendPolicy` que não terminou com o quadro inteiro, o próximo comando no mesmo link exige pelo menos a `FirstReportWindow` (300 ms) de silêncio; o BM52x e a troca bem-sucedida continuam com 100 ms. Não foi estendido à troca bem-sucedida com reenvios: o descarte aumenta o tempo ocioso antes do pedido seguinte, e a perda sobe com ele (27,5 % a 200–300 ms, 47,5 % a 500 ms). Depois de fechar e reabrir o cabo vale o `RecoveryDrainTimeout`. A garantia ficou documentada como de melhor esforço (`Bu86xLink`, `BrymenMeterOptions`, `docs/library.md`). Teste novo, que falha com a lógica antiga |
+| 5 | A família guardada recusava a importação com `E9014` sem nenhum comando, mesmo depois de trocar o medidor no cabo | **Real** (baixo) | `MeterConnection.IsFamilyConfirmed` e `FamilyConfirmationWindow` (2 s), só acréscimos: a recusa imediata vale com a família fixa ou confirmada por um quadro há menos de 2 s (a leitura contínua rodando); senão, a conferência do modelo (uma consulta de tempo real) confirma a família antes. Sem `VerifyModel`, a família conhecida continua recusando na hora. A API faz o mesmo no `POST /api/v1/logger/imports`. Testes na biblioteca e na API com o ET-2517A trocado pelo BM525s |
+| 6 | Pacotes 0.2.0 com o Source Link inoperante, o caminho local nos PDBs e o commit de origem errado | **Real** (médio): conferido nos artefatos da §11.8. A chave do Source Link era `C:\dev\Brymen BU-86X USB kit\*` | `Directory.Build.props`: `DeterministicSourcePaths` no Release de `src/` quando existe `.git`, e a chave virou `/_/*` ([§11.10.4](#11104-pacotes)). O commit não tem correção sem um commit, que esta etapa não podia fazer: **os pacotes só podem ser publicados depois do commit da 0.2.0 e de um novo pack** |
+| 7 | `docs/library.md` com afirmações de validação vencidas e contraditórias | **Real** (baixo) | A seção Windows, a tabela de plataformas, o intervalo de polling e a espera longa passaram a citar a §11; a espera longa foi reescrita com a política nova, e o descarte real nela ficou como pendência |
+| 8 | `docs/library.md` dizia que as DLLs não têm `AssemblyCompanyAttribute` | **Real** (baixo): todas têm `Sidinei Santos Sousa` | Texto corrigido: o `Company` explícito do `Directory.Build.props`, o autor |
+| 9 | A §8.6/§8.7 da especificação contradizia o `E9014`, e o CHANGELOG listava só três diferenças | **Real** (baixo) | §8.6 anotada com o `E9014` (409) e o motivo, e com a família que continua depois de reabrir; §8.7 com o estado de cada item. No CHANGELOG, a espera longa saiu das diferenças (agora segue a §8.5.4), e o `E9014` entrou |
+| 10 | `brymen-dmm.env` e os comentários do `Dockerfile` ficaram na 0.1.0 | **Real** (baixo) | O env tem `Meter__Family`, `Meter__RealTimeResendTimeout` e `Meter__RealTimeResendBudget` comentados, com padrões e faixas, e o comentário do intervalo cita as duas famílias; o `Dockerfile` usa `brymen-dmm:0.2.0` |
+
+Fora dos achados, os textos que diziam “na hora” para o `E9014` (XML do `BrymenMeter`, `IBrymenMeter`,
+`BrymenErrorCodes`, `MeterConnection`, os dois READMEs dos pacotes, `README.md`, `docs/architecture.md` e
+`docs/library.md`) passaram a dizer quando a recusa é imediata.
+
+#### 11.10.2 Build e testes
+
+```powershell
+dotnet build BrymenDmm.slnx -c Release --no-incremental   # 0 avisos, 0 erros
+dotnet test BrymenDmm.slnx
+```
+
+| Projeto de teste | Aprovados | Falhas | Ignorados |
+|---|---|---|---|
+| `Brymen.Dmm.Protocol.Tests` | 411 | 0 | 0 |
+| `Brymen.Dmm.Hid.Tests` | 158 | 0 | 12 (7 de hardware, 5 do uhid) |
+| `Brymen.Dmm.Tests` (`net10.0` / `net8.0`) | 96 / 96 | 0 | 5 / 5 (hardware) |
+| `Brymen.Dmm.Extensions.Hosting.Tests` (`net10.0` / `net8.0`) | 28 / 28 | 0 | 0 |
+| `Brymen.Dmm.Api.Tests` | 211 | 0 | 0 |
+| **Total** | **1028** | **0** | **22** |
+
+Testes novos ou alterados:
+
+- `Bu86xLinkResendTests`: `A_concurrent_caller_does_not_reset_the_sends_of_the_exchange_in_progress`,
+  `The_numbers_of_a_failed_exchange_are_its_own_with_a_concurrent_caller` e
+  `An_interrupted_exchange_with_resends_makes_the_next_command_wait_for_the_first_report_window`. Com a lógica antiga
+  (os contadores publicados e o descarte de 100 ms) restaurada temporariamente, os três falharam.
+- `RealTimeResendTests`: `The_long_wait_resends_with_an_unknown_or_BM82x_family_and_is_a_single_send_with_a_known_BM52x`
+  (no lugar do teste que fixava o envio único), `After_an_answered_memory_command_the_long_wait_is_a_single_send` (com e
+  sem `VerifyModel`), `A_dropped_first_request_after_a_long_idle_time_is_resent_within_the_long_wait` (o ET-2517A
+  simulado 10 s ocioso, que descarta os 7 primeiros pedidos: o 8º, 2,1 s depois do 1º, é atendido, sem `W7012`) e
+  `A_silent_meter_at_the_first_query_is_resent_until_the_long_deadline_and_then_tried_with_52_66` (10 envios em 3 s, o
+  descarte de 300 ms e o `52 66`).
+- `DataLoggerFamilyTests`: a família confirmada por 2 s, a recusa depois da conferência do modelo, a troca do ET-2517A
+  pelo BM525s com a importação completa e a recusa imediata sem `VerifyModel`.
+- `SwappedMeterImportTests` (API): `E9014` com a família detectada no `POST`, recusa sem comando logo depois, e, 2,2 s
+  depois de trocar o ET-2517A pelo BM525s, `202` e a importação completa, com `8266 5266` antes do `5288`.
+- Ajustados à política nova: `MeterFamilyTests.The_detection_falls_back_to_52_66_for_a_BM52x_that_ignores_82_66` e
+  `MeterConnectionTests.First_66_after_open_and_after_memory_commands_waits_for_the_slow_answer`.
+
+#### 11.10.3 Hardware
+
+| Execução com o ET-2517A | Resultado |
+|---|---|
+| `Brymen.Dmm.Hid.Tests` (`BRYMEN_HW_TESTS=1`) | 6/6 (o 7º só roda no Linux) |
+| `Brymen.Dmm.Tests` (`net10.0` e `net8.0`, um depois do outro) | 5/5 nos dois alvos. 1ª leitura em 337 / 263 ms, 2ª em 210 / 194 ms, pedidos `8266 8266`; `E9014` em 362 / 355 ms com um pedido (`8266`) e 1 abertura, 2ª tentativa em 4 / 3 ms sem pedido; 3 s: 15 / 14 leituras; eventos em 2 s: 10 / 9; 500 ms por 10 s: 20 / 20 leituras, 0 reenvios, 1 abertura |
+| `soak.cs`, 60 s a 200 ms, sem injeção | 291 leituras (**4,85/s**), 1ª em 0,354 s, intervalo mediano 0,200 s e maior 0,400 s, nenhuma lacuna acima de 1 s; `Queries` 291, `Requests` 291, 0 reenvios, 0 falhas; **0 `W7012`, 0 `E9016`**, nenhum `StateChanged`, 1 abertura do cabo; latência 51 / 120 / 208 / 256 ms (mín. / mediana / p95 / máx.) |
+| `soak.cs`, 20 s a 200 ms, os 3 primeiros pedidos descartados no host (`dropfirst:3`) | 1º pedido a 0,215 s e reenvios a 0,523, 0,829 e 1,135 s, todos dentro da espera longa; o 4º respondeu, e a 1ª leitura saiu a 1,229 s. `Queries` 92, `Requests` 96, `Resends` 3, `RecoveredQueries` 1, `FailedQueries` 0; nenhum erro nem `StateChanged`, 1 abertura. Com a política anterior, o mesmo cenário daria um `W7012` e uma reabertura do cabo depois de ≈ 4 s |
+| `soak.cs`, 12 s a 200 ms, os 11 primeiros pedidos descartados (`dropfirst:11`) | O pior caso: 10 × `82 66` de 0,230 a 2,997 s (o prazo de 3 s), o descarte de recuperação de 300 ms, o `52 66` de reserva a 3,544 s e o `W7012` a 4,553 s; o cabo foi fechado a 4,548 s e reaberto a 4,566 s, e a consulta seguinte respondeu no 1º envio. 1 `W7012`, 0 `E9016`, 2 aberturas |
+
+Os descartes do `dropfirst` são injetados no `RecordingProvider` do `soak.cs`, que deixa de escrever o pedido; as
+respostas aos pedidos escritos são do medidor real. Nesta sessão, de novo, nenhum pedido real se perdeu.
+
+#### 11.10.4 Pacotes
+
+`dotnet pack src/Brymen.Dmm -c Release -o artifacts/packages` e o mesmo para `src/Brymen.Dmm.Extensions.Hosting`, depois
+da última mudança de `src/`: 0 avisos. Estes pacotes substituem os da §11.8.
+
+| Pacote | Tamanho | SHA-256 |
+|---|---|---|
+| `Brymen.Dmm.0.2.0.nupkg` | 317 172 B | `10392771ba59c8d9fb8518a642f352668bced9d4a6f0549f4feed16ff97e1bec` |
+| `Brymen.Dmm.0.2.0.snupkg` | 103 914 B | `c9acd25bd161890064d0329706a82695edaed8448741df1e226577a142e0223a` |
+| `Brymen.Dmm.Extensions.Hosting.0.2.0.nupkg` | 66 211 B | `ed80895090bc12b49c7fd4bdc634ec86acffd06d4959859eb5c3d693ae460e27` |
+| `Brymen.Dmm.Extensions.Hosting.0.2.0.snupkg` | 38 223 B | `7b45d5f9901e6b68897cbacbb5ece659af0df9c8754a0a56b031c75a429d18e0` |
+
+Conferido com um programa que lê os pacotes com `System.Reflection.Metadata` (`.../scratchpad/pdbcheck/pdbcheck.cs`):
+
+- Os 8 PDBs (`Brymen.Dmm`, `Protocol`, `Hid` e `Extensions.Hosting`, nos dois alvos) têm o Source Link
+  `{"documents":{"/_/*":"https://raw.githubusercontent.com/SidineiSantosSousa/brymen-dmm-dotnet/<commit>/*"}}`, e todos
+  os documentos começam com `/_/`: a chave casa com eles.
+- Nenhum PDB, DLL ou nuspec dos quatro pacotes contém o caminho local (`Brymen BU-86X USB kit`); o caminho do PDB nas
+  DLLs é `/_/src/<projeto>/obj/Release/<alvo>/<projeto>.pdb`.
+- As DLLs têm `Company` `Sidinei Santos Sousa`. O README do `Brymen.Dmm` tem 13 048 B, e o do hosting, 7 684 B.
+- **O commit ainda é o errado**: o nuspec (`<repository commit>`), a `InformationalVersion` (`0.2.0+3b024c73…`) e as
+  URLs do Source Link apontam para o `HEAD` `3b024c7`, que é a 0.1.0. As mudanças da 0.2.0 continuam sem commit, e esta
+  etapa não podia fazê-lo. Antes de publicar: commit da 0.2.0, novo pack dos dois pacotes e a mesma conferência, com o
+  commit novo.
+- O consumidor isolado da §11.8 não rodou de novo contra estes pacotes.
+
+#### 11.10.5 Publicação para Linux
+
+`./deploy/publish.ps1` (linux-arm64 e linux-x64, self-contained, single-file e trimmed): 0 avisos.
+
+| Arquivo | Tamanho | SHA-256 |
+|---|---|---|
+| `artifacts/brymen-dmm-0.2.0-linux-arm64.tar.gz` | 9 666 505 B | `3322dbaebc3a8eb9733aae39f9096729b49118ced5dc55677732c99be4e159c0` |
+| `artifacts/brymen-dmm-0.2.0-linux-x64.tar.gz` | 9 933 108 B | `dd3bd1dd97272893489cc56b19693879050933dd86410de6aba3aacbc76bb84b` |
+
+O `deploy/linux/brymen-dmm.env` do pacote tem as chaves novas. A publicação não foi instalada nem executada num Linux.
+
+#### 11.10.6 Pendências da revisão
+
+- **Commit e novo pack** antes de publicar os pacotes ([§11.10.4](#11104-pacotes)).
+- **Descarte real na espera longa**: só exercitado com descartes injetados; nenhum pedido real se perdeu nesta sessão.
+- **BM525s real** com a espera longa nova: no 1º `66` depois da abertura, o BM525s leva 221–308 ms até o último
+  relatório, perto da janela de 300 ms; um reenvio desnecessário é possível, e a resposta duplicada fica para o
+  descarte de recuperação. Também falta o caso da memória lida por outro programa logo antes da abertura (≈ 2 s), em que
+  a família ainda é desconhecida e o pedido é reenviado durante o preparo da resposta (§6, questão 14 da
+  especificação). Os testes de hardware cobrem o BM52x, mas não rodaram com ele.
+- As pendências da [§11.9](#119-pendências) continuam, menos a da espera longa com um envio só.

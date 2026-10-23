@@ -1,8 +1,13 @@
 # Brymen DMM REST
 
 Port para .NET 10 do *Bs82-52x Data Recording System V6.0.0.9*, o software Windows da Brymen que lê
-o multímetro **Brymen BM525s** (vendido no Brasil como **Minipa ET-2615A**) pelo cabo óptico USB
-**BC-86X** (kit **BU-86X**).
+os multímetros das famílias BM52x e BM82x pelo cabo óptico USB **BC-86X** (kit **BU-86X**). Dois
+medidores foram validados no hardware:
+
+- **Brymen BM525s**, vendido no Brasil como **Minipa ET-2615A**: família BM52x, com datalogger;
+- **Minipa ET-2517A**: família BM82x, sem datalogger.
+
+A família é detectada sozinha na 1ª leitura ([Medidores suportados](#medidores-suportados)).
 
 O resultado é um serviço com API REST que roda em **Linux arm64** (Raspberry Pi), **Linux x64** e,
 para desenvolvimento, **Windows**. Ele oferece:
@@ -11,7 +16,7 @@ para desenvolvimento, **Windows**. Ele oferece:
   multímetro é enviada aos clientes conectados);
 - gravação equivalente ao Graphical Recorder e à Data List, com exportação CSV no formato do original;
 - comparador Hi/Lo;
-- importação da memória do datalogger;
+- importação da memória do datalogger (BM52x);
 - painel web mínimo.
 
 Para usar o medidor em outro programa .NET (8 ou mais novo), sem a API, há a biblioteca
@@ -26,6 +31,8 @@ Não há dependências nativas de terceiros. No Linux o acesso ao cabo é feito 
 ## Conteúdo
 
 - [Hardware suportado](#hardware-suportado)
+  - [Medidores suportados](#medidores-suportados)
+  - [Família e pedidos descartados](#família-e-pedidos-descartados)
 - [Arquitetura](#arquitetura)
 - [Como o REA foi usado](#como-o-rea-foi-usado)
 - [Pré-requisitos](#pré-requisitos)
@@ -48,50 +55,98 @@ Não há dependências nativas de terceiros. No Linux o acesso ao cabo é feito 
 
 | Item | Detalhe |
 |---|---|
-| Multímetro | Brymen **BM525s**. O **Minipa ET-2615A** é o mesmo aparelho com a marca Minipa e usa o mesmo protocolo e o mesmo cabo. |
+| Multímetros | Família **BM52x** (Model ID `52h`, com datalogger): Brymen **BM525s**, que é o mesmo aparelho do **Minipa ET-2615A**. Família **BM82x** (Model ID `82h`, sem datalogger): **Minipa ET-2517A**. As duas usam o mesmo cabo e o mesmo mapa de LCD. |
 | Cabo | **BC-86X**, óptico (infravermelho) para USB, vendido no kit **BU-86X**. |
-| USB | HID genérico, VID **0x0820**, PID **0x0001**, usage page 0xFF00. Fabricante `Brymen`, produto `Superior DMM`. Não precisa de driver no Windows nem no Linux. |
-| Protocolo | Comando `00 52 cc` no relatório de saída. O `66` lê o tempo real (27 bytes) e os comandos `88`, `89` e `8A` leem a memória do datalogger (36 bytes por bloco). |
-| Testado | BM525s com o BC-86X no Windows: capturas reais em [`docs/protocol/captures/`](docs/protocol/captures/). |
+| USB | HID genérico, VID **0x0820**, PID **0x0001**, bcdDevice 0x8603, usage page 0xFF00. Fabricante `Brymen`, produto `Superior DMM`. Não precisa de driver no Windows nem no Linux. |
+| Protocolo | Comando `00 fam cc` no relatório de saída, em que `fam` é o código da família (`52` ou `82`). O `66` lê o tempo real (27 bytes): `52 66` no BM52x e `82 66` no BM82x. O BM525s também responde ao `82 66`, com o mesmo quadro, e o ET-2517A não responde ao `52 66`. Os comandos `52 88`, `52 89` e `52 8A` leem a memória do datalogger do BM52x (36 bytes por bloco); o BM82x não tem memória. |
+| Testado | BM525s no Windows 11 e num Orange Pi 5 (Linux arm64); ET-2517A no Windows. Capturas reais em [`docs/protocol/captures/`](docs/protocol/captures/). |
 
-Outros medidores da família BM52x com datalogger, que usam o código de família `52h`, devem
-funcionar, mas só o BM525s foi testado. A série BM82x (código `82h`), também atendida pelo software
-original, não é suportada.
+### Medidores suportados
+
+| Medidor | Família (Model ID) | Datalogger | Situação |
+|---|---|---|---|
+| Brymen **BM525s** = **Minipa ET-2615A** | BM52x (`52h`) | sim | **Validado** no Windows 11 e num Orange Pi 5 (Linux arm64): tempo real, importação da memória, API e biblioteca ([relatório de validação](docs/validation-report.md)). |
+| **Minipa ET-2517A** | BM82x (`82h`) | não | **Validado** no Windows: identificação, `82 66`, decodificação de todos os quadros de uma varredura pelas funções do medidor e medição dos pedidos descartados ([§8 da especificação](docs/protocol/bm52x-usb-protocol.md#8-família-bm82x-model-id-0x82-e-o-minipa-et-2517a)). |
+| Brymen BM521s | BM52x (`52h`, não confirmado por captura) | sim | Provável, **não validado**. |
+| Brymen BM821s, BM822s, BM827s e BM829s | BM82x (`82h`) | não | Prováveis, **não validados**. O ET-2517A deve ser o BM827s com a marca Minipa (mesmas funções, especificações e dimensões, e o logotipo Brymen no manual), o que não foi confirmado. |
+| Brymen BM520 e BM820 (sem o “s”) | BM52x e BM82x, pelos títulos dos protocolos da Brymen | BM820: não; BM520: não confirmado | Não confirmados nem validados. |
+
+- O Model ID identifica a família, e não o modelo: pela USB, um ET-2517A não se distingue de um BM829s. A biblioteca e
+  a API expõem a família, com uma descrição que cita os modelos validados (`BM52x (BM525s / Minipa ET-2615A)` e
+  `BM82x (Minipa ET-2517A)`).
+- Rebrands possíveis, **não validados**: Greenlee DM-810A, DM-820A e DM-830A (parecidos com os BM82x) e DML-430A
+  (parecido com o BM525s), com o kit USB DMSC-9U, que pode não usar o mesmo protocolo HID.
+- A série BM860s (BM867s, BM869s) usa o mesmo kit BU-86X, mas outro protocolo e outro software: **não é suportada**.
+- A versão 0.2.0 foi validada com o **ET-2517A real** no Windows
+  ([§11 do relatório](docs/validation-report.md#11-minipa-et-2517a-família-bm82x)): testes de hardware, 3 min de
+  leitura a 200 ms e 1 min a 500 ms sem `W7012`, `E9016` nem reabertura do cabo, API (`model` BM82x, SSE, SignalR,
+  `E9014` e painel) e pacotes. Nessa sessão o medidor não descartou nenhum pedido, e o reenvio só foi exercitado com
+  descartes injetados no host. Faltam o BM525s real com a 0.2.0 (o `82 66` da detecção e a importação) e a 0.2.0 num
+  Linux real ([CHANGELOG](CHANGELOG.md#não-validado)).
+
+### Família e pedidos descartados
+
+- **Detecção.** A 1ª consulta depois de abrir o cabo envia `82 66`, que as duas famílias aceitam, e já é uma leitura:
+  os bytes 20 a 23 do quadro (o Model ID) dão a família. Sem nenhum relatório, ela tenta o `52 66`. Depois, o BM52x é
+  lido com `52 66` e o BM82x com `82 66`. Um medidor trocado no cabo é detectado de novo pelo Model ID da outra
+  família, ou depois de 3 consultas seguidas sem resposta. A família também pode ser fixada (`Meter:Family` na API,
+  `BrymenMeterOptions.Family` na biblioteca).
+- **Pedidos descartados.** O ET-2517A descarta uma parte dos pedidos de tempo real, tanto mais quanto maior o intervalo
+  entre as consultas, e esperar mais não adianta: o pedido se perde, e só reenviar resolve.
+
+  | Intervalo entre consultas | 0 ms | 100 ms | 200 ms | 300 ms | 500 ms |
+  |---|---|---|---|---|---|
+  | Pedidos sem resposta (de 40) | 0 | 2 | 11 | 11 | 19 |
+
+  O BM525s nunca mostrou isso: 5 leituras/s, sem lacunas, por minutos.
+- **Reenvio.** No BM82x, cada consulta reenvia o mesmo pedido, sem fechar o cabo, depois de 300 ms sem o 1º relatório
+  (`Meter:RealTimeResendTimeout`), até 2 s (`Meter:RealTimeResendBudget`). Só quando esse orçamento acaba a consulta é
+  uma falha (`W7012`); as perdas recuperadas não geram erro e ficam contadas em `realTimeStatistics` de
+  `GET /api/v1/meter`.
+- **Datalogger.** Só o BM52x tem. Num BM82x, a importação é recusada com `E9014` (409), sem nenhum comando de memória:
+  na hora com o polling rodando (ou com `Meter:Family` fixa), e depois de uma consulta de tempo real que confirma a
+  família quando o último quadro tem mais de 2 s (o medidor pode ter sido trocado no cabo).
+
+Os detalhes estão na [§8 da especificação](docs/protocol/bm52x-usb-protocol.md#8-família-bm82x-model-id-0x82-e-o-minipa-et-2517a)
+e no [guia da biblioteca](docs/library.md#famílias-bm52x-e-bm82x).
 
 ## Arquitetura
 
 A especificação completa está em [`docs/architecture.md`](docs/architecture.md).
 
 ```text
-BM525s ──IR── BC-86X ──USB HID── Brymen.Dmm.Hid        hidraw (Linux) / hid.dll (Windows), Bu86xLink
-                                       │ quadros de 27 bytes (tempo real) e 36 bytes (memória)
-                                 Brymen.Dmm.Protocol   RTD → DmmReading; blocos → LoggerMemory
-                                       │
-                                 Brymen.Dmm            BrymenMeter, MeterConnection (timeout do 1º 66),
-                                       │               LoggerMemoryReader (pacote NuGet, net8.0/net10.0)
-                                 Brymen.Dmm.Api        polling, aquisição, comparador, importação,
-                                                       CSV, SSE, SignalR, OpenAPI, health checks, painel
+BM525s ou ──IR── BC-86X ──USB HID── Brymen.Dmm.Hid       hidraw (Linux) / hid.dll (Windows), Bu86xLink
+ET-2517A                                  │ quadros de 27 bytes (tempo real) e 36 bytes (memória)
+                                    Brymen.Dmm.Protocol  RTD → DmmReading (família pelo Model ID); blocos → LoggerMemory
+                                          │
+                                    Brymen.Dmm           BrymenMeter, MeterConnection (família, 1º 66 lento,
+                                          │              reenvio do BM82x), LoggerMemoryReader (NuGet, net8.0/net10.0)
+                                    Brymen.Dmm.Api       polling, aquisição, comparador, importação,
+                                                         CSV, SSE, SignalR, OpenAPI, health checks, painel
 ```
 
 | Projeto | Responsabilidade |
 |---|---|
-| `src/Brymen.Dmm.Protocol` | Decodificação pura, sem E/S: quadro RTD de 27 bytes → `DmmReading`; blocos de memória de 36 bytes → `MemoryBlock`; imagem da memória → `LoggerMemory`. |
-| `src/Brymen.Dmm.Hid` | Transporte HID multiplataforma (`IHidDeviceProvider` / `IHidDevice`) para Linux (hidraw) e Windows (hid.dll com E/S sobreposta), dispositivo e medidor simulados (com as capturas reais e injeção de falhas) e enquadramento do BC-86X (`Bu86xLink`). |
-| `src/Brymen.Dmm` | Biblioteca para outros projetos .NET (pacote NuGet `Brymen.Dmm`, `net8.0` e `net10.0`): `BrymenMeter` (leitura avulsa, contínua e por eventos, reconexão, importação da memória), `MeterConnection` (abertura do cabo e timeout do 1º `66` lento) e `LoggerMemoryReader` (algoritmo robusto da memória), usados também pela API. |
+| `src/Brymen.Dmm.Protocol` | Decodificação pura, sem E/S: quadro RTD de 27 bytes das duas famílias → `DmmReading` (com a família do Model ID, `MeterFamily`); blocos de memória de 36 bytes → `MemoryBlock`; imagem da memória → `LoggerMemory`. |
+| `src/Brymen.Dmm.Hid` | Transporte HID multiplataforma (`IHidDeviceProvider` / `IHidDevice`) para Linux (hidraw) e Windows (hid.dll com E/S sobreposta), medidores simulados (o BM525s e o ET-2517A, com as capturas reais, a injeção de falhas e o descarte de pedidos) e enquadramento do BC-86X (`Bu86xLink`, com o reenvio de pedidos). |
+| `src/Brymen.Dmm` | Biblioteca para outros projetos .NET (pacote NuGet `Brymen.Dmm`, `net8.0` e `net10.0`): `BrymenMeter` (leitura avulsa, contínua e por eventos, reconexão, importação da memória), `MeterConnection` (abertura do cabo, detecção da família, timeout do 1º `66` lento e reenvio do BM82x) e `LoggerMemoryReader` (algoritmo robusto da memória), usados também pela API. |
 | `src/Brymen.Dmm.Api` | ASP.NET Core minimal API: polling, aquisição, comparador, importação do datalogger, export CSV, SSE, hub SignalR (`/hubs/meter`), OpenAPI, health checks e o painel em `wwwroot/`. |
 | `tests/*` | xUnit: vetores do protocolo, enquadramento HID, testes de integração da API com o dispositivo simulado e, opcionais, testes com o cabo real e com um cabo virtual pelo `/dev/uhid`. |
 | `samples/Brymen.Dmm.SignalRClient` | Cliente de console do hub SignalR ([Tempo real via SignalR](#tempo-real-via-signalr)). |
+| `samples/Brymen.Dmm.ConsoleSample`, `samples/Brymen.Dmm.WorkerSample` | Exemplos que consomem os pacotes NuGet ([Biblioteca .NET (NuGet)](#biblioteca-net-nuget)). |
 | `deploy/` | Regra udev, unit systemd, scripts de instalação e de publish (linux-arm64/x64). O `Dockerfile` e o `docker-compose.yml` ficam na raiz. |
 
 Documentos de referência:
 
 - [`docs/protocol/bm52x-usb-protocol.md`](docs/protocol/bm52x-usb-protocol.md): protocolo USB, verificado
   por revisão adversarial e no hardware real, com [`test-vectors.json`](docs/protocol/test-vectors.json)
-  e as [capturas](docs/protocol/captures/);
+  e as [capturas](docs/protocol/captures/); a §8 trata da família BM82x e do ET-2517A, com os scripts de captura em
+  [`docs/protocol/tools/`](docs/protocol/tools/);
 - [`docs/re/bs8252x-reverse-engineering.md`](docs/re/bs8252x-reverse-engineering.md): comportamento do
   software original (formatos CSV e `.g53`, timeouts, comparador, importação, mensagens);
 - [`docs/validation-report.md`](docs/validation-report.md): validação da integração (build, testes, tamanhos
-  dos pacotes e teste de ponta a ponta com o BM525s real no Windows) e o que ainda não foi validado no Linux.
+  dos pacotes e testes de ponta a ponta com o BM525s real no Windows e num Orange Pi 5);
+- [`CHANGELOG.md`](CHANGELOG.md): as mudanças de cada versão.
 
 ## Como o REA foi usado
 
@@ -180,26 +235,31 @@ Para rodar como serviço, veja [Deploy com systemd e udev](#deploy-com-systemd-e
 
 ## Modo simulado
 
-Com `Meter:Transport` = `Simulated`, a API usa um medidor simulado que reproduz as capturas reais do
-BM525s, embutidas no executável:
+Com `Meter:Transport` = `Simulated`, a API usa um medidor simulado que reproduz as capturas reais, embutidas no
+executável. `Meter:SimulatedModel` escolhe qual:
 
-- o comando `66` percorre em ciclo os quadros de [`rtd-acv.txt`](docs/protocol/captures/rtd-acv.txt)
-  (ACV com Hz no display secundário);
-- a importação lê [`memory-dump-1.txt`](docs/protocol/captures/memory-dump-1.txt), com 1 sessão e
-  375 amostras.
+- `Bm525s` (padrão): o `52 66` e o `82 66` percorrem em ciclo os quadros de
+  [`rtd-acv.txt`](docs/protocol/captures/rtd-acv.txt) (ACV com Hz no display secundário), e a importação lê
+  [`memory-dump-1.txt`](docs/protocol/captures/memory-dump-1.txt), com 1 sessão e 375 amostras;
+- `Et2517a`: o `82 66` percorre os 43 quadros reais da varredura do ET-2517A
+  ([`et2517a-sweep-2026-10-23.txt`](docs/protocol/captures/et2517a-sweep-2026-10-23.txt): ACV, DCV, Hz, continuidade,
+  temperatura, diodo, faixa manual e REC), sem datalogger e com o descarte de pedidos medido no medidor real; os
+  reenvios aparecem em `realTimeStatistics` de `GET /api/v1/meter`.
 
-Funciona em qualquer sistema e sem o cabo, e é o modo usado nos testes de integração. O medidor simulado é o
-`SimulatedBm52xMeter.FromCaptures()` da biblioteca `Brymen.Dmm.Hid`, com injeção de falhas por comando
-(`FaultInjector`) e o `8A` que, logo depois do `88`, avança como um `89`, como no medidor real.
+Funciona em qualquer sistema e sem o cabo, e é o modo usado nos testes de integração. Os medidores simulados são o
+`SimulatedBm52xMeter.FromCaptures()` e o `SimulatedBm52xMeter.FromEt2517aCaptures()` da biblioteca `Brymen.Dmm.Hid`,
+com injeção de falhas por comando (`FaultInjector`) e, no BM525s, o `8A` que, logo depois do `88`, avança como um `89`,
+como no medidor real.
 
 ```bash
 Meter__Transport=Simulated dotnet run --project src/Brymen.Dmm.Api
+Meter__Transport=Simulated Meter__SimulatedModel=Et2517a dotnet run --project src/Brymen.Dmm.Api
 ```
 
 ```powershell
 $env:Meter__Transport = 'Simulated'; dotnet run --project src/Brymen.Dmm.Api
 # ou, pela linha de comando:
-dotnet run --project src/Brymen.Dmm.Api -- --Meter:Transport=Simulated
+dotnet run --project src/Brymen.Dmm.Api -- --Meter:Transport=Simulated --Meter:SimulatedModel=Et2517a
 ```
 
 Com `Auto` (o padrão), o serviço usa o HID da plataforma e só recorre ao simulado quando a plataforma
@@ -212,27 +272,30 @@ Para integrar o medidor em outros projetos .NET 8 ou mais novos, sem a API, há 
 `net10.0`:
 
 - [`Brymen.Dmm`](src/Brymen.Dmm/README.md): o `BrymenMeter` (leitura avulsa, contínua ou por eventos, com reconexão
-  automática, e importação do datalogger com o mesmo algoritmo da API) e o medidor simulado. Um pacote único, sem
-  dependências, que leva dentro o `Brymen.Dmm.Protocol` e o `Brymen.Dmm.Hid`.
+  automática, detecção da família e reenvio dos pedidos descartados pelo BM82x, e importação do datalogger do BM52x com
+  o mesmo algoritmo da API) e os medidores simulados. Um pacote único, sem dependências, que leva dentro o
+  `Brymen.Dmm.Protocol` e o `Brymen.Dmm.Hid`.
 - [`Brymen.Dmm.Extensions.Hosting`](src/Brymen.Dmm.Extensions.Hosting/README.md) (opcional): `AddBrymenMeter` para o
   Generic Host, com um serviço hospedado e o `IBrymenMeterAccessor`.
 
 ```csharp
 await using var meter = await BrymenMeter.OpenAsync();      // E9015 sem o cabo; OpenSimulatedAsync() sem hardware
 await foreach (var r in meter.ReadContinuouslyAsync())      // a cada 200 ms, com reconexão automática
-    Console.WriteLine($"{r.Main?.Text} {r.Main?.UnitSymbol}");
+    Console.WriteLine($"{r.Family} {r.Main?.Text} {r.Main?.UnitSymbol}");   // Bm52x ou Bm82x, pelo Model ID
 ```
 
 ```bash
 dotnet pack src/Brymen.Dmm -c Release -o artifacts/packages                      # Brymen.Dmm.<versão>.nupkg e .snupkg
 dotnet pack src/Brymen.Dmm.Extensions.Hosting -c Release -o artifacts/packages
 dotnet run --project samples/Brymen.Dmm.ConsoleSample -- --simulated --count 10   # consome o pacote do feed local
+dotnet run --project samples/Brymen.Dmm.ConsoleSample -- --simulated et2517a --count 10
 ```
 
 O guia completo, com a API pública, threads, erros e códigos, ciclo de vida, trimming/AOT, Linux e Windows e o
 empacotamento, está em [`docs/library.md`](docs/library.md). Os exemplos
 [`ConsoleSample`](samples/Brymen.Dmm.ConsoleSample/README.md) e [`WorkerSample`](samples/Brymen.Dmm.WorkerSample/README.md)
-consomem os pacotes do feed local `artifacts/packages`. Os pacotes são MIT.
+consomem os pacotes do feed local `artifacts/packages`. Os pacotes são MIT, e as mudanças de cada versão estão no
+[CHANGELOG](CHANGELOG.md).
 
 ## API REST
 
@@ -241,9 +304,9 @@ Base: `http://<host>:5080`. O esquema exato de cada requisição e resposta est�
 
 | Método | Rota | Descrição | Original |
 |---|---|---|---|
-| `GET` | `/` | Painel web mínimo | Digital/Analog Meter |
-| `GET` | `/api/v1/meter` | Estado do link (`unlinked`, `connecting`, `connected`, `reconnecting`...), do cabo e último erro | — |
-| `PUT` | `/api/v1/meter/link` | `{ "enabled": true }` liga o polling (`52 66` a cada `Meter:PollInterval`); `false` desliga | Link/Unlink |
+| `GET` | `/` | Painel web mínimo, com o medidor detectado no título | Digital/Analog Meter |
+| `GET` | `/api/v1/meter` | Estado do link (`unlinked`, `connecting`, `connected`, `reconnecting`...), do cabo, último erro, medidor detectado (`model`) e contadores do tempo real (`realTimeStatistics`) | — |
+| `PUT` | `/api/v1/meter/link` | `{ "enabled": true }` liga o polling (uma consulta de tempo real a cada `Meter:PollInterval`: `82 66` na detecção, depois `52 66` no BM52x e `82 66` no BM82x); `false` desliga | Link/Unlink |
 | `GET` | `/api/v1/readings/latest` | Última leitura: displays, anunciadores e resultado do comparador. `409` com `E9002` com o link desativado (`503` com `E9015` se o Link falhou por falta do cabo) e com `CONFLICT` durante a importação | Digital Meter |
 | `GET` | `/api/v1/readings/stream` | Server-Sent Events, um evento `reading` por leitura e um `heartbeat` a cada 15 s | Digital/Analog Meter |
 | — | `/hubs/meter` | Hub SignalR: eventos `reading`, `status` e `acquisitionSample` ([detalhes](#tempo-real-via-signalr)) | Digital/Analog Meter |
@@ -256,7 +319,7 @@ Base: `http://<host>:5080`. O esquema exato de cada requisição e resposta est�
 | `DELETE` | `/api/v1/acquisition/samples` | Apaga o buffer | Clear |
 | `GET` | `/api/v1/comparator` | Limites Hi/Lo e alarme | Comparator |
 | `PUT` | `/api/v1/comparator` | Altera e persiste os limites (`settings.json`); campos ausentes ficam como estão | Comparator |
-| `POST` | `/api/v1/logger/imports` | Inicia a importação do datalogger: `202 Accepted` + `Location`; `409` se outra estiver em andamento | Import data from DMM |
+| `POST` | `/api/v1/logger/imports` | Inicia a importação do datalogger: `202 Accepted` + `Location`; `409` se outra estiver em andamento (`CONFLICT`) ou num medidor sem datalogger (`E9014`, família BM82x) | Import data from DMM |
 | `GET` | `/api/v1/logger/imports` | Importações guardadas (as `Logger:ImportRetention` mais novas) | — |
 | `GET`, `DELETE` | `/api/v1/logger/imports/{id}` | Progresso (`running`, `completed`, `failed`, `canceled`); `DELETE` cancela ou apaga | — |
 | `GET` | `/api/v1/logger/imports/{id}/image` | Imagem bruta da memória (blocos de 24 bytes) | — |
@@ -271,6 +334,10 @@ As rotas da imagem e das sessões respondem `409` (`CONFLICT`) enquanto a import
 se ela não terminou com sucesso. A lista completa de respostas por rota está em
 [`docs/architecture.md`](docs/architecture.md#rotas).
 
+**Painel.** O título do painel em `/` mostra o medidor detectado (`BM82x (Minipa ET-2517A)`, por exemplo; “Brymen DMM”
+antes da 1ª leitura), com a família, o Model ID e os reenvios do tempo real na dica. Num medidor sem datalogger, o botão
+“Importar do medidor” some, e uma nota avisa que não há memória para importar.
+
 **Erros.** As falhas voltam como `ProblemDetails` (RFC 9457), com o código em `code`: o do software
 original (W/E) ou um código da API. Cabo ausente responde **503**.
 
@@ -283,7 +350,8 @@ original (W/E) ou um código da API. Cabo ausente responde **503**.
 | `E9015` | Cabo USB não encontrado | 503 |
 | `E9016` | Tempo esgotado na transmissão (3ª falha seguida do tempo real ou importação) | 503 |
 | `E9017` | Medidor desligado, desconectado ou sem datalogger | 503 |
-| `W7012` | Nenhum dado recebido (tempo real) | 503 |
+| `E9014` | Medidor sem datalogger (família BM82x, como o ET-2517A): a importação é recusada sem nenhum comando de memória e sem criar importação. Código da biblioteca, não do original | 409 |
+| `W7012` | Nenhum dado recebido (tempo real; no BM82x, depois de esgotados os reenvios) | 503 |
 | `W8011` | Quadro inválido recebido do medidor | 503 |
 | `E9002` | Link desativado (gravação ou leitura sem link) | 409 |
 | `E9003` | Falha ao criar ou gravar o arquivo de backup (aparece em `backupError` de `GET /api/v1/acquisition`) | — |
@@ -301,7 +369,7 @@ original (W/E) ou um código da API. Cabo ausente responde **503**.
 ```bash
 H=http://localhost:5080
 
-# Estado e link
+# Estado, medidor detectado e link
 curl -s "$H/api/v1/meter"
 curl -s -X PUT "$H/api/v1/meter/link" -H 'Content-Type: application/json' -d '{"enabled":true}'
 
@@ -316,6 +384,24 @@ curl -N "$H/api/v1/readings/stream"
 O fluxo SSE começa pela última leitura conhecida e manda um evento `heartbeat`, sem leitura, a cada
 `Sse:HeartbeatInterval` (15 s), para que proxies não fechem a conexão ociosa durante uma importação ou uma
 falha do cabo. Ele termina quando o serviço é encerrado.
+
+**Medidor detectado.** `GET /api/v1/meter` traz, em `model`, a família que o Model ID do tempo real identifica (`null`
+antes da 1ª leitura e depois de 3 consultas seguidas sem resposta), e, em `realTimeStatistics`, os contadores do tempo
+real desde a partida do serviço. Com o ET-2517A simulado (`Meter:SimulatedModel=Et2517a`):
+
+```json
+{
+  "linkEnabled": true, "state": "connected", "transport": "simulated", "...": "...",
+  "model": { "family": "BM82x", "modelId": "0x82", "name": "BM82x (Minipa ET-2517A)", "supportsDataLogger": false },
+  "realTimeStatistics": { "queries": 27, "requests": 33, "resends": 6, "lostRequests": 6, "recoveredQueries": 4, "failedQueries": 0 }
+}
+```
+
+`family` é `BM52x` ou `BM82x`; `modelId`, `0x52` ou `0x82` (o mesmo código do pedido de tempo real); `name` cita os
+modelos validados da família; e `supportsDataLogger = false` quer dizer que a importação responde 409 com `E9014`. Os
+contadores são os da biblioteca ([`RealTimeStatistics`](docs/library.md#pedidos-descartados-e-reenvio)): consultas,
+pedidos enviados, reenvios, pedidos perdidos, consultas recuperadas por reenvio e consultas sem resposta (cada uma, um
+`W7012`). O evento SignalR `status` também sai quando a família muda.
 
 Gravação (Graphical Recorder) e exportação CSV:
 
@@ -344,14 +430,19 @@ O CSV segue o original: separador vírgula, linhas CRLF, `#item` a partir de 1, 
 O formato estendido acrescenta `Timestamp,MainSiValue,SubSiValue,Flags,Comparator`. Durante a
 gravação, cada amostra também vai para o backup `~BDMDLn.csv` em `<DataDirectory>/backup`.
 
-Três divergências do original são deliberadas ([detalhes](docs/architecture.md#divergências-deliberadas-em-relação-ao-original)):
+Algumas divergências do original são deliberadas ([detalhes](docs/architecture.md#divergências-deliberadas-em-relação-ao-original)):
 
 - `Time` é o **tempo decorrido** desde a 1ª amostra, e não a hora do relógio, que num Raspberry Pi sem RTC
   salta quando o NTP acerta o relógio; a hora absoluta fica em `Timestamp`;
 - `fullSpeed` grava **toda leitura** do polling (a cada `Meter:PollInterval`, 200 ms por padrão), e não um
   timer de 500 ms; para o ritmo do original, use `Meter__PollInterval=00:00:00.500`;
 - na **3ª falha seguida** do tempo real, o erro é `E9016` e o serviço continua tentando a cada
-  `Meter:ReconnectDelay`; o original mostrava "No data received." e desfazia o link.
+  `Meter:ReconnectDelay`; o original mostrava "No data received." e desfazia o link. No BM82x, uma falha é uma
+  consulta com os reenvios esgotados, e não um pedido perdido;
+- o original consulta o tempo real com `82 66` nas duas famílias, espera até 4 s e fecha e reabre o cabo quando o
+  pedido se perde; a port usa `52 66` no BM52x depois da detecção e, no BM82x, reenvia o pedido a cada 300 ms sem
+  fechar o cabo;
+- num BM82x, a importação é recusada com `E9014`, e não com o `E9017` do original.
 
 Comparador. Os limites valem para o valor SI do display principal (`0.5` = 0,5 V, não 0,5 mV);
 `v > Hi` dá `High`, `v < Lo` dá `Low` e o resto é `Pass`:
@@ -362,11 +453,15 @@ curl -s -X PUT "$H/api/v1/comparator" -H 'Content-Type: application/json' \
      -d '{"enabled":true,"high":0.5,"low":0.1,"alarm":false}'
 ```
 
-Importação do datalogger. O polling fica pausado enquanto ela dura, e `GET /api/v1/readings/latest`
+Importação do datalogger (só BM52x). O polling fica pausado enquanto ela dura, e `GET /api/v1/readings/latest`
 responde `409` (`CONFLICT`). A leitura espera 200 ms depois do `88`, recupera uma falha do `88` com outro
 `88` e só usa o `8A` depois de um `89` (§2.7 e §4.11 da especificação). No BM525s real, a importação de 2272
 bytes leva cerca de 11 s. Depois dela, o medidor leva cerca de 2 s para responder ao primeiro `52 66`, que vem com
-os displays em traços (`-.---`, `value` nulo); o polling espera até 3 s por essa resposta, sem acusar erro:
+os displays em traços (`-.---`, `value` nulo); o polling espera até 3 s por essa resposta, sem acusar erro. Num
+medidor da família BM82x (`model.supportsDataLogger = false`), o `POST` responde `409` com `E9014`, sem criar
+importação nem enviar comando de memória: na hora com o polling rodando, e com a família ainda desconhecida (link
+desativado desde a partida, por exemplo) ou conhecida há mais de 2 s, depois de uma consulta de tempo real que a
+confirma (um BM525s posto no lugar do ET-2517A é importado normalmente):
 
 ```bash
 loc=$(curl -s -D - -o /dev/null -X POST "$H/api/v1/logger/imports" | tr -d '\r' | sed -n 's/^[Ll]ocation: //p')
@@ -388,8 +483,8 @@ precisem consultar a API. A fonte é a mesma do SSE: o hub não faz polling extr
 
 | Evento (servidor → cliente) | Conteúdo | Quando |
 |---|---|---|
-| `reading` | O mesmo JSON de `GET /api/v1/readings/latest` | A cada leitura decodificada (cada quadro `52 66` válido), para todos os clientes |
-| `status` | O mesmo JSON de `GET /api/v1/meter` | Quando o link ou o cabo muda de estado: conectado, desconectado, erro (com `lastError.code`), início e fim da importação |
+| `reading` | O mesmo JSON de `GET /api/v1/readings/latest` | A cada leitura decodificada (cada quadro de tempo real válido), para todos os clientes |
+| `status` | O mesmo JSON de `GET /api/v1/meter` | Quando o link, o cabo ou o medidor muda: conectado, desconectado, erro (com `lastError.code`), início e fim da importação, família detectada (`model`) |
 | `acquisitionSample` | Uma amostra, como os itens de `GET /api/v1/acquisition/samples` | A cada amostra gravada pelo Graphical Recorder |
 
 | Método (cliente → servidor) | Retorno |
@@ -416,7 +511,7 @@ await using var connection = new HubConnectionBuilder()
 
 connection.On<Reading>("reading", r =>
     Console.WriteLine($"#{r.Sequence} {r.Main?.Text} {r.Main?.UnitSymbol} {r.Main?.Mode} | {r.Secondary?.Text} {r.Secondary?.UnitSymbol}"));
-connection.On<Status>("status", s => Console.WriteLine($"medidor: {s.State} {s.LastError?.Code}"));
+connection.On<Status>("status", s => Console.WriteLine($"medidor: {s.State} {s.Model?.Name} {s.LastError?.Code}"));
 connection.Reconnected += async _ => Console.WriteLine($"reconectado; última: {(await connection.InvokeAsync<Reading?>("GetLatest"))?.Sequence}");
 
 await connection.StartAsync();
@@ -427,7 +522,8 @@ Console.ReadLine();
 record Display(string Text, double? Value, string UnitSymbol, string Mode);
 record Reading(long Sequence, DateTimeOffset Timestamp, Display? Main, Display? Secondary, string[] Flags);
 record MeterError(string Code, string Message);
-record Status(bool LinkEnabled, string State, MeterError? LastError, bool Importing);
+record Model(string Family, string ModelId, string Name, bool SupportsDataLogger);
+record Status(bool LinkEnabled, string State, MeterError? LastError, bool Importing, Model? Model);
 ```
 
 O projeto [`samples/Brymen.Dmm.SignalRClient`](samples/Brymen.Dmm.SignalRClient) é um cliente de console
@@ -453,7 +549,7 @@ const connection = new signalR.HubConnectionBuilder()
   .build();
 
 connection.on('reading', r => console.log(r.sequence, r.main?.text, r.main?.unitSymbol, r.secondary?.text));
-connection.on('status', s => console.log('medidor:', s.state, s.lastError?.code ?? ''));
+connection.on('status', s => console.log('medidor:', s.state, s.model?.name ?? '', s.lastError?.code ?? ''));
 connection.on('acquisitionSample', s => console.log('amostra', s.item, s.time, s.main?.text));
 connection.onreconnected(async () => console.log('última:', await connection.invoke('GetLatest')));
 
@@ -497,9 +593,13 @@ respondem).
     "Transport": "Auto",          // Auto | Hid | Simulated
     "DevicePath": null,           // ex.: "/dev/hidraw0"; null = primeiro VID 0820/PID 0001
     "AutoLink": true,             // abre e começa o polling ao iniciar
+    "Family": "Auto",             // Auto | Bm52x | Bm82x
     "PollInterval": "00:00:00.200",
     "ReportTimeout": "00:00:01",
-    "ReconnectDelay": "00:00:02"
+    "RealTimeResendTimeout": "00:00:00.300",
+    "RealTimeResendBudget": "00:00:02",
+    "ReconnectDelay": "00:00:02",
+    "SimulatedModel": "Bm525s"    // Bm525s | Et2517a (só com Transport = Simulated)
   },
   "Acquisition": { "MaxSamples": 1000000, "BackupDirectory": null, "BackupRetention": 20 },
   "Logger": { "ImportRetention": 10 },
@@ -518,10 +618,14 @@ respondem).
 | `Meter:Transport` | `Meter__Transport` | `Auto` | `Auto`, `Hid` ou `Simulated` |
 | `Meter:DevicePath` | `Meter__DevicePath` | `null` | `/dev/hidrawN`, `/dev/brymen-bu86x` ou o caminho HID do Windows; `null` usa o primeiro VID 0820/PID 0001 |
 | `Meter:AutoLink` | `Meter__AutoLink` | `true` | Abre o cabo e inicia o polling na partida |
-| `Meter:PollInterval` | `Meter__PollInterval` | `00:00:00.200` | Intervalo entre consultas `52 66` (o original não faz pausa) |
+| `Meter:Family` | `Meter__Family` | `Auto` | `Auto` detecta a família na 1ª leitura (`82 66`); `Bm52x` (sempre `52 66`, como a versão 0.1.0) e `Bm82x` (sempre `82 66`) a fixam, e um medidor da outra família dá `W8011` ([Família e pedidos descartados](#família-e-pedidos-descartados)) |
+| `Meter:PollInterval` | `Meter__PollInterval` | `00:00:00.200` | Intervalo entre o início de duas consultas de tempo real (o original não faz pausa); no ET-2517A, um intervalo menor perde menos pedidos |
 | `Meter:ReportTimeout` | `Meter__ReportTimeout` | `00:00:01` | Espera máxima por relatório HID |
+| `Meter:RealTimeResendTimeout` | `Meter__RealTimeResendTimeout` | `00:00:00.300` | BM82x e detecção: espera pelo 1º relatório antes de reenviar o mesmo pedido, sem fechar o cabo (10 ms a 30 s) |
+| `Meter:RealTimeResendBudget` | `Meter__RealTimeResendBudget` | `00:00:02` | BM82x e detecção: tempo total de uma consulta com os reenvios; só quando ele acaba a consulta é `W7012` (10 ms a 1 min) |
 | `Meter:ReconnectDelay` | `Meter__ReconnectDelay` | `00:00:02` | Espera antes de reabrir o cabo após uma falha |
 | `Meter:SimulatedLatency` | `Meter__SimulatedLatency` | `00:00:00.020` | Latência das respostas do transporte simulado |
+| `Meter:SimulatedModel` | `Meter__SimulatedModel` | `Bm525s` | Medidor do transporte simulado: `Bm525s` (com datalogger) ou `Et2517a` (sem datalogger, com o descarte de pedidos do real) ([Modo simulado](#modo-simulado)) |
 | `Acquisition:MaxSamples` | `Acquisition__MaxSamples` | `1000000` | Capacidade do buffer; ao enchê-lo, a gravação para |
 | `Acquisition:BackupDirectory` | `Acquisition__BackupDirectory` | `null` | Backup contínuo em CSV (equivale ao `~BDMDLn.TMP`); `null` = `<DataDirectory>/backup` |
 | `Acquisition:BackupEnabled` | `Acquisition__BackupEnabled` | `true` | Grava cada amostra também no backup |
@@ -602,14 +706,14 @@ runtime em `$HOME` fica invisível para o serviço por causa do `ProtectHome`.
 ### 2. Instalar no Raspberry Pi (arm64)
 
 ```bash
-scp artifacts/brymen-dmm-0.1.0-linux-arm64.tar.gz pi@raspberrypi.local:
+scp artifacts/brymen-dmm-0.2.0-linux-arm64.tar.gz pi@raspberrypi.local:
 ssh pi@raspberrypi.local
-tar -xzf brymen-dmm-0.1.0-linux-arm64.tar.gz
-sudo bash brymen-dmm-0.1.0-linux-arm64/deploy/linux/install.sh brymen-dmm-0.1.0-linux-arm64
+tar -xzf brymen-dmm-0.2.0-linux-arm64.tar.gz
+sudo bash brymen-dmm-0.2.0-linux-arm64/deploy/linux/install.sh brymen-dmm-0.2.0-linux-arm64
 ```
 
 O `install.sh` também aceita o próprio `.tar.gz`. A partir de um clone do repositório, rode
-`sudo bash deploy/linux/install.sh artifacts/brymen-dmm-0.1.0-linux-arm64.tar.gz`. Ele:
+`sudo bash deploy/linux/install.sh artifacts/brymen-dmm-0.2.0-linux-arm64.tar.gz`. Ele:
 
 1. confere se o executável é ELF e se o sistema tem o interpretador dele (`/lib/ld-linux-aarch64.so.1` ou
    `/lib64/ld-linux-x86-64.so.2`), o que evita instalar o pacote x64 no Pi ou o arm64 num Raspberry Pi OS de
@@ -630,7 +734,7 @@ O `install.sh` também aceita o próprio `.tar.gz`. A partir de um clone do repo
 Igual ao Raspberry Pi, com o pacote `linux-x64`:
 
 ```bash
-sudo bash brymen-dmm-0.1.0-linux-x64/deploy/linux/install.sh brymen-dmm-0.1.0-linux-x64
+sudo bash brymen-dmm-0.2.0-linux-x64/deploy/linux/install.sh brymen-dmm-0.2.0-linux-x64
 ```
 
 ### 4. Verificar
@@ -677,11 +781,11 @@ O [`Dockerfile`](Dockerfile) gera uma imagem multi-arquitetura (`linux/amd64` e 
 
 ```bash
 # multi-arquitetura, enviando para um registry
-docker buildx build --platform linux/amd64,linux/arm64 -t registry.example/brymen-dmm:0.1.0 --push .
+docker buildx build --platform linux/amd64,linux/arm64 -t registry.example/brymen-dmm:0.2.0 --push .
 # uma arquitetura, carregando no Docker local
-docker buildx build --platform linux/arm64 -t brymen-dmm:0.1.0 --load .
+docker buildx build --platform linux/arm64 -t brymen-dmm:0.2.0 --load .
 # Docker sem o plugin buildx (builder legado), num Raspberry Pi ou Orange Pi de 64 bits
-DOCKER_BUILDKIT=0 docker build --build-arg BUILDPLATFORM=linux/arm64 --build-arg TARGETARCH=arm64 -t brymen-dmm:0.1.0 .
+DOCKER_BUILDKIT=0 docker build --build-arg BUILDPLATFORM=linux/arm64 --build-arg TARGETARCH=arm64 -t brymen-dmm:0.2.0 .
 ```
 
 O builder legado não define o `BUILDPLATFORM` nem o `TARGETARCH`, que o BuildKit preenche sozinho: passe os dois com
@@ -706,7 +810,7 @@ docker run -d --name brymen-dmm -p 5080:5080 --stop-timeout 45 \
   --group-add "$(getent group brymen-dmm | cut -d: -f3)" \
   -e Meter__DevicePath="$HIDRAW" \
   -v brymen-dmm-data:/data \
-  brymen-dmm:0.1.0
+  brymen-dmm:0.2.0
 
 # o mesmo cabo com um nome fixo no contêiner, independente do hidrawN do host
 docker run -d --name brymen-dmm -p 5080:5080 --stop-timeout 45 \
@@ -714,10 +818,10 @@ docker run -d --name brymen-dmm -p 5080:5080 --stop-timeout 45 \
   --group-add "$(getent group brymen-dmm | cut -d: -f3)" \
   -e Meter__DevicePath=/dev/bu86x \
   -v brymen-dmm-data:/data \
-  brymen-dmm:0.1.0
+  brymen-dmm:0.2.0
 
 # sem o cabo
-docker run -d --name brymen-dmm-sim -p 5081:5080 -e Meter__Transport=Simulated brymen-dmm:0.1.0
+docker run -d --name brymen-dmm-sim -p 5081:5080 -e Meter__Transport=Simulated brymen-dmm:0.2.0
 ```
 
 Com o [`docker-compose.yml`](docker-compose.yml):
@@ -812,8 +916,13 @@ outro; rode um projeto de cada vez, porque os dois disputariam o cabo:
 $env:BRYMEN_HW_TESTS = '1'; dotnet test tests/Brymen.Dmm.Tests --filter "FullyQualifiedName~HardwareTests"
 ```
 
-Os testes de hardware só usam os comandos de leitura documentados (`52 66`, `52 88`, `52 89` e
-`52 8A`); a leitura não altera a memória do medidor.
+Os testes de hardware só usam os comandos de leitura documentados (`52 66`, `82 66`, `52 88`, `52 89` e
+`52 8A`); a leitura não altera a memória do medidor. Eles servem para os dois medidores: cada um detecta a família pelo
+`82 66` (Model ID `52h` ou `82h`) e reenvia o pedido sem resposta, como a biblioteca. Com o BM525s, a importação é
+comparada com a memória da captura. Com o ET-2517A, que não tem datalogger, ela tem de falhar com `E9014` sem nenhum
+`88`/`89`/`8A`, e o `52 66` tem de ficar sem resposta. Há também um teste de 10 s a 500 ms que confere que uma perda
+recuperável não reabre o cabo. Os testes de sempre (sem variável) cobrem as duas famílias com os medidores simulados,
+inclusive o ET-2517A com o descarte de pedidos medido.
 
 **Cabo virtual (uhid).** Sem o cabo, os testes criam um BC-86X virtual pelo `/dev/uhid` do kernel e
 exercitam o hidraw de verdade: `open`/`poll`/`read`/`write` da libc, relatórios sem report ID, timeouts e
@@ -865,14 +974,25 @@ Se o `sudo` não achar o `dotnet` (o `secure_path` ignora o `PATH` do usuário),
 
 O cabo continua enumerado com o medidor desligado, mas nada responde:
 
-- no tempo real, o resultado é `W7012` (nenhum dado recebido), e o serviço tenta de novo a cada
-  `Meter:ReconnectDelay`;
+- no tempo real, o resultado é `W7012` (nenhum dado recebido; no BM82x e na detecção da família, depois de 2 s de
+  reenvios), e o serviço tenta de novo a cada `Meter:ReconnectDelay`. Depois de 3 consultas seguidas sem resposta, a
+  família volta a ser desconhecida (`model: null`) e é detectada de novo quando o medidor responder;
 - na importação, o resultado é `E9016` (tempo esgotado) ou `E9017` (medidor desligado ou sem
   datalogger).
 
 Ligue o medidor, encaixe o cabo na porta óptica e, em gravações longas, desative o desligamento
 automático (APO) conforme o manual do medidor. O que o cabo devolve com o medidor desligado ainda
-não foi caracterizado ([questão 9](#limitações-e-questões-em-aberto)).
+não foi caracterizado, no BM525s nem no ET-2517A ([questões 9 e 17](#limitações-e-questões-em-aberto)).
+
+### Muitos reenvios ou `W7012` com o ET-2517A
+
+O ET-2517A descarta pedidos de tempo real, e os reenvios são o normal ([Família e pedidos descartados](#família-e-pedidos-descartados)):
+eles aparecem em `realTimeStatistics.resends` de `GET /api/v1/meter`, e não como erro. Se ainda houver `W7012`:
+
+- reduza o `Meter:PollInterval` (por exemplo, `00:00:00.100`): quanto menor o intervalo, menos pedidos se perdem (a
+  0 ms, nenhum em 40);
+- aumente o `Meter:RealTimeResendBudget` (por exemplo, `00:00:03`), para mais reenvios por consulta;
+- confira o encaixe do cabo na porta óptica e se o medidor não entrou em APO.
 
 ### Linux sem `/dev/hidraw*`
 
@@ -917,31 +1037,46 @@ Questões em aberto do protocolo ([§6 da especificação](docs/protocol/bm52x-u
     com `8A` é segura.
 11. Por que o primeiro `66` depois do último bloco da memória leva cerca de 2 s e volta em traços, e se a
     demora cresce com memórias maiores. A espera de 3 s da port cobre o dump de 2272 bytes medido.
+12. Por que o ET-2517A descarta pedidos de tempo real, e por que a taxa cresce com o intervalo entre as consultas.
+13. Se, com o orçamento de 2 s, ainda sobra algum pedido sem resposta. Com 4 tentativas (cerca de 1,2 s), 1 a 5 de
+    40 consultas falharam; o orçamento de 2 s não foi medido no hardware.
+14. O que o BM525s faz com um `66` reenviado enquanto ainda prepara a resposta lenta do 1º `66` depois da memória.
+    Por isso a port não reenvia nessa espera.
+15. O que o LCD do ET-2517A mostra quando o secundário vem só com o ponto, em faixa manual de ACV.
+16. Se algum BM52x ignora o `82 66` (o `52 66` de reserva da detecção cobre esse caso) e se outros BM82x devolvem
+    outros valores no Model ID.
+17. Se o ET-2517A responde ao `82 66` em APO, em modo de configuração ou com o seletor em OFF.
+
+Do ET-2517A também faltam capturas do modo EF (detecção de campo elétrico): o mapa de bytes não tem um bit para ele, e
+não se sabe se o `E.F.` e os traços de intensidade chegam nos dígitos. A barra gráfica não é transmitida.
 
 Do software original ([§14 do relatório de RE](docs/re/bs8252x-reverse-engineering.md#14-questões-em-aberto)):
 
-- o original consulta o tempo real com `82 66`, e a port usa `52 66`. No BM525s os dois devolvem quadros
-  idênticos ([`cmd-sequences-2026-10-22.txt`](docs/protocol/captures/cmd-sequences-2026-10-22.txt),
-  §2.7 da especificação);
+- o original consulta o tempo real com `82 66` nas duas famílias. A port usa o `82 66` na detecção e no BM82x, e o
+  `52 66` no BM525s depois da detecção, o comando validado no hardware; no BM525s os dois devolvem quadros idênticos
+  ([`cmd-sequences-2026-10-22.txt`](docs/protocol/captures/cmd-sequences-2026-10-22.txt), §2.7 e §8.1 da
+  especificação);
 - não foram analisados o formato `.slr`, os layouts legados `.g51`/`.g52` e a tabela exata do
   multiplicador do Analog Meter.
 
 Limitações da port:
 
-- só os comandos `66`, `88`, `89` e `8A` são enviados;
+- só os comandos `66` (com `52` ou `82`), `88`, `89` e `8A` (com `52`) são enviados;
+- a família vem do Model ID, que não distingue os modelos de uma família (um ET-2517A de um BM829s, por exemplo);
 - o backup contínuo é CSV, e não o `~BDMDLn.TMP` binário; não há leitura nem gravação de `.g53`, nem
   importação do `BTCDL.ini`;
 - o painel web é mínimo e não reproduz a interface do original (gráficos do ProEssentials,
   mostrador analógico e mostrador do comparador);
 - o alarme do comparador é exposto como estado na API; o servidor não emite bipes;
-- não há suporte à porta serial (`iPort`) nem à série BM82x;
+- não há suporte à porta serial (`iPort`) nem à série BM860s (outro protocolo, no mesmo kit BU-86X);
 - a API e o hub SignalR não têm autenticação nem TLS. Exponha-os só em rede confiável, com firewall, ou
   atrás de um proxy reverso com autenticação ([Segurança](#segurança)).
 
 ## Aviso legal
 
-Brymen é marca da Brymen Technology Corporation, e Minipa é marca da Minipa. BM525s, BC-86X, BU-86X e
-ET-2615A são designações de produtos dessas empresas. O software *Bs82-52x Data Recording System* e
+Brymen é marca da Brymen Technology Corporation, e Minipa é marca da Minipa. BM525s, BM82x, BC-86X, BU-86X,
+ET-2615A e ET-2517A são designações de produtos dessas empresas, e Greenlee é marca da sua dona; os modelos citados
+como possivelmente compatíveis não foram testados. O software *Bs82-52x Data Recording System* e
 os documentos de protocolo citados pertencem à Brymen:
 
 - `10000count-professional-dual-display-mobile-logging-DMMs-protocol.pdf`;

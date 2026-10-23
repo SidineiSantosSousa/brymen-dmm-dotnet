@@ -22,11 +22,14 @@ internal static class MeterEndpoints
         meter.MapGet("", GetStatus)
             .WithName("GetMeter")
             .WithSummary("Estado do medidor")
-            .WithDescription("Estado do link, do cabo BC-86X (caminho, VID/PID, fabricante), do polling e o último erro registrado.");
+            .WithDescription("Estado do link, do cabo BC-86X (caminho, VID/PID, fabricante), do polling e o último erro registrado. "
+                + "\"model\" é o medidor detectado pelo Model ID do tempo real (família BM52x ou BM82x, Model ID, nome e se tem datalogger), "
+                + "null antes da 1ª detecção; \"realTimeStatistics\" conta os pedidos, os reenvios e as perdas do tempo real.");
         meter.MapPut("/link", SetLinkAsync)
             .WithName("SetMeterLink")
             .WithSummary("Ativa ou desativa o link")
-            .WithDescription("Equivale ao botão Link/Unlink do original. Com o link ativo o serviço consulta 52 66 a cada Meter:PollInterval. "
+            .WithDescription("Equivale ao botão Link/Unlink do original. Com o link ativo o serviço faz uma consulta de tempo real a cada Meter:PollInterval: "
+                + "82 66 na detecção da família, depois 52 66 no BM52x e 82 66 no BM82x, com reenvio dos pedidos que o ET-2517A descarta. "
                 + "Sem cabo responde 503 com o código E9015 e o link fica desativado.")
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .ProducesProblem(StatusCodes.Status503ServiceUnavailable);

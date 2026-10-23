@@ -160,6 +160,9 @@ progress { width: 100%; }
 .sessions { margin: 0; padding-left: 18px; }
 .sessions li { margin: 4px 0; }
 
+/* O atributo hidden vale também nos elementos com display próprio (botões, badges, linhas). */
+[hidden] { display: none !important; }
+
 .muted { color: var(--muted); }
 .small { font-size: 0.85rem; }
 

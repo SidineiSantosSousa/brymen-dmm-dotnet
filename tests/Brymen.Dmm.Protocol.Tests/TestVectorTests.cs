@@ -19,10 +19,30 @@ public class TestVectorTests
     public void Vector_file_has_every_known_kind()
     {
         var kinds = TestData.Vectors.Select(v => v.GetProperty("kind").GetString()).ToList();
-        Assert.Equal(14, kinds.Count);
+        // 14 vetores do BM525s (BM52x) e, desde 2026-10-23, 14 do Minipa ET-2517A e do PDF-N (BM82x), §8.4.16.
+        Assert.Equal(28, kinds.Count);
         Assert.All(kinds, k => Assert.True(k is "rtd" or "memory-block" or "memory-dump", k));
         Assert.Contains(TestData.Vectors, v => v.GetProperty("kind").GetString() == "rtd"
             && !v.GetProperty("expected").GetProperty("valid").GetBoolean());
+        Assert.Equal(14, TestData.Vectors.Count(v => FamilyOf(v) == MeterFamily.Bm82x));
+        Assert.Equal(14, TestData.Vectors.Count(v => FamilyOf(v) == MeterFamily.Bm52x));
+    }
+
+    [Fact]
+    public void Every_BM82x_vector_is_a_valid_8266_real_time_frame_with_model_82()
+    {
+        var bm82x = TestData.Vectors.Where(v => FamilyOf(v) == MeterFamily.Bm82x).ToList();
+
+        Assert.All(bm82x, v =>
+        {
+            Assert.Equal("rtd", v.GetProperty("kind").GetString());
+            Assert.Equal("8266", v.GetProperty("command").GetString());
+            Assert.Equal("82828282", v.GetProperty("modelBytes").GetString());
+            Assert.True(v.GetProperty("expected").GetProperty("valid").GetBoolean());
+            Assert.True(Bm52xRealtime.TryGetFamily(Convert.FromHexString(v.GetProperty("hex").GetString()!), out var family));
+            Assert.Equal(MeterFamily.Bm82x, family);
+        });
+        Assert.Equal(13, bm82x.Count(v => v.GetProperty("name").GetString()!.StartsWith("et2517a-", StringComparison.Ordinal)));
     }
 
     [Theory]
@@ -69,6 +89,7 @@ public class TestVectorTests
         Assert.NotNull(reading);
         Assert.Equal(Timestamp, reading.Timestamp);
         Assert.Equal(Convert.ToHexString(frame), reading.RawHex);
+        Assert.Equal(FamilyOf(vector), reading.Family);
         AssertDisplay(expected.GetProperty("main"), reading.Main);
         AssertDisplay(expected.GetProperty("secondary"), reading.Secondary);
 
@@ -85,7 +106,17 @@ public class TestVectorTests
         Assert.Equal(unknown.GetProperty("bytes25to27").GetString(), diagnostics.Bytes25To27);
 
         Assert.Equal(reading, Bm52xRealtime.Decode(frame, Timestamp));
+
+        // Com a família da conexão: a mesma leitura na própria família, e a recusa na outra (§8.3).
+        var other = reading.Family == MeterFamily.Bm52x ? MeterFamily.Bm82x : MeterFamily.Bm52x;
+        Assert.Equal(reading, Bm52xRealtime.Decode(frame, Timestamp, reading.Family));
+        Assert.False(Bm52xRealtime.TryDecode(frame, Timestamp, other, out _, out string? mismatch));
+        Assert.StartsWith("bytes 20..23 = ", mismatch);
     }
+
+    // Vetor sem o campo family = BM52x (BM525s), pela convenção do arquivo.
+    private static MeterFamily FamilyOf(JsonElement vector)
+        => vector.TryGetProperty("family", out var family) && family.GetString() == "BM82x" ? MeterFamily.Bm82x : MeterFamily.Bm52x;
 
     private static void AssertDisplay(JsonElement expected, DisplayReading? actual)
     {

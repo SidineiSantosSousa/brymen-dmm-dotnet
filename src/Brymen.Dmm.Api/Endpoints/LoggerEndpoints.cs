@@ -16,7 +16,9 @@ internal static class LoggerEndpoints
             .WithName("StartLoggerImport")
             .WithSummary("Inicia a importação da memória")
             .WithDescription("Responde 202 com Location do job. A leitura (88h e depois 89h..., checksum, recuperação com 8Ah ou recomeço do 88h) "
-                + "roda em segundo plano com o polling pausado. Sem cabo responde 503 com E9015; com outra importação em andamento, 409.")
+                + "roda em segundo plano com o polling pausado. Sem cabo responde 503 com E9015; com outra importação em andamento, 409 com CONFLICT; "
+                + "num medidor sem datalogger (família BM82x, como o Minipa ET-2517A: model.supportsDataLogger = false em GET /api/v1/meter), "
+                + "409 com E9014, sem criar job. Com a família ainda desconhecida, ela é detectada antes, por uma consulta 82 66.")
             .ProducesProblem(StatusCodes.Status409Conflict)
             .ProducesProblem(StatusCodes.Status503ServiceUnavailable);
         group.MapGet("", List)

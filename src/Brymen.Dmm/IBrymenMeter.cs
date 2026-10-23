@@ -11,8 +11,9 @@ namespace Brymen.Dmm;
 /// </summary>
 /// <remarks>
 /// As operações seguem as regras do <see cref="BrymenMeter"/>: são thread-safe, passam uma de cada vez pelo cabo e
-/// nunca fazem a E/S na thread de quem chama. Os membros que vierem em versões futuras terão implementação padrão, para
-/// não quebrar quem implementa a interface.
+/// nunca fazem a E/S na thread de quem chama. Os membros novos têm implementação padrão (<see cref="Family"/>,
+/// <see cref="SupportsDataLogger"/>, <see cref="ModelDescription"/> e <see cref="RealTimeStatistics"/>, na 0.2.0), para não
+/// quebrar quem implementa a interface.
 /// </remarks>
 public interface IBrymenMeter
 {
@@ -25,7 +26,33 @@ public interface IBrymenMeter
     /// <summary>Última falha registrada (<see langword="null"/> se nenhuma); continua depois da recuperação.</summary>
     BrymenMeterError? LastError { get; }
 
-    /// <summary>Um <c>52 66</c> decodificado, sem nova tentativa (veja <see cref="BrymenMeter.ReadAsync"/>).</summary>
+    /// <summary>
+    /// A família do medidor (veja <see cref="BrymenMeter.Family"/>): a configurada, ou a detectada pela 1ª leitura;
+    /// <see langword="null"/> antes dela. A implementação padrão devolve <see langword="null"/>.
+    /// </summary>
+    MeterFamily? Family => null;
+
+    /// <summary>
+    /// Se o medidor pode ter datalogger: <see langword="false"/> só com uma família conhecida sem datalogger (BM82x), em que a
+    /// leitura da memória falha com <see cref="BrymenErrorCodes.DataLoggerNotSupported"/>, sem nenhum comando de memória. A
+    /// implementação padrão usa <see cref="Family"/>.
+    /// </summary>
+    bool SupportsDataLogger => Family is not { } family || family.HasDataLogger();
+
+    /// <summary>
+    /// Descrição da família do medidor, como <c>"BM52x (BM525s / Minipa ET-2615A)"</c> ou <c>"BM82x (Minipa ET-2517A)"</c>
+    /// (<see cref="MeterFamilies.Describe"/>); <see langword="null"/> com a família desconhecida. A implementação padrão usa
+    /// <see cref="Family"/>.
+    /// </summary>
+    string? ModelDescription => Family?.Describe();
+
+    /// <summary>
+    /// Os contadores das consultas de tempo real: pedidos, reenvios e perdas (veja <see cref="BrymenMeter.RealTimeStatistics"/>).
+    /// A implementação padrão devolve zeros.
+    /// </summary>
+    RealTimeStatistics RealTimeStatistics => default;
+
+    /// <summary>Uma consulta de tempo real decodificada, sem nova tentativa (veja <see cref="BrymenMeter.ReadAsync"/>).</summary>
     /// <param name="cancellationToken">Cancela a consulta.</param>
     Task<DmmReading> ReadAsync(CancellationToken cancellationToken = default);
 

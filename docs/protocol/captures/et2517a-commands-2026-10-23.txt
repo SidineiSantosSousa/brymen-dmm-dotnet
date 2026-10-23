@@ -1,0 +1,28 @@
+# Capturas reais (Windows, probe.cs), 2026-10-23: Minipa ET-2517A com o cabo BC-86X (o mesmo cabo do BM525s:
+# VID 0820, PID 0001, bcdDevice 0x8603, "Brymen" / "Superior DMM", usage page FF00, in 9 / out 4).
+# Formato: <Command2 Command3> <hex dos relatórios concatenados, com o report ID 00 de cada relatório>
+
+# Tempo real: o ET-2517A NÃO responde ao 52 66 (timeout de 1,5 s); responde ao 82 66 com Model ID 82 82 82 82.
+5266 (sem resposta)
+8266 00001000BFAFA0E90000BFAFAFAF00012006008282828210000000
+8266 00001000BFAFA0E90000BFAFAFAF00012006008282828210000000
+8266 00001000BFAFA0AF0000BFAFAFAF00012006008282828210000000
+
+# Memória do datalogger: sem resposta com as duas famílias (o ET-2517A não tem datalogger).
+5288 (sem resposta)
+8288 (sem resposta)
+
+# Pedidos 82 66 sem resposta por intervalo entre consultas (rate.cs, sozinho no cabo; 40 pedidos por intervalo,
+# espera de 1 s pelo 1º relatório; na falta de resposta, um reenvio imediato). Latência normal até o 1º relatório: 36–237 ms.
+# intervalo    0 ms:  0/40 sem resposta
+# intervalo  100 ms:  2/40 sem resposta, 2 recuperados no reenvio
+# intervalo  200 ms: 11/40 sem resposta, 9 recuperados no reenvio
+# intervalo  300 ms: 11/40 sem resposta, 5 recuperados no reenvio
+# intervalo  500 ms: 19/40 sem resposta, 9 recuperados no reenvio
+# Esperar mais não ajuda (na varredura, com espera de 2,5 s, o pedido também se perdia): o pedido é descartado.
+#
+# Estratégia de reenvio rápido (rate2.cs): 1º relatório em até 300 ms, senão reenvia, até 3 reenvios.
+# intervalo  100 ms: 1ª tentativa 28/40; após 1/2/3 reenvios 1/1/7; falhas 3; tempo total mediana 91 / máx 1090 ms
+# intervalo  200 ms: 1ª tentativa 32/40; após 1/2/3 reenvios 0/0/7; falhas 1; tempo total mediana 187 / máx 1174 ms
+# intervalo  500 ms: 1ª tentativa 24/40; após 1/2/3 reenvios 1/9/2; falhas 4; tempo total mediana 95 / máx 1252 ms
+# intervalo 1000 ms: 1ª tentativa 16/40; após 1/2/3 reenvios 6/10/3; falhas 5; tempo total mediana 552 / máx 1168 ms

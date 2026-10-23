@@ -15,7 +15,7 @@ internal static class MeterTransportFactory
         switch (options.Transport)
         {
             case MeterTransport.Simulated:
-                logger.LogInformation("Transporte Simulated: medidor reproduzido a partir das capturas reais.");
+                logger.LogInformation("Transporte Simulated: {Model} reproduzido a partir das capturas reais.", Describe(options.SimulatedModel));
                 return CreateSimulated(services.GetRequiredService<SimulatedBm52xMeter>(), options.SimulatedLatency);
             case MeterTransport.Hid:
                 return HidDeviceProviders.CreateForCurrentPlatform();
@@ -26,15 +26,33 @@ internal static class MeterTransportFactory
                 }
                 catch (PlatformNotSupportedException ex)
                 {
-                    logger.LogWarning(ex, "Sem suporte a HID nesta plataforma; usando o transporte Simulated.");
+                    logger.LogWarning(ex, "Sem suporte a HID nesta plataforma; usando o transporte Simulated ({Model}).", Describe(options.SimulatedModel));
                     return CreateSimulated(services.GetRequiredService<SimulatedBm52xMeter>(), options.SimulatedLatency);
                 }
         }
     }
 
     /// <summary>
-    /// Um BC-86X simulado (<see cref="SimulatedHidDevice.CreateBm52x"/>) ligado ao medidor simulado com as capturas
-    /// reais. O dispositivo usa o relógio do sistema: os testes com relógio falso não precisam avançá-lo a cada relatório.
+    /// O multímetro simulado de <c>Meter:SimulatedModel</c>: o BM525s com as capturas reais (tempo real e memória, com o
+    /// <c>8A</c> que, logo depois do <c>88</c>, avança como um <c>89</c>) ou o ET-2517A com a varredura real e o descarte
+    /// de pedidos de tempo real medido no hardware (<see cref="SimulatedBm52xMeter.FromEt2517aCaptures"/>).
+    /// </summary>
+    public static SimulatedBm52xMeter CreateSimulatedMeter(SimulatedMeterModel model, TimeProvider time) => model switch
+    {
+        SimulatedMeterModel.Et2517a => SimulatedBm52xMeter.FromEt2517aCaptures(time),
+        _ => SimulatedBm52xMeter.FromCaptures(time),
+    };
+
+    private static string Describe(SimulatedMeterModel model) => model switch
+    {
+        SimulatedMeterModel.Et2517a => "Minipa ET-2517A (BM82x, sem datalogger, com descarte de pedidos)",
+        _ => "Brymen BM525s (BM52x, com datalogger)",
+    };
+
+    /// <summary>
+    /// Um BC-86X simulado (<see cref="SimulatedHidDevice.CreateBm52x"/>, que aceita qualquer <see cref="SimulatedBm52xMeter"/>,
+    /// BM52x ou BM82x) ligado ao medidor simulado com as capturas reais. O dispositivo usa o relógio do sistema: os testes
+    /// com relógio falso não precisam avançá-lo a cada relatório.
     /// </summary>
     public static SimulatedHidDeviceProvider CreateSimulated(SimulatedBm52xMeter meter, TimeSpan latency)
     {
