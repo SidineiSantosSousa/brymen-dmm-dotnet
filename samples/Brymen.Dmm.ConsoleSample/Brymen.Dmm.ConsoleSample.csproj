@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+    <!-- Analisadores de trimming/AOT: o exemplo também pode ser publicado trimmed ou com Native AOT. -->
+    <EnableTrimAnalyzer>true</EnableTrimAnalyzer>
+    <EnableAotAnalyzer>true</EnableAotAnalyzer>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- O PACOTE Brymen.Dmm, e não o projeto: vem do feed local artifacts/packages (veja ../nuget.config), na versão do
+         Directory.Build.props. Gere-o antes com "dotnet pack src/Brymen.Dmm -c Release -o artifacts/packages". -->
+    <PackageReference Include="Brymen.Dmm" Version="$(Version)" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,45 @@
+# Regra udev do cabo óptico USB Brymen BC-86X (kit BU-86X), HID VID 0820 / PID 0001.
+#
+# O que faz, para cada /dev/hidrawN do cabo:
+#   - dono root, grupo "brymen-dmm" (o usuário do serviço), modo 0660: o serviço lê sem root;
+#   - TAG "uaccess": o usuário da sessão local (console/desktop) recebe ACL de leitura e escrita;
+#   - symlink estável /dev/brymen-bu86x, usado em Meter__DevicePath pela unit systemd.
+#
+# Instalação (o install.sh já faz tudo isto):
+#   sudo groupadd --system brymen-dmm        # o grupo precisa existir; senão o udev usa root
+#   sudo install -m 0644 99-brymen-bu86x.rules /etc/udev/rules.d/
+#   sudo udevadm control --reload
+#   # reaplica as regras só ao hidraw do cabo (HID_ID do dispositivo HID pai), e não a todos os hidraw:
+#   for n in /sys/class/hidraw/hidraw*; do
+#       grep -qix 'HID_ID=0003:00000820:00000001' "$n/device/uevent" &&
+#           sudo udevadm trigger --action=change --subsystem-match=hidraw --sysname-match="${n##*/}"
+#   done
+#   sudo udevadm settle
+#
+# Teste (com o cabo ligado):
+#   ls -lL /dev/brymen-bu86x                            # crw-rw---- root brymen-dmm ("+" com ACL do uaccess)
+#   udevadm info --name=/dev/brymen-bu86x               # DEVLINKS=/dev/brymen-bu86x, TAGS=:uaccess:
+#   udevadm info --attribute-walk --name=/dev/brymen-bu86x | grep -E 'idVendor|idProduct'
+#   udevadm test "$(udevadm info --query=path --name=/dev/brymen-bu86x)" 2>&1 | grep -i brymen
+#   getfacl /dev/brymen-bu86x                           # ACL do usuário da sessão local (uaccess)
+#
+# Com mais de um cabo ligado, o symlink aponta para o último enumerado; nesse caso configure
+# Meter__DevicePath com o /dev/hidrawN desejado.
+
+ACTION=="remove", GOTO="brymen_bu86x_end"
+SUBSYSTEM!="hidraw", GOTO="brymen_bu86x_end"
+
+# ATTRS procura o atributo subindo pelos pais (hidraw → hid → interface → dispositivo USB).
+# Um teste negativo (ATTRS{idVendor}!=...) casaria já no hidraw, que não tem o atributo, então
+# a identificação é feita em positivo e marcada numa variável.
+ATTRS{idVendor}=="0820", ATTRS{idProduct}=="0001", ENV{BRYMEN_BU86X}="1"
+ENV{BRYMEN_BU86X}!="1", GOTO="brymen_bu86x_end"
+
+GROUP="brymen-dmm", MODE="0660", TAG+="uaccess", SYMLINK+="brymen-bu86x"
+
+# O systemd aplica o "uaccess" em 73-seat-late.rules, que roda antes deste arquivo (99-*).
+# Por isso o builtin é chamado aqui também. A linha fica separada para que um udev sem o
+# builtin (eudev, por exemplo) descarte só ela, e não as permissões acima.
+TAG=="uaccess", ENV{MAJOR}!="", RUN{builtin}+="uaccess"
+
+LABEL="brymen_bu86x_end"

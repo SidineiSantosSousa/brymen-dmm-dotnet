@@ -1,0 +1,25 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <!-- net8.0 (LTS) para a biblioteca Brymen.Dmm, que também atende projetos .NET 8. -->
+    <TargetFrameworks>net8.0;net10.0</TargetFrameworks>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <!-- Exigido pelo código gerado por [LibraryImport] (ponteiros nos P/Invokes de libc e hid.dll). -->
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <!-- Vai no pacote Brymen.Dmm: todo membro público precisa de documentação XML (CS1591 e CS1573 de volta). -->
+    <NoWarn>$(NoWarn.Replace('CS1591', '').Replace('CS1573', ''))</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Brymen.Dmm.Hid.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Capturas reais do BM525s, usadas pelo medidor simulado (SimulatedBm52xMeter): o dump da memória é a imagem
+         padrão, e os quadros de tempo real em ACV são os de CapturedRealTimeFrames. -->
+    <EmbeddedResource Include="..\..\docs\protocol\captures\memory-dump-1.txt" LogicalName="Brymen.Dmm.Hid.Simulation.memory-dump-1.txt" Link="Simulation\memory-dump-1.txt" />
+    <EmbeddedResource Include="..\..\docs\protocol\captures\rtd-acv.txt" LogicalName="Brymen.Dmm.Hid.Simulation.rtd-acv.txt" Link="Simulation\rtd-acv.txt" />
+  </ItemGroup>
+
+</Project>

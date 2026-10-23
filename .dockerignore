@@ -1,0 +1,34 @@
+# O Dockerfile copia só Directory.Build.props, src/ e docs/protocol/captures/ (capturas embutidas
+# no transporte Simulated); o resto fica fora do contexto de build.
+
+# Saídas de build e dados locais
+**/bin/
+**/obj/
+artifacts/
+**/TestResults/
+/data/
+src/Brymen.Dmm.Api/data/
+
+# IDEs e controle de versão
+.git/
+.vs/
+.vscode/
+.idea/
+**/*.user
+**/*.suo
+
+# Fora da imagem: testes, scripts de deploy, documentação pesada e o instalador original.
+# Não exclua docs/protocol/captures/.
+tests/
+deploy/
+docs/protocol/png/
+docs/**/*.png
+docs/**/*.pdf
+*.exe
+
+# Arquivos do próprio Docker e do Compose
+Dockerfile
+.dockerignore
+docker-compose*.yml
+compose*.yml
+.env

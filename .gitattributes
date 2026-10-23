@@ -1,0 +1,43 @@
+# Normalização de fim de linha: o Git decide o que é texto e guarda texto com LF no repositório.
+* text=auto
+
+# Scripts e configuração do Linux precisam de LF: o bash, o udev, o systemd e o EnvironmentFile= não
+# aceitam CRLF. O Dockerfile também roda no Linux (continuações de linha e o HEALTHCHECK em bash).
+*.sh        text eol=lf
+*.rules     text eol=lf
+*.service   text eol=lf
+*.env       text eol=lf
+Dockerfile  text eol=lf
+
+# Scripts do PowerShell ficam com CRLF, como o Windows PowerShell espera.
+*.ps1       text eol=crlf
+
+# Código e documentação: diff com contexto de função.
+*.cs        text diff=csharp
+*.md        text diff=markdown
+
+# Capturas do hardware são texto (hex por linha), mesmo sem uma regra de extensão mais específica.
+docs/protocol/captures/*.txt text
+
+# Binários: sem conversão de fim de linha nem diff textual.
+*.exe       binary
+*.dll       binary
+*.pdb       binary
+*.bin       binary
+*.g53       binary
+*.tmp       binary
+*.TMP       binary
+*.png       binary
+*.jpg       binary
+*.jpeg      binary
+*.gif       binary
+*.ico       binary
+*.pdf       binary
+*.zip       binary
+*.gz        binary
+*.tgz       binary
+*.7z        binary
+*.woff      binary
+*.woff2     binary
+*.ttf       binary
+*.snk       binary

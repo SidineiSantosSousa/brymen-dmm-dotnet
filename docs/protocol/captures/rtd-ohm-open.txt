@@ -1,0 +1,6 @@
+# Captura real (Windows, API em Meter:Transport=Hid), 2026-10-23, BM525s em Ω com as pontas abertas.
+# Formato: hex dos 27 bytes do Cs_RTD (52 66), com o report ID 00 de cada relatório.
+# Decodificação pela API: principal digits=" 0L ", text="0.L", overload=true, value=null, prefix="M", unit="Ohm" (MΩ),
+# mode=NONE; secundário apagado (null); flags=[AUTO]. Confirma em hardware a regra de OL da §3.4 (antes só sintética).
+# Bytes não documentados: b18 = FC (no ACV era 06) e nibble baixo do b24 = F (no ACV era 0).
+0000000000BF0700000000000000006000FC00525252521F000000

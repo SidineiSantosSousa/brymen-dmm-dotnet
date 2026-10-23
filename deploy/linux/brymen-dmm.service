@@ -1,0 +1,86 @@
+# Unit systemd do Brymen DMM REST (port do Bs82-52x V6.0.0.9).
+#
+# Instalação (o install.sh já faz tudo isto):
+#   sudo install -m 0644 brymen-dmm.service /etc/systemd/system/
+#   sudo systemctl daemon-reload
+#   sudo systemctl enable --now brymen-dmm.service
+#
+# Operação:
+#   systemctl status brymen-dmm
+#   journalctl -u brymen-dmm -f
+#   curl http://localhost:5080/health/ready
+#
+# Ajustes locais: use /etc/brymen-dmm/brymen-dmm.env (variáveis de ambiente, prevalece sobre os
+# Environment= abaixo) ou "systemctl edit brymen-dmm" (drop-in). Evite editar este arquivo, que o
+# install.sh sobrescreve.
+
+[Unit]
+Description=Brymen DMM REST (BM525s / ET-2615A pelo cabo BC-86X)
+Documentation=file:///opt/brymen-dmm/README.md
+# Escutar em 0.0.0.0 não exige rede configurada; network-online.target atrasaria o boot.
+After=network.target
+
+[Service]
+# A API usa Host.UseSystemd(): avisa o systemd (READY=1) quando o Kestrel está escutando.
+Type=notify
+User=brymen-dmm
+Group=brymen-dmm
+ExecStart=/opt/brymen-dmm/Brymen.Dmm.Api
+WorkingDirectory=/var/lib/brymen-dmm
+# Cria /var/lib/brymen-dmm com dono brymen-dmm; é o único diretório gravável (ProtectSystem=strict).
+StateDirectory=brymen-dmm
+StateDirectoryMode=0750
+UMask=0027
+
+# O processo roda em /var/lib/brymen-dmm, mas appsettings.json e wwwroot/ ficam em /opt/brymen-dmm.
+Environment=ASPNETCORE_CONTENTROOT=/opt/brymen-dmm
+# ASPNETCORE_URLS tem precedência menor que a chave Urls do appsettings.json; a variável sem
+# prefixo (Urls) tem precedência maior. Para trocar a porta, altere as duas.
+Environment=ASPNETCORE_URLS=http://0.0.0.0:5080
+Environment=Urls=http://0.0.0.0:5080
+# Symlink criado pela regra udev 99-brymen-bu86x.rules.
+Environment=Meter__DevicePath=/dev/brymen-bu86x
+Environment=DataDirectory=/var/lib/brymen-dmm
+# Só tem efeito se algum arquivo precisar ser extraído do executável single-file.
+Environment=DOTNET_BUNDLE_EXTRACT_BASE_DIR=/var/lib/brymen-dmm/.bundle
+EnvironmentFile=-/etc/brymen-dmm/brymen-dmm.env
+
+Restart=on-failure
+RestartSec=5s
+TimeoutStartSec=60s
+# Acima dos 30 s que o host do .NET espera, no SIGTERM, pelas requisições abertas (SSE do painel).
+# Com menos, o systemd mata o processo com SIGKILL antes do fim do encerramento.
+TimeoutStopSec=45s
+
+# Endurecimento. O hidraw é liberado por DevicePolicy/DeviceAllow; PrivateDevices=yes o esconderia.
+# O systemd resolve o char-hidraw pela lista de /proc/devices só na partida da unit: o hidraw precisa estar
+# registrado antes (no Debian/Ubuntu ele vem no módulo hid, que o install.sh carrega no boot por
+# /etc/modules-load.d/brymen-dmm.conf). Se ele aparecer depois, o open() do hidraw dá EPERM até um restart.
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+DevicePolicy=closed
+DeviceAllow=char-hidraw rw
+# AF_UNIX: notificação do systemd e journald; AF_NETLINK: enumeração de interfaces de rede do .NET.
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6 AF_NETLINK
+CapabilityBoundingSet=
+AmbientCapabilities=
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectKernelLogs=yes
+ProtectControlGroups=yes
+ProtectClock=yes
+ProtectHostname=yes
+# ProtectProc= fica no padrão: o UseSystemd só reconhece o systemd lendo /proc/<ppid>/comm, e com
+# invisible, noaccess ou ptraceable o /proc/1 fica oculto ou ilegível para este usuário. Sem essa
+# leitura, o READY=1 nunca sai e o Type=notify estoura o TimeoutStartSec.
+RestrictNamespaces=yes
+RestrictRealtime=yes
+RestrictSUIDSGID=yes
+LockPersonality=yes
+SystemCallArchitectures=native
+# MemoryDenyWriteExecute=yes não é usado: o JIT do .NET precisa de páginas graváveis e executáveis.
+
+[Install]
+WantedBy=multi-user.target

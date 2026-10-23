@@ -1,0 +1,45 @@
+# Saídas de build do .NET (inclui o artifacts/ dos scripts de publish e do --artifacts-path)
+bin/
+obj/
+artifacts/
+*.user
+*.suo
+*.userprefs
+*.rsuser
+
+# IDEs
+.vs/
+.vscode/*
+!.vscode/extensions.json
+.idea/
+*.swp
+*~
+
+# Testes e cobertura
+TestResults/
+*.trx
+coverage*.json
+coverage*.xml
+*.coverage
+
+# Dados locais do serviço (DataDirectory padrão: <ContentRoot>/data) e backups da gravação.
+# Só em src/ e na raiz, para não alcançar dados de teste em tests/**/data/.
+/data/
+src/**/data/
+~BDMDL*
+
+# Docker Compose: .env local (BRYMEN_DMM_GID etc.) e overrides de cada máquina
+.env
+docker-compose.override.yml
+
+# Software original da Brymen (instalador); não é redistribuído por este repositório
+/*.exe
+
+# Documentação e capturas do hardware são sempre versionadas, mesmo que algo acima as alcance
+!docs/
+!docs/**
+!**/captures/
+!**/captures/**
+
+# Configuração local do Claude Code (caminhos desta máquina)
+.claude/

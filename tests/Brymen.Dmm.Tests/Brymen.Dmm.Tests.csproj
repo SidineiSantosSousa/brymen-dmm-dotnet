@@ -1,0 +1,36 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <!-- Os dois alvos da biblioteca: o net8.0 roda no runtime 8.0 (LTS), com o polyfill do Lock. -->
+    <TargetFrameworks>net10.0;net8.0</TargetFrameworks>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+    <!-- Com o cabo real (BRYMEN_HW_TESTS=1), os dois alvos não podem falar com o medidor ao mesmo tempo. -->
+    <TestTfmsInParallel Condition="'$(BRYMEN_HW_TESTS)' == '1'">false</TestTfmsInParallel>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="coverlet.collector" Version="6.0.4" />
+    <PackageReference Include="Microsoft.Extensions.TimeProvider.Testing" Version="10.10.0" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
+    <PackageReference Include="xunit" Version="2.9.3" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="3.1.4" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Xunit" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- O Brymen.Dmm referencia o Protocol e o Hid com PrivateAssets="all" (vão dentro do pacote): aqui, diretamente. -->
+    <ProjectReference Include="..\..\src\Brymen.Dmm\Brymen.Dmm.csproj" />
+    <ProjectReference Include="..\..\src\Brymen.Dmm.Protocol\Brymen.Dmm.Protocol.csproj" />
+    <ProjectReference Include="..\..\src\Brymen.Dmm.Hid\Brymen.Dmm.Hid.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\..\docs\protocol\captures\memory-dump-1.txt" Link="TestData\memory-dump-1.txt" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+</Project>

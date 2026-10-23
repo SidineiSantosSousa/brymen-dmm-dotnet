@@ -1,0 +1,54 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <!-- net8.0 (LTS) e net10.0: a biblioteca atende projetos .NET 8 e os mais novos. -->
+    <TargetFrameworks>net8.0;net10.0</TargetFrameworks>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>Brymen.Dmm</RootNamespace>
+    <Product>Brymen.Dmm</Product>
+    <!-- Vai no pacote Brymen.Dmm: todo membro público precisa de documentação XML (CS1591 e CS1573 de volta). -->
+    <NoWarn>$(NoWarn.Replace('CS1591', '').Replace('CS1573', ''))</NoWarn>
+  </PropertyGroup>
+
+  <!-- Pacote NuGet único, sem dependências: o Brymen.Dmm.Protocol e o Brymen.Dmm.Hid vão dentro dele (veja o target
+       IncludeReferencedProjectsInPackage). A versão vem do Directory.Build.props. -->
+  <PropertyGroup>
+    <IsPackable>true</IsPackable>
+    <PackageId>Brymen.Dmm</PackageId>
+    <Title>Brymen.Dmm: multímetro Brymen BM52x pelo cabo USB BC-86X</Title>
+    <Description>Biblioteca .NET para o multímetro Brymen BM525s (= Minipa ET-2615A) e outros BM52x com datalogger, pelo cabo óptico USB BC-86X (kit BU-86X, HID VID 0820h/PID 0001h), no Windows e no Linux, sem driver e sem dependências nativas. Lê o tempo real (52 66) de forma avulsa, contínua ou por eventos, com reconexão automática, e importa a memória do datalogger (88/89/8A) com checksum e recuperação de erros. Inclui um medidor simulado com as capturas reais. Projeto independente, sem afiliação com a Brymen nem com a Minipa.</Description>
+    <PackageTags>brymen;bm525s;bm52x;bc-86x;bu-86x;minipa;et-2615a;multimeter;multimetro;dmm;datalogger;hid;hidraw;usb</PackageTags>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <Deterministic>true</Deterministic>
+    <!-- Os caminhos locais saem das DLLs e dos PDBs pelo PathMap do Release (Directory.Build.props), também sem git. -->
+    <ContinuousIntegrationBuild Condition="'$(CI)' != '' Or '$(TF_BUILD)' != ''">true</ContinuousIntegrationBuild>
+    <TargetsForTfmSpecificBuildOutput>$(TargetsForTfmSpecificBuildOutput);IncludeReferencedProjectsInPackage</TargetsForTfmSpecificBuildOutput>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- PrivateAssets="all": as duas bibliotecas não viram dependências de pacote no nuspec; as DLLs (e os XML docs) vão
+         no próprio nupkg, em lib/<tfm>/. -->
+    <ProjectReference Include="..\Brymen.Dmm.Protocol\Brymen.Dmm.Protocol.csproj" PrivateAssets="all" />
+    <ProjectReference Include="..\Brymen.Dmm.Hid\Brymen.Dmm.Hid.csproj" PrivateAssets="all" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="README.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Brymen.Dmm.Tests" />
+  </ItemGroup>
+
+  <!-- Saídas dos ProjectReference (DLL, XML de documentação e PDB) no pacote, ao lado da Brymen.Dmm.dll de cada TFM. O
+       pack separa pelas extensões: DLL e XML vão para o .nupkg, e o PDB para o .snupkg. -->
+  <Target Name="IncludeReferencedProjectsInPackage" DependsOnTargets="ResolveReferences">
+    <ItemGroup>
+      <BuildOutputInPackage Include="@(ReferenceCopyLocalPaths->WithMetadataValue('ReferenceSourceTarget', 'ProjectReference'))" />
+    </ItemGroup>
+  </Target>
+
+</Project>

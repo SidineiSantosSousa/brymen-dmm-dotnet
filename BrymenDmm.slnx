@@ -1,0 +1,19 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Brymen.Dmm/Brymen.Dmm.csproj" />
+    <Project Path="src/Brymen.Dmm.Extensions.Hosting/Brymen.Dmm.Extensions.Hosting.csproj" />
+    <Project Path="src/Brymen.Dmm.Api/Brymen.Dmm.Api.csproj" />
+    <Project Path="src/Brymen.Dmm.Hid/Brymen.Dmm.Hid.csproj" />
+    <Project Path="src/Brymen.Dmm.Protocol/Brymen.Dmm.Protocol.csproj" />
+  </Folder>
+  <Folder Name="/samples/">
+    <Project Path="samples/Brymen.Dmm.SignalRClient/Brymen.Dmm.SignalRClient.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Brymen.Dmm.Api.Tests/Brymen.Dmm.Api.Tests.csproj" />
+    <Project Path="tests/Brymen.Dmm.Tests/Brymen.Dmm.Tests.csproj" />
+    <Project Path="tests/Brymen.Dmm.Extensions.Hosting.Tests/Brymen.Dmm.Extensions.Hosting.Tests.csproj" />
+    <Project Path="tests/Brymen.Dmm.Hid.Tests/Brymen.Dmm.Hid.Tests.csproj" />
+    <Project Path="tests/Brymen.Dmm.Protocol.Tests/Brymen.Dmm.Protocol.Tests.csproj" />
+  </Folder>
+</Solution>

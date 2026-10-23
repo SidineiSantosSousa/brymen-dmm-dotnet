@@ -1,0 +1,51 @@
+<Project>
+  <PropertyGroup>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <!-- Linux embarcado (Raspberry Pi etc.) muitas vezes não tem libicu; formatação é sempre invariante. -->
+    <InvariantGlobalization>true</InvariantGlobalization>
+    <!-- O produto das bibliotecas (o Protocol e o Hid vão dentro do pacote Brymen.Dmm); a API e o hosting têm o seu. -->
+    <Product>Brymen.Dmm</Product>
+    <Version>0.1.0</Version>
+    <!-- Autoria explícita: o padrão do SDK (o nome do assembly, "Brymen.Dmm.Hid") pareceria uma empresa Brymen. -->
+    <Authors>Sidinei Santos Sousa</Authors>
+    <Company>Sidinei Santos Sousa</Company>
+    <Copyright>Copyright (c) 2026 Sidinei Santos Sousa</Copyright>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/SidineiSantosSousa/brymen-dmm-dotnet</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/SidineiSantosSousa/brymen-dmm-dotnet</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <!-- Só o Brymen.Dmm e o Brymen.Dmm.Extensions.Hosting são pacotes (IsPackable=true nos dois .csproj). O Protocol e o
+         Hid vão dentro do Brymen.Dmm, e um "dotnet pack" da solução não pode gerar pacotes deles com as mesmas DLLs. -->
+    <IsPackable>false</IsPackable>
+    <!-- O Web SDK avisaria ao pular a API num "dotnet pack" da solução, por ver o IsPackable=false acima. -->
+    <WarnOnPackingNonPackableProject>false</WarnOnPackingNonPackableProject>
+    <!-- Pasta do projeto relativa à raiz do repositório (ex.: src\Brymen.Dmm.Api). O caminho absoluto não serve:
+         um clone em ~/src/brymen-dmm ou C:\src\... também contém "src". -->
+    <BrymenRepoRelativeDirectory>$([MSBuild]::MakeRelative('$(MSBuildThisFileDirectory)', '$(MSBuildProjectDirectory)'))</BrymenRepoRelativeDirectory>
+  </PropertyGroup>
+
+  <!-- Bibliotecas: compatíveis com trimming/Native AOT (analisadores ativos). -->
+  <PropertyGroup Condition="$(BrymenRepoRelativeDirectory.StartsWith('src\')) Or $(BrymenRepoRelativeDirectory.StartsWith('src/'))">
+    <IsAotCompatible>true</IsAotCompatible>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);CS1591;CS1573</NoWarn>
+  </PropertyGroup>
+
+  <!-- Release de src/ (o que vai nos pacotes e no publish): a raiz do repositório vira "/_/" nas DLLs e nos PDBs, sem
+       depender do git nem do ContinuousIntegrationBuild (que só mapeia as raízes do SourceRoot, vazias sem um clone git).
+       Sem isso, o caminho da máquina do build ia no caminho do PDB e, no net8.0, no [InterceptsLocation] que o gerador do
+       Configuration.Binder 8.0 grava no hosting. O Debug continua com os caminhos reais, para o depurador achar os
+       fontes. -->
+  <PropertyGroup Condition="'$(Configuration)' == 'Release' And ($(BrymenRepoRelativeDirectory.StartsWith('src\')) Or $(BrymenRepoRelativeDirectory.StartsWith('src/')))">
+    <PathMap>$([MSBuild]::EnsureTrailingSlash('$(MSBuildThisFileDirectory)'))=/_/</PathMap>
+  </PropertyGroup>
+
+  <!-- Polyfills das bibliotecas multi-target (net8.0 e net10.0). O System.Threading.Lock só existe a partir do .NET 9:
+       no net8.0, "Lock" vira um apelido de object, e o lock (_lock) usa o Monitor, com a mesma semântica. -->
+  <ItemGroup Condition="'$(TargetFramework)' == 'net8.0'">
+    <Using Include="System.Object" Alias="Lock" />
+  </ItemGroup>
+</Project>

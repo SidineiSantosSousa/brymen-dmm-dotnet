@@ -1,0 +1,61 @@
+# Exemplo de uso do Brymen DMM REST com Docker Compose.
+#
+# Com o cabo BC-86X (host Linux com a regra deploy/linux/99-brymen-bu86x.rules instalada):
+#   echo "BRYMEN_DMM_GID=$(getent group brymen-dmm | cut -d: -f3)" > .env
+#   echo "BRYMEN_DMM_HIDRAW=$(readlink -f /dev/brymen-bu86x)" >> .env
+#   docker compose up -d --build
+#   curl http://localhost:5080/api/v1/meter
+#
+# Sem o cabo (transporte simulado, porta 5081):
+#   docker compose --profile simulated up -d --build brymen-dmm-simulated
+#   curl http://localhost:5081/api/v1/readings/latest
+#
+# O nó do dispositivo é criado no container quando ele sobe; se o cabo for religado e ganhar outro
+# /dev/hidrawN, atualize BRYMEN_DMM_HIDRAW e recrie o container (docker compose up -d --force-recreate).
+
+name: brymen-dmm
+
+x-brymen-dmm: &brymen-dmm
+  build:
+    context: .
+    dockerfile: Dockerfile
+  image: brymen-dmm:latest
+  restart: unless-stopped
+  # O host do .NET espera até 30 s pelas requisições abertas (SSE) no SIGTERM; os 10 s padrão do
+  # Docker terminariam em SIGKILL.
+  stop_grace_period: 45s
+
+services:
+  brymen-dmm:
+    <<: *brymen-dmm
+    ports:
+      - "5080:5080"
+    environment:
+      Meter__Transport: Hid
+      Meter__DevicePath: ${BRYMEN_DMM_HIDRAW:-/dev/hidraw0}
+    devices:
+      # Aqui o nó tem no container o mesmo nome do host, que é o que a enumeração pelo sysfs mostra
+      # (/dev/hidrawN). Descubra-o com: readlink -f /dev/brymen-bu86x. Outro nome também funciona
+      # (ex.: "...:/dev/bu86x" com Meter__DevicePath=/dev/bu86x): um caminho fora da enumeração é
+      # aberto direto e identificado pelo ioctl HIDIOCGRAWINFO (VID 0820/PID 0001).
+      - "${BRYMEN_DMM_HIDRAW:-/dev/hidraw0}:${BRYMEN_DMM_HIDRAW:-/dev/hidraw0}"
+    group_add:
+      # gid numérico do grupo brymen-dmm no host (dono do hidraw pela regra udev). O container não
+      # conhece o nome do grupo, só o número. Defina BRYMEN_DMM_GID no .env.
+      - "${BRYMEN_DMM_GID:-998}"
+    volumes:
+      - brymen-dmm-data:/data
+
+  brymen-dmm-simulated:
+    <<: *brymen-dmm
+    profiles: ["simulated"]
+    ports:
+      - "5081:5080"
+    environment:
+      Meter__Transport: Simulated
+    volumes:
+      - brymen-dmm-simulated-data:/data
+
+volumes:
+  brymen-dmm-data:
+  brymen-dmm-simulated-data:

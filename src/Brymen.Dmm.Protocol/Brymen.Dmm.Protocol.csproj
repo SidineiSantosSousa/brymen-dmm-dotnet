@@ -1,0 +1,12 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <!-- net8.0 (LTS) para a biblioteca Brymen.Dmm, que também atende projetos .NET 8. -->
+    <TargetFrameworks>net8.0;net10.0</TargetFrameworks>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <!-- Vai no pacote Brymen.Dmm: todo membro público precisa de documentação XML (CS1591 e CS1573 de volta). -->
+    <NoWarn>$(NoWarn.Replace('CS1591', '').Replace('CS1573', ''))</NoWarn>
+  </PropertyGroup>
+
+</Project>

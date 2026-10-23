@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Brymen DMM</title>
+  <link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+  <header class="topbar">
+    <h1>Brymen BM525s <span class="muted">· BC-86X</span></h1>
+    <div class="topbar-actions">
+      <span id="link-state" class="badge" title="Estado do link">—</span>
+      <button id="link-toggle" type="button">Link</button>
+    </div>
+  </header>
+
+  <main class="grid">
+    <section class="card meter" aria-label="Display do multímetro">
+      <div class="display-main">
+        <span id="main-mode" class="mode"></span>
+        <span id="main-text" class="value">----</span>
+        <span id="main-unit" class="unit"></span>
+      </div>
+      <div class="display-sub">
+        <span id="sub-mode" class="mode"></span>
+        <span id="sub-text" class="value">----</span>
+        <span id="sub-unit" class="unit"></span>
+      </div>
+      <div class="meter-footer">
+        <span id="comparator-result" class="badge" hidden></span>
+        <span id="flags" class="flags"></span>
+        <span id="reading-time" class="muted small"></span>
+      </div>
+      <canvas id="chart" height="160" aria-label="Gráfico das últimas leituras do display principal"></canvas>
+    </section>
+
+    <section class="card" aria-labelledby="acq-title">
+      <h2 id="acq-title">Aquisição</h2>
+      <div class="row">
+        <label>Modo
+          <select id="acq-mode">
+            <option value="fullSpeed">Full Speed (toda leitura)</option>
+            <option value="interval">Intervalo (segundos)</option>
+            <option value="manual">Manual</option>
+          </select>
+        </label>
+        <label>Intervalo (s)
+          <input id="acq-interval" type="number" min="1" step="1" value="1">
+        </label>
+        <button id="acq-apply" type="button">Aplicar</button>
+      </div>
+      <div class="row">
+        <button id="acq-start" type="button" class="primary">Iniciar</button>
+        <button id="acq-stop" type="button">Parar</button>
+        <button id="acq-manual" type="button">Amostra manual</button>
+        <button id="acq-clear" type="button" class="danger">Limpar</button>
+      </div>
+      <div class="row">
+        <a class="button" href="api/v1/acquisition/samples.csv" download>Exportar CSV</a>
+        <a class="button" href="api/v1/acquisition/samples.csv?format=extended" download>CSV estendido</a>
+      </div>
+      <p id="acq-status" class="muted small">—</p>
+    </section>
+
+    <section class="card" aria-labelledby="cmp-title">
+      <h2 id="cmp-title">Comparador</h2>
+      <div class="row">
+        <label class="check"><input id="cmp-enabled" type="checkbox"> Ativo</label>
+        <label class="check"><input id="cmp-alarm" type="checkbox"> Alarme sonoro</label>
+      </div>
+      <div class="row">
+        <label>Hi <input id="cmp-high" type="number" step="any"></label>
+        <label>Lo <input id="cmp-low" type="number" step="any"></label>
+        <button id="cmp-save" type="button">Salvar</button>
+      </div>
+      <p class="muted small">Limites em unidades SI do display principal (V, A, Ohm, Hz...). v &gt; Hi = High, v &lt; Lo = Low.</p>
+    </section>
+
+    <section class="card" aria-labelledby="log-title">
+      <h2 id="log-title">Datalogger</h2>
+      <div class="row">
+        <button id="log-import" type="button" class="primary">Importar do medidor</button>
+      </div>
+      <progress id="log-progress" max="100" value="0" hidden></progress>
+      <p id="log-status" class="muted small">—</p>
+      <ul id="log-sessions" class="sessions"></ul>
+    </section>
+  </main>
+
+  <div id="toast" class="toast" role="alert" hidden></div>
+  <script src="js/app.js"></script>
+</body>
+</html>

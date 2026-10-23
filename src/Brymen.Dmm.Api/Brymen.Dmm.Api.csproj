@@ -1,0 +1,55 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <ItemGroup>
+    <ProjectReference Include="..\Brymen.Dmm\Brymen.Dmm.csproj" />
+    <ProjectReference Include="..\Brymen.Dmm.Protocol\Brymen.Dmm.Protocol.csproj" />
+    <ProjectReference Include="..\Brymen.Dmm.Hid\Brymen.Dmm.Hid.csproj" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <!-- Minimal APIs gerados em compile-time: permite publicar trimmed (self-contained enxuto p/ ARM). -->
+    <EnableRequestDelegateGenerator>true</EnableRequestDelegateGenerator>
+    <!-- Binding de IConfiguration por source generator (sem reflexão, compatível com trimming/AOT). -->
+    <EnableConfigurationBindingGenerator>true</EnableConfigurationBindingGenerator>
+    <!-- Analisadores de trimming/AOT/single-file em todo build (não só no publish): com TreatWarningsAsErrors,
+         um IL2026/IL3050 novo quebra a compilação na hora. -->
+    <EnableTrimAnalyzer>true</EnableTrimAnalyzer>
+    <EnableAotAnalyzer>true</EnableAotAnalyzer>
+    <EnableSingleFileAnalyzer>true</EnableSingleFileAnalyzer>
+    <UserSecretsId>brymen-dmm-api</UserSecretsId>
+    <Product>Brymen DMM REST (port do Bs82-52x V6.0.0.9)</Product>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.12" />
+    <PackageReference Include="Microsoft.Extensions.Hosting.Systemd" Version="10.0.12" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Brymen.Dmm.Api.Tests" />
+  </ItemGroup>
+
+  <!--
+    Publish self-contained (deploy/publish.*, Dockerfile) com o runtime 10.0.13, baixado do NuGet como runtime pack,
+    quando o SDK traz um mais antigo: o ASP.NET Core 10.0.12 do SDK 10.0.401 tem o Microsoft.AspNetCore.SignalR.Common
+    com o aviso GHSA-334f-vvp4-7g6p. Com um SDK mais novo, vale o runtime dele. Só no self-contained: num build
+    framework-dependent, o runtimeconfig.json passaria a exigir o runtime 10.0.13 instalado.
+    A versão vai como metadado das FrameworkReference, e não na propriedade RuntimeFrameworkVersion, que levaria junto
+    o pack do ILLink 10.0.13; ele roda no runtime do SDK e exigiria o 10.0.13 instalado na máquina do build.
+  -->
+  <PropertyGroup>
+    <PatchedRuntimeVersion>10.0.13</PatchedRuntimeVersion>
+  </PropertyGroup>
+  <Target Name="UsePatchedRuntimePacks" BeforeTargets="ProcessFrameworkReferences"
+          Condition="'$(SelfContained)' == 'true' And $([MSBuild]::VersionLessThan('$(BundledNETCoreAppPackageVersion)', '$(PatchedRuntimeVersion)'))">
+    <ItemGroup>
+      <FrameworkReference Condition="'%(Identity)' == 'Microsoft.NETCore.App' Or '%(Identity)' == 'Microsoft.AspNetCore.App'">
+        <RuntimeFrameworkVersion>$(PatchedRuntimeVersion)</RuntimeFrameworkVersion>
+      </FrameworkReference>
+    </ItemGroup>
+  </Target>
+
+</Project>

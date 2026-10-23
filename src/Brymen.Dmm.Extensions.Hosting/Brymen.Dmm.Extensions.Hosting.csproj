@@ -1,0 +1,68 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <!-- Os mesmos alvos do Brymen.Dmm: net8.0 (LTS) e net10.0. -->
+    <TargetFrameworks>net8.0;net10.0</TargetFrameworks>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>Brymen.Dmm.Extensions.Hosting</RootNamespace>
+    <Product>Brymen.Dmm.Extensions.Hosting</Product>
+    <!-- Vai no pacote Brymen.Dmm.Extensions.Hosting: todo membro público precisa de documentação XML (CS1591 e CS1573 de volta). -->
+    <NoWarn>$(NoWarn.Replace('CS1591', '').Replace('CS1573', ''))</NoWarn>
+    <!-- Binding de IConfiguration por source generator (sem reflexão, compatível com trimming/Native AOT). -->
+    <EnableConfigurationBindingGenerator>true</EnableConfigurationBindingGenerator>
+  </PropertyGroup>
+
+  <!-- Pacote opcional, separado do Brymen.Dmm: quem não usa o Generic Host não leva as dependências do
+       Microsoft.Extensions.*. A versão vem do Directory.Build.props. -->
+  <PropertyGroup>
+    <IsPackable>true</IsPackable>
+    <PackageId>Brymen.Dmm.Extensions.Hosting</PackageId>
+    <Title>Brymen.Dmm.Extensions.Hosting: o multímetro Brymen BM52x no Generic Host</Title>
+    <Description>Integração do Brymen.Dmm com o Generic Host do .NET (Microsoft.Extensions.Hosting): AddBrymenMeter registra as opções (por código ou por IConfiguration, com binding por source generator, compatível com Native AOT), um serviço hospedado que abre o multímetro Brymen BM525s (= Minipa ET-2615A) pelo cabo USB BC-86X com reconexão automática e mantém a leitura contínua, e o IBrymenMeterAccessor, com o medidor atual, a última leitura e os eventos. Projeto independente, sem afiliação com a Brymen nem com a Minipa.</Description>
+    <PackageTags>brymen;bm525s;bm52x;bc-86x;bu-86x;minipa;et-2615a;multimeter;multimetro;dmm;hosting;dependency-injection;worker</PackageTags>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <Deterministic>true</Deterministic>
+    <!-- Os caminhos locais saem das DLLs e dos PDBs pelo PathMap do Release (Directory.Build.props), também sem git. -->
+    <ContinuousIntegrationBuild Condition="'$(CI)' != '' Or '$(TF_BUILD)' != ''">true</ContinuousIntegrationBuild>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Vira a dependência de pacote Brymen.Dmm (>= a versão deste build). -->
+    <ProjectReference Include="..\Brymen.Dmm\Brymen.Dmm.csproj" />
+    <!-- Só para compilar: o Brymen.Dmm leva o Protocol e o Hid dentro do próprio pacote (lib/<tfm>/), e não como
+         dependências. PrivateAssets="all" deixa os dois fora do nuspec deste pacote. -->
+    <ProjectReference Include="..\Brymen.Dmm.Protocol\Brymen.Dmm.Protocol.csproj" PrivateAssets="all" />
+    <ProjectReference Include="..\Brymen.Dmm.Hid\Brymen.Dmm.Hid.csproj" PrivateAssets="all" />
+  </ItemGroup>
+
+  <!-- Microsoft.Extensions.* na versão de cada alvo: um app .NET 8 não é levado às abstrações 10.0. A versão é o PISO
+       do consumidor (o nuspec diz ">= versão"): a menor de cada linha, a 8.0.0 e a 10.0.0, para um app com um patch mais
+       antigo do que o mais recente não cair no NU1605 (downgrade) nem levar cópias locais por cima do framework
+       compartilhado. O Binder traz o source generator do binding (EnableConfigurationBindingGenerator), e o
+       Logging.Abstractions, o do [LoggerMessage] (os geradores não vêm pelas dependências transitivas do
+       Hosting.Abstractions); o IHostedLifecycleService existe desde o Hosting.Abstractions 8.0.0. -->
+  <ItemGroup Condition="'$(TargetFramework)' == 'net8.0'">
+    <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="8.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="8.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Options" Version="8.0.0" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(TargetFramework)' == 'net10.0'">
+    <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="10.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="10.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Options" Version="10.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="README.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Brymen.Dmm.Extensions.Hosting.Tests" />
+  </ItemGroup>
+
+</Project>
