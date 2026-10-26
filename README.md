@@ -1,5 +1,8 @@
 # Brymen DMM REST
 
+<p align="center"><img src="docs/images/minipa-et-2615a-bc-86x.webp" width="360"
+  alt="Minipa ET-2615A (Brymen BM525s) com o cabo óptico USB BC-86X"></p>
+
 Port para .NET 10 do *Bs82-52x Data Recording System V6.0.0.9*, o software Windows da Brymen que lê
 os multímetros das famílias BM52x e BM82x pelo cabo óptico USB **BC-86X** (kit **BU-86X**). Dois
 medidores foram validados no hardware:
