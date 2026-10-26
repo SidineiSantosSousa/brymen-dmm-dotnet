@@ -62,8 +62,8 @@ public sealed class Bm525sUnlinkedFactory : ApiFactory
 
 internal static class ModelAssertions
 {
-    public const string Bm52xName = "BM52x (BM525s / Minipa ET-2615A)";
-    public const string Bm82xName = "BM82x (Minipa ET-2517A)";
+    public const string Bm52xName = "Minipa ET-2615A (Brymen BM525s, BM52x)";
+    public const string Bm82xName = "Minipa ET-2517A (Brymen BM827s, BM82x)";
 
     /// <summary>Espera até <c>GET /api/v1/meter</c> ter o objeto <c>model</c>.</summary>
     public static async Task<JsonElement> WaitForModelAsync(HttpClient client)

@@ -28,7 +28,7 @@ public sealed class DataLoggerFamilyTests
         Assert.Equal("E9014", BrymenErrorCodes.DataLoggerNotSupported);
         Assert.Equal(BrymenErrorCodes.DataLoggerNotSupported, memory.Code);
         Assert.Equal(BrymenErrorCodes.DataLoggerNotSupported, image.Code);
-        Assert.Contains("BM82x (Minipa ET-2517A)", memory.Message, StringComparison.Ordinal);
+        Assert.Contains("Minipa ET-2517A (Brymen BM827s, BM82x)", memory.Message, StringComparison.Ordinal);
         Assert.Contains("Model ID 82h", memory.Message, StringComparison.Ordinal);
         Assert.Contains("nenhum comando de memória", memory.Message, StringComparison.Ordinal);
         Assert.Equal(writes, setup.Device.Writes.Count);

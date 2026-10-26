@@ -75,7 +75,7 @@ There are no third-party native dependencies. On Linux the cable is accessed thr
 
 - The Model ID identifies the family, not the model: over USB, an ET-2517A cannot be told apart from a BM829s. The
   library and the API expose the family, with a description that names the validated models
-  (`BM52x (BM525s / Minipa ET-2615A)` and `BM82x (Minipa ET-2517A)`).
+  (`Minipa ET-2615A (Brymen BM525s, BM52x)` and `Minipa ET-2517A (Brymen BM827s, BM82x)`).
 - Possible rebrands, **not validated**: Greenlee DM-810A, DM-820A and DM-830A (similar to the BM82x meters) and
   DML-430A (similar to the BM525s), with the DMSC-9U USB kit, which may not use the same HID protocol.
 - The BM860s series (BM867s, BM869s) uses the same BU-86X kit, but a different protocol and different software:
@@ -336,7 +336,7 @@ The image and session routes return `409` (`CONFLICT`) while the import is in pr
 complete successfully. The full list of responses per route is in
 [`docs/architecture.md`](docs/architecture.md#rotas).
 
-**Dashboard.** The title of the dashboard at `/` shows the detected meter (`BM82x (Minipa ET-2517A)`, for example;
+**Dashboard.** The title of the dashboard at `/` shows the detected meter (`Minipa ET-2517A (Brymen BM827s, BM82x)`, for example;
 “Brymen DMM” before the 1st reading), with the family, the Model ID and the real-time resends in the tooltip. On a
 meter without a datalogger, the “Importar do medidor” (“Import from meter”) button disappears, and a note says that
 there is no memory to import.
@@ -395,7 +395,7 @@ real-time counters since the service started. With the simulated ET-2517A (`Mete
 ```json
 {
   "linkEnabled": true, "state": "connected", "transport": "simulated", "...": "...",
-  "model": { "family": "BM82x", "modelId": "0x82", "name": "BM82x (Minipa ET-2517A)", "supportsDataLogger": false },
+  "model": { "family": "BM82x", "modelId": "0x82", "name": "Minipa ET-2517A (Brymen BM827s, BM82x)", "supportsDataLogger": false },
   "realTimeStatistics": { "queries": 27, "requests": 33, "resends": 6, "lostRequests": 6, "recoveredQueries": 4, "failedQueries": 0 }
 }
 ```

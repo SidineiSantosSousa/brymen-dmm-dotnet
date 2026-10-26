@@ -28,7 +28,7 @@ public sealed class MeterFamilyTests
         Assert.Equal((MeterFamily.Bm52x, MeterFamily.Bm52x), (first.Family, second.Family));
         Assert.Equal((Bm525sHex(0), Bm525sHex(1)), (first.RawHex, second.RawHex));
         Assert.Equal(["8266", "5266"], setup.Requests);
-        Assert.Equal("BM52x (BM525s / Minipa ET-2615A)", meter.ModelDescription);
+        Assert.Equal("Minipa ET-2615A (Brymen BM525s, BM52x)", meter.ModelDescription);
         Assert.True(meter.SupportsDataLogger);
         Assert.Equal(new RealTimeStatistics(Queries: 2, Requests: 2, Resends: 0, LostRequests: 0, RecoveredQueries: 0, FailedQueries: 0), meter.RealTimeStatistics);
     }
@@ -52,7 +52,7 @@ public sealed class MeterFamilyTests
         Assert.Equal("V", readings[0].Main!.UnitSymbol);
         Assert.Equal(MeasurementMode.AC, readings[0].Main!.Mode);
         Assert.False(meter.SupportsDataLogger);
-        Assert.Equal("BM82x (Minipa ET-2517A)", meter.ModelDescription);
+        Assert.Equal("Minipa ET-2517A (Brymen BM827s, BM82x)", meter.ModelDescription);
         Assert.Equal((meter.Family, meter.SupportsDataLogger, meter.ModelDescription), (view.Family, view.SupportsDataLogger, view.ModelDescription));
         Assert.Equal(meter.RealTimeStatistics, view.RealTimeStatistics);
         Assert.Equal(3, meter.RealTimeStatistics.Queries);

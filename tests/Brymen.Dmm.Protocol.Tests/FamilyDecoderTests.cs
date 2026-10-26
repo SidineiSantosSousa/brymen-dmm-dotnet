@@ -105,8 +105,8 @@ public class FamilyDecoderTests
         Assert.True(bm52x.HasDataLogger());
         Assert.False(bm82x.HasDataLogger());
         Assert.Equal(("BM52x", "BM82x"), (bm52x.Name(), bm82x.Name()));
-        Assert.Equal("BM52x (BM525s / Minipa ET-2615A)", bm52x.Describe());
-        Assert.Equal("BM82x (Minipa ET-2517A)", bm82x.Describe());
+        Assert.Equal("Minipa ET-2615A (Brymen BM525s, BM52x)", bm52x.Describe());
+        Assert.Equal("Minipa ET-2517A (Brymen BM827s, BM82x)", bm82x.Describe());
     }
 
     [Fact]

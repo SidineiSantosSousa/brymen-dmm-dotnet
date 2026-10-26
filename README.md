@@ -72,8 +72,8 @@ Não há dependências nativas de terceiros. No Linux o acesso ao cabo é feito 
 | Brymen BM520 e BM820 (sem o “s”) | BM52x e BM82x, pelos títulos dos protocolos da Brymen | BM820: não; BM520: não confirmado | Não confirmados nem validados. |
 
 - O Model ID identifica a família, e não o modelo: pela USB, um ET-2517A não se distingue de um BM829s. A biblioteca e
-  a API expõem a família, com uma descrição que cita os modelos validados (`BM52x (BM525s / Minipa ET-2615A)` e
-  `BM82x (Minipa ET-2517A)`).
+  a API expõem a família, com uma descrição que cita os modelos validados (`Minipa ET-2615A (Brymen BM525s, BM52x)` e
+  `Minipa ET-2517A (Brymen BM827s, BM82x)`).
 - Rebrands possíveis, **não validados**: Greenlee DM-810A, DM-820A e DM-830A (parecidos com os BM82x) e DML-430A
   (parecido com o BM525s), com o kit USB DMSC-9U, que pode não usar o mesmo protocolo HID.
 - A série BM860s (BM867s, BM869s) usa o mesmo kit BU-86X, mas outro protocolo e outro software: **não é suportada**.
@@ -334,7 +334,7 @@ As rotas da imagem e das sessões respondem `409` (`CONFLICT`) enquanto a import
 se ela não terminou com sucesso. A lista completa de respostas por rota está em
 [`docs/architecture.md`](docs/architecture.md#rotas).
 
-**Painel.** O título do painel em `/` mostra o medidor detectado (`BM82x (Minipa ET-2517A)`, por exemplo; “Brymen DMM”
+**Painel.** O título do painel em `/` mostra o medidor detectado (`Minipa ET-2517A (Brymen BM827s, BM82x)`, por exemplo; “Brymen DMM”
 antes da 1ª leitura), com a família, o Model ID e os reenvios do tempo real na dica. Num medidor sem datalogger, o botão
 “Importar do medidor” some, e uma nota avisa que não há memória para importar.
 
@@ -392,7 +392,7 @@ real desde a partida do serviço. Com o ET-2517A simulado (`Meter:SimulatedModel
 ```json
 {
   "linkEnabled": true, "state": "connected", "transport": "simulated", "...": "...",
-  "model": { "family": "BM82x", "modelId": "0x82", "name": "BM82x (Minipa ET-2517A)", "supportsDataLogger": false },
+  "model": { "family": "BM82x", "modelId": "0x82", "name": "Minipa ET-2517A (Brymen BM827s, BM82x)", "supportsDataLogger": false },
   "realTimeStatistics": { "queries": 27, "requests": 33, "resends": 6, "lostRequests": 6, "recoveredQueries": 4, "failedQueries": 0 }
 }
 ```

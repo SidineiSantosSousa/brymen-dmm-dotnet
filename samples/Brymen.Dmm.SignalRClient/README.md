@@ -21,14 +21,14 @@ também é aceito. O cliente:
 ```text
 Conectando a http://localhost:5080/hubs/meter (Ctrl+C encerra)...
 18:18:14 conectado (Pz1-VjshrPMkHzPSCmwTvA).
-18:18:14 [GetStatus] connected, link ativo, cabo aberto (sim://bu86x/0), transporte simulated, medidor BM52x (BM525s / Minipa ET-2615A), 45 leituras
+18:18:14 [GetStatus] connected, link ativo, cabo aberto (sim://bu86x/0), transporte simulated, medidor Minipa ET-2615A (Brymen BM525s, BM52x), 45 leituras
 18:18:14.314 [GetLatest] #45         0.090 V AC | 0.000 Hz        AUTO
 18:18:14.521 #46         0.090 V AC | 0.000 Hz        AUTO
-18:18:16 [status] unlinked, link desativado, cabo fechado (sim://bu86x/0), transporte simulated, medidor BM52x (BM525s / Minipa ET-2615A), 54 leituras
+18:18:16 [status] unlinked, link desativado, cabo fechado (sim://bu86x/0), transporte simulated, medidor Minipa ET-2615A (Brymen BM525s, BM52x), 54 leituras
 ```
 
 Com o ET-2517A (ou `Meter:SimulatedModel=Et2517a` no serviço), o medidor aparece como
-`medidor BM82x (Minipa ET-2517A) sem datalogger`. Antes da 1ª leitura, e com um serviço 0.1.0, que não manda o campo
+`medidor Minipa ET-2517A (Brymen BM827s, BM82x) sem datalogger`. Antes da 1ª leitura, e com um serviço 0.1.0, que não manda o campo
 `model`, a parte do medidor não aparece.
 
 ## Contrato do hub `/hubs/meter`

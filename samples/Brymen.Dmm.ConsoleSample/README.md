@@ -1,7 +1,7 @@
 # Brymen.Dmm.ConsoleSample
 
 Console .NET 10 que usa o **pacote** `Brymen.Dmm`, como um projeto de fora deste repositório usaria: imprime as
-leituras do multímetro ao vivo, da família BM52x (BM525s = Minipa ET-2615A) ou BM82x (Minipa ET-2517A), e importa a
+leituras do multímetro ao vivo, da família BM52x (BM525s = Minipa ET-2615A) ou Minipa ET-2517A (Brymen BM827s, BM82x), e importa a
 memória do datalogger do BM52x para um CSV.
 
 O projeto não está na solução (`BrymenDmm.slnx`) e não referencia o código de `src/`: ele restaura o pacote do feed
@@ -25,7 +25,7 @@ Saída (medidor simulado, com as capturas reais do BM525s em ACV):
 ```text
 Cabo: sim://bu86x/0 (Brymen Superior DMM)
 10 leituras (Ctrl+C interrompe):
-Medidor: BM52x (BM525s / Minipa ET-2615A), com datalogger
+Medidor: Minipa ET-2615A (Brymen BM525s, BM52x), com datalogger
 14:02:31.415  0.287 V AC       | 0.000 Hz         [AUTO]
 ...
 Tempo real: 10 consultas, 10 pedidos, 0 reenvios, 0 consultas recuperadas por reenvio, 0 sem resposta
@@ -40,7 +40,7 @@ descarta pedidos como o real, os reenvios aparecem nela sem nenhum erro. As 60 l
 $ dotnet run --project samples/Brymen.Dmm.ConsoleSample -- --simulated et2517a --count 60
 Cabo: sim://bu86x/0 (Brymen Superior DMM)
 60 leituras (Ctrl+C interrompe):
-Medidor: BM82x (Minipa ET-2517A), sem datalogger
+Medidor: Minipa ET-2517A (Brymen BM827s, BM82x), sem datalogger
 17:21:27.217  0.013 V AC       | 0.000 Hz         [AUTO]
 ...
 17:21:44.889  0.000 V DC       | 0.000 V AC       [AUTO]

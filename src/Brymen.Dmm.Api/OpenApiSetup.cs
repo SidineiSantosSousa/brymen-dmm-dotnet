@@ -68,7 +68,7 @@ internal static class OpenApiSetup
             + "O Model ID identifica a família, e não o modelo exato.";
         Describe(schema, "family", "Família do medidor.", "BM52x", "BM82x");
         Describe(schema, "modelId", "Model ID e código do pedido de tempo real (52 66 ou 82 66).", "0x52", "0x82");
-        Describe(schema, "name", "Família com os modelos validados no hardware.", "BM52x (BM525s / Minipa ET-2615A)", "BM82x (Minipa ET-2517A)");
+        Describe(schema, "name", "Família com os modelos validados no hardware.", "Minipa ET-2615A (Brymen BM525s, BM52x)", "Minipa ET-2517A (Brymen BM827s, BM82x)");
         Describe(schema, "supportsDataLogger", "Se o medidor tem datalogger (só a família BM52x); false = POST /api/v1/logger/imports responde 409 com E9014.");
     }
 

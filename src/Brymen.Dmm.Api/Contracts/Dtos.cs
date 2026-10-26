@@ -57,7 +57,7 @@ public sealed record MeterErrorDto(string Code, string Message, DateTimeOffset T
 /// </summary>
 /// <param name="Family">"BM52x" ou "BM82x".</param>
 /// <param name="ModelId">Model ID e código do pedido de tempo real: "0x52" (pedido 52 66) ou "0x82" (pedido 82 66).</param>
-/// <param name="Name">Família com os modelos validados: "BM52x (BM525s / Minipa ET-2615A)" ou "BM82x (Minipa ET-2517A)".</param>
+/// <param name="Name">Família com os modelos validados: "Minipa ET-2615A (Brymen BM525s, BM52x)" ou "Minipa ET-2517A (Brymen BM827s, BM82x)".</param>
 /// <param name="SupportsDataLogger">
 /// Se o medidor tem datalogger (só a BM52x); false = <c>POST /api/v1/logger/imports</c> responde 409 com E9014.
 /// </param>

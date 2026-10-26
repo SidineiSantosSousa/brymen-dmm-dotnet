@@ -40,7 +40,7 @@ public interface IBrymenMeter
     bool SupportsDataLogger => Family is not { } family || family.HasDataLogger();
 
     /// <summary>
-    /// Descrição da família do medidor, como <c>"BM52x (BM525s / Minipa ET-2615A)"</c> ou <c>"BM82x (Minipa ET-2517A)"</c>
+    /// Descrição da família do medidor, como <c>"Minipa ET-2615A (Brymen BM525s, BM52x)"</c> ou <c>"Minipa ET-2517A (Brymen BM827s, BM82x)"</c>
     /// (<see cref="MeterFamilies.Describe"/>); <see langword="null"/> com a família desconhecida. A implementação padrão usa
     /// <see cref="Family"/>.
     /// </summary>

@@ -24,7 +24,7 @@ public sealed class FamilyHostingTests
         Assert.Equal(MeterFamily.Bm82x, host.Accessor.Family);
         Assert.Equal(MeterFamily.Bm82x, meter.Family);
         Assert.False(meter.SupportsDataLogger);
-        Assert.Equal("BM82x (Minipa ET-2517A)", meter.ModelDescription);
+        Assert.Equal("Minipa ET-2517A (Brymen BM827s, BM82x)", meter.ModelDescription);
         Assert.True(meter.RealTimeStatistics.Queries >= 2);
         Assert.All(host.Events.Readings, r => Assert.Equal(MeterFamily.Bm82x, r.Family));
 
@@ -35,7 +35,7 @@ public sealed class FamilyHostingTests
 
         var family = Assert.Single(host.Logs.Of<BrymenMeterHostedService>(), e => e.EventId == 8);
         Assert.Equal(LogLevel.Information, family.Level);
-        Assert.Equal("Família do multímetro: BM82x (Minipa ET-2517A), sem datalogger.", family.Message);
+        Assert.Equal("Família do multímetro: Minipa ET-2517A (Brymen BM827s, BM82x), sem datalogger.", family.Message);
 
         await host.StopAsync();
 
@@ -54,7 +54,7 @@ public sealed class FamilyHostingTests
         await host.StopAsync();
 
         var family = Assert.Single(host.Logs.Of<BrymenMeterHostedService>(), e => e.EventId == 8);
-        Assert.Equal("Família do multímetro: BM52x (BM525s / Minipa ET-2615A), com datalogger.", family.Message);
+        Assert.Equal("Família do multímetro: Minipa ET-2615A (Brymen BM525s, BM52x), com datalogger.", family.Message);
         Assert.Equal(MeterFamily.Bm52x, host.Accessor.Family);
     }
 
@@ -99,7 +99,7 @@ public sealed class FamilyHostingTests
         Assert.Null(empty.Family);
         Assert.Equal(MeterFamily.Bm82x, withMeter.Family);
         Assert.False(withMeter.Meter!.SupportsDataLogger);
-        Assert.Equal("BM82x (Minipa ET-2517A)", withMeter.Meter.ModelDescription);
+        Assert.Equal("Minipa ET-2517A (Brymen BM827s, BM82x)", withMeter.Meter.ModelDescription);
     }
 
     /// <summary>Um <see cref="IBrymenMeter"/> só com os membros sem implementação padrão (o de quem simula a interface).</summary>

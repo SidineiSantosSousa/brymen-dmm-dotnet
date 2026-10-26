@@ -25,7 +25,7 @@ BM525s (= Minipa ET-2615A). Na API pública da biblioteca, só acréscimos: nada
 
 - `enum MeterFamily : byte { Bm52x = 0x52, Bm82x = 0x82 }` e `static class MeterFamilies`: `TryFromModelId(byte, out
   MeterFamily)` e as extensões `Code()`, `HasDataLogger()`, `Name()` (`"BM52x"`, `"BM82x"`) e `Describe()`
-  (`"BM52x (BM525s / Minipa ET-2615A)"`, `"BM82x (Minipa ET-2517A)"`).
+  (`"Minipa ET-2615A (Brymen BM525s, BM52x)"`, `"Minipa ET-2517A (Brymen BM827s, BM82x)"`).
 - `Bm52xCommands.Bm52xFamily` (`0x52`) e `Bm52xCommands.Bm82xFamily` (`0x82`); `Bm52xCommands.Family` (`0x52`) continua.
 - `Bm52xRealtime.Decode(ReadOnlySpan<byte>, DateTimeOffset, MeterFamily expectedFamily)`,
   `TryDecode(ReadOnlySpan<byte>, DateTimeOffset, MeterFamily expectedFamily, out DmmReading?, out string?)` e

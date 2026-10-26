@@ -88,7 +88,7 @@ um cabo removido ou um medidor desligado não termina a enumeração: as falhas 
 
 O mesmo cabo serve às duas famílias, com o mesmo mapa de LCD. A família vem do Model ID (bytes 20–23) do quadro de
 tempo real e fica em `meter.Family` e em `DmmReading.Family`; `meter.ModelDescription` a descreve (`"BM52x (BM525s /
-Minipa ET-2615A)"` ou `"BM82x (Minipa ET-2517A)"`), e `meter.SupportsDataLogger` diz se há memória.
+Minipa ET-2615A)"` ou `"Minipa ET-2517A (Brymen BM827s, BM82x)"`), e `meter.SupportsDataLogger` diz se há memória.
 
 - **Detecção** (`BrymenMeterOptions.Family = MeterFamilySelection.Auto`, o padrão): a 1ª leitura depois da abertura
   envia o `82 66`, que as duas famílias aceitam, e já é uma leitura; sem nenhum relatório, ela tenta o `52 66`. Depois,
@@ -106,7 +106,7 @@ Minipa ET-2615A)"` ou `"BM82x (Minipa ET-2517A)"`), e `meter.SupportsDataLogger`
 
 ```csharp
 DmmReading r = await meter.ReadAsync();
-Console.WriteLine($"{meter.ModelDescription}: {r.Main?.Text} {r.Main?.UnitSymbol}");   // BM82x (Minipa ET-2517A): ...
+Console.WriteLine($"{meter.ModelDescription}: {r.Main?.Text} {r.Main?.UnitSymbol}");   // Minipa ET-2517A (Brymen BM827s, BM82x): ...
 
 RealTimeStatistics s = meter.RealTimeStatistics;
 Console.WriteLine($"{s.Queries} consultas, {s.Resends} reenvios, {s.RecoveredQueries} recuperadas, {s.FailedQueries} sem resposta");

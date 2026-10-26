@@ -97,7 +97,7 @@ pasta da versão no cache.
 | Windows | `hid.dll`, sem driver. Validado no Windows 11 x64, nos dois alvos: com o BM525s real na versão 0.1.0 e com o ET-2517A real na 0.2.0 ([§11 do relatório de validação](validation-report.md#11-minipa-et-2517a-família-bm82x)). |
 | Linux | `hidraw` pela libc, com glibc, em x64 e arm64 (Raspberry Pi com sistema de 64 bits). Validado com o BM525s real num Orange Pi 5 (Ubuntu 22.04, arm64), com o pacote 0.1.0 nos dois alvos ([§10.7 do relatório de validação](validation-report.md#107-biblioteca-nuget-no-arm)). Um Linux x64 real não foi testado; o transporte hidraw também é coberto pelos testes do `Brymen.Dmm.Hid`, inclusive com um cabo virtual pelo `/dev/uhid`. |
 | Outros sistemas | Sem transporte HID: `BrymenMeter.OpenAsync` sem `DeviceProvider` lança `PlatformNotSupportedException`. O medidor simulado e um `IHidDeviceProvider` próprio funcionam. |
-| Medidores | BM52x (BM525s = Minipa ET-2615A) e BM82x (Minipa ET-2517A), com a família detectada na 1ª leitura ([Famílias BM52x e BM82x](#famílias-bm52x-e-bm82x)). A lista completa, com os modelos prováveis não validados, está em [Medidores suportados](../README.md#medidores-suportados). |
+| Medidores | BM52x (BM525s = Minipa ET-2615A) e Minipa ET-2517A (Brymen BM827s, BM82x), com a família detectada na 1ª leitura ([Famílias BM52x e BM82x](#famílias-bm52x-e-bm82x)). A lista completa, com os modelos prováveis não validados, está em [Medidores suportados](../README.md#medidores-suportados). |
 
 ## Início rápido
 
@@ -144,7 +144,7 @@ bytes 20 a 23 do quadro (o Model ID, os quatro iguais) dizem a família, e não 
 | Política de cada consulta | um envio, até `ReportTimeout` por relatório | reenvios a cada `RealTimeResendTimeout`, até `RealTimeResendBudget` |
 
 A família fica em `BrymenMeter.Family` e em cada `DmmReading.Family`. `ModelDescription` a descreve
-(`"BM52x (BM525s / Minipa ET-2615A)"` ou `"BM82x (Minipa ET-2517A)"`), e `SupportsDataLogger` diz se a leitura da
+(`"Minipa ET-2615A (Brymen BM525s, BM52x)"` ou `"Minipa ET-2517A (Brymen BM827s, BM82x)"`), e `SupportsDataLogger` diz se a leitura da
 memória faz sentido. Os outros modelos prováveis de cada família (BM521s; BM821s, BM822s, BM827s e BM829s) não foram
 validados: veja [Medidores suportados](../README.md#medidores-suportados).
 
@@ -284,7 +284,7 @@ quem chama ([Threads](#threads-concorrência-e-eventos)).
 | `bool IsRunning` | Se o laço de `Start` está rodando. |
 | `MeterFamily? Family` | A família: a de `BrymenMeterOptions.Family`, quando fixa, ou a detectada pela leitura mais recente. Com `Auto`, `null` logo depois da abertura, até a 1ª leitura, e depois de 3 consultas seguidas sem resposta, até a detecção seguinte ([Detecção](#detecção)). |
 | `bool SupportsDataLogger` | `false` só com uma família conhecida sem datalogger (BM82x), em que a leitura da memória falha com `E9014`, sem comandos de memória ([Sem datalogger](#sem-datalogger-e9014)); `true` com a família desconhecida. |
-| `string? ModelDescription` | `"BM52x (BM525s / Minipa ET-2615A)"` ou `"BM82x (Minipa ET-2517A)"` (`MeterFamilies.Describe`); `null` com a família desconhecida. |
+| `string? ModelDescription` | `"Minipa ET-2615A (Brymen BM525s, BM52x)"` ou `"Minipa ET-2517A (Brymen BM827s, BM82x)"` (`MeterFamilies.Describe`); `null` com a família desconhecida. |
 | `RealTimeStatistics RealTimeStatistics` | Os contadores do tempo real desde a abertura: consultas, pedidos, reenvios, perdas, consultas recuperadas e sem resposta ([Pedidos descartados](#pedidos-descartados-e-reenvio)). |
 | `Task<DmmReading> ReadAsync(CancellationToken cancellationToken = default)` | Uma consulta de tempo real decodificada (`52 66` no BM52x; `82 66` no BM82x e na detecção), sem nova tentativa além dos reenvios do BM82x. |
 | `IAsyncEnumerable<DmmReading> ReadContinuouslyAsync(TimeSpan? interval = null, CancellationToken cancellationToken = default)` | Uma consulta a cada `interval` (padrão: `PollInterval`), contado do início de uma ao início da seguinte; termina quando o medidor é descartado, e com `OperationCanceledException` no cancelamento. Cada enumeração faz as suas consultas, independentes do laço de `Start` e das outras: para vários consumidores, use `Start` e `ReadingReceived` (ou `IBrymenMeterAccessor.ReadingsAsync`). |
@@ -356,7 +356,7 @@ Um valor fora da faixa dá `ArgumentOutOfRangeException` (um `ArgumentException`
 | `sealed record DisplayReading` | `Digits`, `Text` (como no LCD), `Negative`, `Overload`, `double? Value`, `Prefix`, `Unit`, `MeasurementMode Mode`, `double? SiValue`, `UnitSymbol` (ex.: `mV`, `kΩ`). |
 | `[Flags] enum DmmFlags` e `static class DmmFlagNames` | Os anunciadores do LCD (`Auto`, `HoldBox`, `LowBattery`...) e os nomes estáveis (`DmmFlagNames.ToNames`, `TryParse`). |
 | `enum MeasurementMode { None, DC, AC, AcDc }` | Acoplamento indicado no display. |
-| `enum MeterFamily : byte { Bm52x = 0x52, Bm82x = 0x82 }` e `static class MeterFamilies` | A família (Protocol). `MeterFamilies.TryFromModelId(byte modelId, out MeterFamily family)` e as extensões `Code()` (`52h`/`82h`), `HasDataLogger()` (só `Bm52x`), `Name()` (`"BM52x"`/`"BM82x"`) e `Describe()` (`"BM52x (BM525s / Minipa ET-2615A)"`/`"BM82x (Minipa ET-2517A)"`). |
+| `enum MeterFamily : byte { Bm52x = 0x52, Bm82x = 0x82 }` e `static class MeterFamilies` | A família (Protocol). `MeterFamilies.TryFromModelId(byte modelId, out MeterFamily family)` e as extensões `Code()` (`52h`/`82h`), `HasDataLogger()` (só `Bm52x`), `Name()` (`"BM52x"`/`"BM82x"`) e `Describe()` (`"Minipa ET-2615A (Brymen BM525s, BM52x)"`/`"Minipa ET-2517A (Brymen BM827s, BM82x)"`). |
 | `enum MeterFamilySelection { Auto = 0, Bm52x = 0x52, Bm82x = 0x82 }` | O valor de `BrymenMeterOptions.Family`: detectada ou fixa. |
 | `readonly record struct RealTimeStatistics(long Queries, long Requests, long Resends, long LostRequests, long RecoveredQueries, long FailedQueries)` | Os contadores do tempo real ([Pedidos descartados](#pedidos-descartados-e-reenvio)). |
 
@@ -620,7 +620,7 @@ lidas, na partida do host.
   falhas (Warning, evento 2; a mesma falha repetida vai para Debug, evento 3, até a comunicação voltar), recuperação
   (Information, evento 4), falhas inesperadas e de handlers (Error, evento 5), sem reconexão automática (Warning,
   evento 6), fechamento (Information, evento 7) e a família do medidor (Information, evento 8: “Família do multímetro:
-  BM82x (Minipa ET-2517A), sem datalogger.”), na 1ª leitura do medidor aberto pelo serviço e a cada troca de família.
+  Minipa ET-2517A (Brymen BM827s, BM82x), sem datalogger.”), na 1ª leitura do medidor aberto pelo serviço e a cada troca de família.
   Os pedidos do BM82x
   recuperados por reenvio não são falhas e não vão para o log.
 

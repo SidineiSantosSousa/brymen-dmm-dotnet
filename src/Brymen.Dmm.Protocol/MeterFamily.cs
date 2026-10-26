@@ -57,13 +57,13 @@ public static class MeterFamilies
     };
 
     /// <summary>
-    /// Descrição da família com os modelos validados no hardware: <c>"BM52x (BM525s / Minipa ET-2615A)"</c> e
-    /// <c>"BM82x (Minipa ET-2517A)"</c>. O Model ID não distingue os modelos de uma família.
+    /// Descrição da família com os modelos validados no hardware: <c>"Minipa ET-2615A (Brymen BM525s, BM52x)"</c> e
+    /// <c>"Minipa ET-2517A (Brymen BM827s, BM82x)"</c>. O Model ID não distingue os modelos de uma família.
     /// </summary>
     public static string Describe(this MeterFamily family) => family switch
     {
-        MeterFamily.Bm52x => "BM52x (BM525s / Minipa ET-2615A)",
-        MeterFamily.Bm82x => "BM82x (Minipa ET-2517A)",
+        MeterFamily.Bm52x => "Minipa ET-2615A (Brymen BM525s, BM52x)",
+        MeterFamily.Bm82x => "Minipa ET-2517A (Brymen BM827s, BM82x)",
         _ => "família desconhecida",
     };
 }

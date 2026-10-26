@@ -5,7 +5,7 @@ using Brymen.Dmm.Protocol;
 namespace Brymen.Dmm;
 
 /// <summary>
-/// Multímetro Brymen BM52x (BM525s = Minipa ET-2615A) ou BM82x (Minipa ET-2517A) pelo cabo óptico USB BC-86X (kit BU-86X):
+/// Multímetro Brymen BM52x (BM525s = Minipa ET-2615A) ou Minipa ET-2517A (Brymen BM827s, BM82x) pelo cabo óptico USB BC-86X (kit BU-86X):
 /// leitura do tempo real avulsa (<see cref="ReadAsync"/>), contínua (<see cref="ReadContinuouslyAsync"/>) ou por eventos
 /// (<see cref="Start"/>), e importação da memória do datalogger do BM52x (<see cref="ReadLoggerMemoryAsync"/>).
 /// </summary>
@@ -146,8 +146,8 @@ public sealed class BrymenMeter : IBrymenMeter, IAsyncDisposable, IDisposable
     public bool SupportsDataLogger => _connection.SupportsDataLogger;
 
     /// <summary>
-    /// Descrição da família, com os modelos validados: <c>"BM52x (BM525s / Minipa ET-2615A)"</c> ou
-    /// <c>"BM82x (Minipa ET-2517A)"</c> (<see cref="MeterFamilies.Describe"/>); <see langword="null"/> com
+    /// Descrição da família, com os modelos validados: <c>"Minipa ET-2615A (Brymen BM525s, BM52x)"</c> ou
+    /// <c>"Minipa ET-2517A (Brymen BM827s, BM82x)"</c> (<see cref="MeterFamilies.Describe"/>); <see langword="null"/> com
     /// <see cref="Family"/> desconhecida. O Model ID identifica a família, e não o modelo exato.
     /// </summary>
     public string? ModelDescription => Family?.Describe();

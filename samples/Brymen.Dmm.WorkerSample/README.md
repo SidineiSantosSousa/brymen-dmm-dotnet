@@ -29,7 +29,7 @@ info: Brymen.Dmm.WorkerSample.ReadingLogger[102]
 info: Microsoft.Hosting.Lifetime[0]
       Application started. Press Ctrl+C to shut down.
 info: Brymen.Dmm.Extensions.Hosting.BrymenMeterHostedService[8]
-      Família do multímetro: BM52x (BM525s / Minipa ET-2615A), com datalogger.
+      Família do multímetro: Minipa ET-2615A (Brymen BM525s, BM52x), com datalogger.
 info: Brymen.Dmm.WorkerSample.ReadingLogger[100]
       Leitura: 0.287 V AC | 0.000 Hz [AUTO]
 ```
@@ -39,7 +39,7 @@ leitura contínua começa depois deles: o `ReadingLogger`, registrado depois do 
 `StartAsync`, já encontra o medidor aberto e recebe a 1ª leitura (`0.287`). A ordem do registro não importa.
 
 A 1ª leitura detecta a família pelo Model ID, e o serviço a registra (evento 8). Com `--simulated et2517a`, a linha é
-“Família do multímetro: BM82x (Minipa ET-2517A), sem datalogger.”, e os pedidos que o simulado descarta, como o
+“Família do multímetro: Minipa ET-2517A (Brymen BM827s, BM82x), sem datalogger.”, e os pedidos que o simulado descarta, como o
 ET-2517A real, são reenviados sem nenhum aviso no log.
 
 Sem `--simulated`, o worker usa o primeiro cabo BC-86X. Sem o cabo, ele sobe assim mesmo, registra o `E9015` uma vez
