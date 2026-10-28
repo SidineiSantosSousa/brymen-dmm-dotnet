@@ -1,0 +1,5466 @@
+date: "2026-10-28T09:19:54.722824200-03:00"
+tool_version: 0.9.0 (6749b6a)
+device_name: unknown
+transport_name: BU-86X
+transport_info: BU-86X cable, firmware 86.03
+supported: false
+device_id: bm82x
+init_frames:
+- at_ms: 0
+  dir: tx
+  hex: 00 82 66
+- at_ms: 174
+  dir: rx
+  hex: 00 20 00 BF AF AF AF 40 BF AF A0 AF 10 00 20 00 82 82 82 82 10 00 00 00
+tier: gate
+drive: "off"
+steps:
+- id: ef
+  instruction: "V⎓ position: hold HOLD (EF) for one second or more, away from any wire (E.F. shows), then Enter (BM827s and BM829s only; skip if your meter lacks it)."
+  status: captured
+  samples:
+  - raw_hex: 00 20 00 BF AF AF AF 40 BF A0 AF E4 10 00 20 00 82 82 82 82 10 00 00 00
+    mode_byte: "0x06"
+    mode: DC V
+    display_raw: "0.000"
+    value: "0"
+    unit: V
+    range_label: ""
+    progress: 0
+    flags:
+      hold: false
+      rel: false
+      auto_range: true
+      min: false
+      max: false
+      avg: false
+      low_battery: false
+      hv_warning: false
+      dc: true
+      peak_min: false
+      peak_max: false
+      lead_error: false
+      comp: false
+      record: false
+      loz: false
+      void: false
+    aux:
+    - label: AC
+      value: "0.104"
+      unit: V
+    main_label: DC
+  - raw_hex: 00 20 00 BF AF AF AF 40 BF AF 6D A8 10 00 20 00 82 82 82 82 10 00 00 00
+    mode_byte: "0x06"
+    mode: DC V
+    display_raw: "0.000"
+    value: "0"
+    unit: V
+    range_label: ""
+    progress: 0
+    flags:
+      hold: false
+      rel: false
+      auto_range: true
+      min: false
+      max: false
+      avg: false
+      low_battery: false
+      hv_warning: false
+      dc: true
+      peak_min: false
+      peak_max: false
+      lead_error: false
+      comp: false
+      record: false
+      loz: false
+      void: false
+    aux:
+    - label: AC
+      value: "0.057"
+      unit: V
+    main_label: DC
+  - raw_hex: 00 20 00 BF AF AF AF 40 BF AF 6D A8 10 00 20 00 82 82 82 82 10 00 00 00
+    mode_byte: "0x06"
+    mode: DC V
+    display_raw: "0.000"
+    value: "0"
+    unit: V
+    range_label: ""
+    progress: 0
+    flags:
+      hold: false
+      rel: false
+      auto_range: true
+      min: false
+      max: false
+      avg: false
+      low_battery: false
+      hv_warning: false
+      dc: true
+      peak_min: false
+      peak_max: false
+      lead_error: false
+      comp: false
+      record: false
+      loz: false
+      void: false
+    aux:
+    - label: AC
+      value: "0.057"
+      unit: V
+    main_label: DC
+  - raw_hex: 00 20 00 BF AF AF AF 40 BF AF E9 ED 10 00 20 00 82 82 82 82 10 00 00 00
+    mode_byte: "0x06"
+    mode: DC V
+    display_raw: "0.000"
+    value: "0"
+    unit: V
+    range_label: ""
+    progress: 0
+    flags:
+      hold: false
+      rel: false
+      auto_range: true
+      min: false
+      max: false
+      avg: false
+      low_battery: false
+      hv_warning: false
+      dc: true
+      peak_min: false
+      peak_max: false
+      lead_error: false
+      comp: false
+      record: false
+      loz: false
+      void: false
+    aux:
+    - label: AC
+      value: "0.039"
+      unit: V
+    main_label: DC
+  - raw_hex: 00 20 80 BF AF AF AF 40 BF AF E9 ED 10 00 20 00 82 82 82 82 10 00 00 00
+    mode_byte: "0x06"
+    mode: DC V
+    display_raw: "-0.000"
+    value: "-0"
+    unit: V
+    range_label: ""
+    progress: 0
+    flags:
+      hold: false
+      rel: false
+      auto_range: true
+      min: false
+      max: false
+      avg: false
+      low_battery: false
+      hv_warning: false
+      dc: true
+      peak_min: false
+      peak_max: false
+      lead_error: false
+      comp: false
+      record: false
+      loz: false
+      void: false
+    aux:
+    - label: AC
+      value: "0.039"
+      unit: V
+    main_label: DC
+  frames:
+  - at_ms: 20166
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 20767
+    dir: rx
+    hex: 00 20 00 BF AF AF AF 40 BF A0 AF E4 10 00 20 00 82 82 82 82 10 00 00 00
+  - at_ms: 20783
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 21550
+    dir: rx
+    hex: 00 20 00 BF AF AF AF 40 BF AF 6D A8 10 00 20 00 82 82 82 82 10 00 00 00
+  - at_ms: 21567
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 22335
+    dir: rx
+    hex: 00 20 00 BF AF AF AF 40 BF AF 6D A8 10 00 20 00 82 82 82 82 10 00 00 00
+  - at_ms: 22351
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 23126
+    dir: rx
+    hex: 00 20 00 BF AF AF AF 40 BF AF E9 ED 10 00 20 00 82 82 82 82 10 00 00 00
+  - at_ms: 23142
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 23910
+    dir: rx
+    hex: 00 20 80 BF AF AF AF 40 BF AF E9 ED 10 00 20 00 82 82 82 82 10 00 00 00
+- id: rec
+  instruction: "DCV: press REC briefly (R and MAX MIN AVG show), then Enter (BM827s and BM829s only; skip this and the REC steps after it if your meter lacks it)."
+  status: captured
+  samples:
+  - raw_hex: 00 2B 00 BF AF AF AF 40 BF AF E9 E9 10 00 20 00 82 82 82 82 30 00 00 00
+    mode_byte: "0x06"
+    mode: DC V
+    display_raw: "0.000"
+    value: "0"
+    unit: V
+    range_label: ""
+    progress: 0
+    flags:
+      hold: false
+      rel: false
+      auto_range: true
+      min: true
+      max: true
+      avg: true
+      low_battery: false
+      hv_warning: false
+      dc: true
+      peak_min: false
+      peak_max: false
+      lead_error: false
+      comp: false
+      record: true
+      loz: false
+      void: false
+    aux:
+    - label: AC
+      value: "0.033"
+      unit: V
+    main_label: DC
+  - raw_hex: 00 2B 00 BF AF AF AF 40 BF AF E9 E9 10 00 20 00 82 82 82 82 30 00 00 00
+    mode_byte: "0x06"
+    mode: DC V
+    display_raw: "0.000"
+    value: "0"
+    unit: V
+    range_label: ""
+    progress: 0
+    flags:
+      hold: false
+      rel: false
+      auto_range: true
+      min: true
+      max: true
+      avg: true
+      low_battery: false
+      hv_warning: false
+      dc: true
+      peak_min: false
+      peak_max: false
+      lead_error: false
+      comp: false
+      record: true
+      loz: false
+      void: false
+    aux:
+    - label: AC
+      value: "0.033"
+      unit: V
+    main_label: DC
+  - raw_hex: 00 2B 00 BF AF AF AF 40 BF AF E9 CB 10 00 20 00 82 82 82 82 30 00 00 00
+    mode_byte: "0x06"
+    mode: DC V
+    display_raw: "0.000"
+    value: "0"
+    unit: V
+    range_label: ""
+    progress: 0
+    flags:
+      hold: false
+      rel: false
+      auto_range: true
+      min: true
+      max: true
+      avg: true
+      low_battery: false
+      hv_warning: false
+      dc: true
+      peak_min: false
+      peak_max: false
+      lead_error: false
+      comp: false
+      record: true
+      loz: false
+      void: false
+    aux:
+    - label: AC
+      value: "0.032"
+      unit: V
+    main_label: DC
+  - raw_hex: 00 2B 00 BF AF AF AF 40 BF AF E9 CB 10 00 20 00 82 82 82 82 30 00 00 00
+    mode_byte: "0x06"
+    mode: DC V
+    display_raw: "0.000"
+    value: "0"
+    unit: V
+    range_label: ""
+    progress: 0
+    flags:
+      hold: false
+      rel: false
+      auto_range: true
+      min: true
+      max: true
+      avg: true
+      low_battery: false
+      hv_warning: false
+      dc: true
+      peak_min: false
+      peak_max: false
+      lead_error: false
+      comp: false
+      record: true
+      loz: false
+      void: false
+    aux:
+    - label: AC
+      value: "0.032"
+      unit: V
+    main_label: DC
+  - raw_hex: 00 2B 00 BF AF AF AF 40 BF AF E9 AF 10 00 20 00 82 82 82 82 30 00 00 00
+    mode_byte: "0x06"
+    mode: DC V
+    display_raw: "0.000"
+    value: "0"
+    unit: V
+    range_label: ""
+    progress: 0
+    flags:
+      hold: false
+      rel: false
+      auto_range: true
+      min: true
+      max: true
+      avg: true
+      low_battery: false
+      hv_warning: false
+      dc: true
+      peak_min: false
+      peak_max: false
+      lead_error: false
+      comp: false
+      record: true
+      loz: false
+      void: false
+    aux:
+    - label: AC
+      value: "0.030"
+      unit: V
+    main_label: DC
+  frames:
+  - at_ms: 40637
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 40750
+    dir: rx
+    hex: 00 2B 00 BF AF AF AF 40 BF AF E9 E9 10 00 20 00 82 82 82 82 30 00 00 00
+  - at_ms: 40767
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 40942
+    dir: rx
+    hex: 00 2B 00 BF AF AF AF 40 BF AF E9 E9 10 00 20 00 82 82 82 82 30 00 00 00
+  - at_ms: 40958
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 41142
+    dir: rx
+    hex: 00 2B 00 BF AF AF AF 40 BF AF E9 CB 10 00 20 00 82 82 82 82 30 00 00 00
+  - at_ms: 41158
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 41334
+    dir: rx
+    hex: 00 2B 00 BF AF AF AF 40 BF AF E9 CB 10 00 20 00 82 82 82 82 30 00 00 00
+  - at_ms: 41350
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 41534
+    dir: rx
+    hex: 00 2B 00 BF AF AF AF 40 BF AF E9 AF 10 00 20 00 82 82 82 82 30 00 00 00
+- id: rec_max
+  instruction: "REC: press REC briefly (MAX shows), then Enter (BM827s and BM829s only)."
+  status: captured
+  samples:
+  - raw_hex: 00 21 00 BF AF E9 E4 40 BF E4 A8 E9 10 00 20 00 82 82 82 82 30 00 00 00
+    mode_byte: "0x06"
+    mode: DC V
+    display_raw: "0.034"
+    value: "0.034"
+    unit: V
+    range_label: ""
+    progress: 0
+    flags:
+      hold: false
+      rel: false
+      auto_range: true
+      min: false
+      max: true
+      avg: false
+      low_battery: false
+      hv_warning: false
+      dc: true
+      peak_min: false
+      peak_max: false
+      lead_error: false
+      comp: false
+      record: true
+      loz: false
+      void: false
+    aux:
+    - label: AC
+      value: "0.473"
+      unit: V
+    main_label: DC
+  - raw_hex: 00 21 00 BF AF E9 E4 40 BF E4 A8 E9 10 00 20 00 82 82 82 82 30 00 00 00
+    mode_byte: "0x06"
+    mode: DC V
+    display_raw: "0.034"
+    value: "0.034"
+    unit: V
+    range_label: ""
+    progress: 0
+    flags:
+      hold: false
+      rel: false
+      auto_range: true
+      min: false
+      max: true
+      avg: false
+      low_battery: false
+      hv_warning: false
+      dc: true
+      peak_min: false
+      peak_max: false
+      lead_error: false
+      comp: false
+      record: true
+      loz: false
+      void: false
+    aux:
+    - label: AC
+      value: "0.473"
+      unit: V
+    main_label: DC
+  - raw_hex: 00 21 00 BF AF E9 E4 40 BF E4 A8 E9 10 00 20 00 82 82 82 82 30 00 00 00
+    mode_byte: "0x06"
+    mode: DC V
+    display_raw: "0.034"
+    value: "0.034"
+    unit: V
+    range_label: ""
+    progress: 0
+    flags:
+      hold: false
+      rel: false
+      auto_range: true
+      min: false
+      max: true
+      avg: false
+      low_battery: false
+      hv_warning: false
+      dc: true
+      peak_min: false
+      peak_max: false
+      lead_error: false
+      comp: false
+      record: true
+      loz: false
+      void: false
+    aux:
+    - label: AC
+      value: "0.473"
+      unit: V
+    main_label: DC
+  - raw_hex: 00 21 00 BF AF E9 E4 40 BF E4 A8 E9 10 00 20 00 82 82 82 82 30 00 00 00
+    mode_byte: "0x06"
+    mode: DC V
+    display_raw: "0.034"
+    value: "0.034"
+    unit: V
+    range_label: ""
+    progress: 0
+    flags:
+      hold: false
+      rel: false
+      auto_range: true
+      min: false
+      max: true
+      avg: false
+      low_battery: false
+      hv_warning: false
+      dc: true
+      peak_min: false
+      peak_max: false
+      lead_error: false
+      comp: false
+      record: true
+      loz: false
+      void: false
+    aux:
+    - label: AC
+      value: "0.473"
+      unit: V
+    main_label: DC
+  - raw_hex: 00 21 00 BF AF E9 E4 40 BF E4 A8 E9 10 00 20 00 82 82 82 82 30 00 00 00
+    mode_byte: "0x06"
+    mode: DC V
+    display_raw: "0.034"
+    value: "0.034"
+    unit: V
+    range_label: ""
+    progress: 0
+    flags:
+      hold: false
+      rel: false
+      auto_range: true
+      min: false
+      max: true
+      avg: false
+      low_battery: false
+      hv_warning: false
+      dc: true
+      peak_min: false
+      peak_max: false
+      lead_error: false
+      comp: false
+      record: true
+      loz: false
+      void: false
+    aux:
+    - label: AC
+      value: "0.473"
+      unit: V
+    main_label: DC
+  frames:
+  - at_ms: 52828
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 52934
+    dir: rx
+    hex: 00 21 00 BF AF E9 E4 40 BF E4 A8 E9 10 00 20 00 82 82 82 82 30 00 00 00
+  - at_ms: 52950
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 53126
+    dir: rx
+    hex: 00 21 00 BF AF E9 E4 40 BF E4 A8 E9 10 00 20 00 82 82 82 82 30 00 00 00
+  - at_ms: 53142
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 53326
+    dir: rx
+    hex: 00 21 00 BF AF E9 E4 40 BF E4 A8 E9 10 00 20 00 82 82 82 82 30 00 00 00
+  - at_ms: 53342
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 53526
+    dir: rx
+    hex: 00 21 00 BF AF E9 E4 40 BF E4 A8 E9 10 00 20 00 82 82 82 82 30 00 00 00
+  - at_ms: 53542
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 53718
+    dir: rx
+    hex: 00 21 00 BF AF E9 E4 40 BF E4 A8 E9 10 00 20 00 82 82 82 82 30 00 00 00
+- id: rec_min
+  instruction: "REC: press REC briefly again (MIN shows), then Enter (BM827s and BM829s only)."
+  status: captured
+  samples:
+  - raw_hex: 00 28 80 BF AF CB 6F 40 BF 6D AF CB 10 00 20 00 82 82 82 82 30 00 00 00
+    mode_byte: "0x06"
+    mode: DC V
+    display_raw: "-0.026"
+    value: "-0.026"
+    unit: V
+    range_label: ""
+    progress: 0
+    flags:
+      hold: false
+      rel: false
+      auto_range: true
+      min: true
+      max: false
+      avg: false
+      low_battery: false
+      hv_warning: false
+      dc: true
+      peak_min: false
+      peak_max: false
+      lead_error: false
+      comp: false
+      record: true
+      loz: false
+      void: false
+    aux:
+    - label: AC
+      value: "0.502"
+      unit: V
+    main_label: DC
+  - raw_hex: 00 28 80 BF AF CB 6F 40 BF 6D AF CB 10 00 20 00 82 82 82 82 30 00 00 00
+    mode_byte: "0x06"
+    mode: DC V
+    display_raw: "-0.026"
+    value: "-0.026"
+    unit: V
+    range_label: ""
+    progress: 0
+    flags:
+      hold: false
+      rel: false
+      auto_range: true
+      min: true
+      max: false
+      avg: false
+      low_battery: false
+      hv_warning: false
+      dc: true
+      peak_min: false
+      peak_max: false
+      lead_error: false
+      comp: false
+      record: true
+      loz: false
+      void: false
+    aux:
+    - label: AC
+      value: "0.502"
+      unit: V
+    main_label: DC
+  - raw_hex: 00 28 80 BF AF CB 6F 40 BF 6D AF CB 10 00 20 00 82 82 82 82 30 00 00 00
+    mode_byte: "0x06"
+    mode: DC V
+    display_raw: "-0.026"
+    value: "-0.026"
+    unit: V
+    range_label: ""
+    progress: 0
+    flags:
+      hold: false
+      rel: false
+      auto_range: true
+      min: true
+      max: false
+      avg: false
+      low_battery: false
+      hv_warning: false
+      dc: true
+      peak_min: false
+      peak_max: false
+      lead_error: false
+      comp: false
+      record: true
+      loz: false
+      void: false
+    aux:
+    - label: AC
+      value: "0.502"
+      unit: V
+    main_label: DC
+  - raw_hex: 00 28 80 BF AF CB 6F 40 BF 6D AF CB 10 00 20 00 82 82 82 82 30 00 00 00
+    mode_byte: "0x06"
+    mode: DC V
+    display_raw: "-0.026"
+    value: "-0.026"
+    unit: V
+    range_label: ""
+    progress: 0
+    flags:
+      hold: false
+      rel: false
+      auto_range: true
+      min: true
+      max: false
+      avg: false
+      low_battery: false
+      hv_warning: false
+      dc: true
+      peak_min: false
+      peak_max: false
+      lead_error: false
+      comp: false
+      record: true
+      loz: false
+      void: false
+    aux:
+    - label: AC
+      value: "0.502"
+      unit: V
+    main_label: DC
+  - raw_hex: 00 28 80 BF AF CB 6F 40 BF 6D AF CB 10 00 20 00 82 82 82 82 30 00 00 00
+    mode_byte: "0x06"
+    mode: DC V
+    display_raw: "-0.026"
+    value: "-0.026"
+    unit: V
+    range_label: ""
+    progress: 0
+    flags:
+      hold: false
+      rel: false
+      auto_range: true
+      min: true
+      max: false
+      avg: false
+      low_battery: false
+      hv_warning: false
+      dc: true
+      peak_min: false
+      peak_max: false
+      lead_error: false
+      comp: false
+      record: true
+      loz: false
+      void: false
+    aux:
+    - label: AC
+      value: "0.502"
+      unit: V
+    main_label: DC
+  frames:
+  - at_ms: 59034
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 59222
+    dir: rx
+    hex: 00 28 80 BF AF CB 6F 40 BF 6D AF CB 10 00 20 00 82 82 82 82 30 00 00 00
+  - at_ms: 59238
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 59414
+    dir: rx
+    hex: 00 28 80 BF AF CB 6F 40 BF 6D AF CB 10 00 20 00 82 82 82 82 30 00 00 00
+  - at_ms: 59430
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 59614
+    dir: rx
+    hex: 00 28 80 BF AF CB 6F 40 BF 6D AF CB 10 00 20 00 82 82 82 82 30 00 00 00
+  - at_ms: 59630
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 59814
+    dir: rx
+    hex: 00 28 80 BF AF CB 6F 40 BF 6D AF CB 10 00 20 00 82 82 82 82 30 00 00 00
+  - at_ms: 59830
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 60006
+    dir: rx
+    hex: 00 28 80 BF AF CB 6F 40 BF 6D AF CB 10 00 20 00 82 82 82 82 30 00 00 00
+- id: rec_max_min
+  instruction: "REC: press REC briefly again (MAX-MIN shows), then Enter (BM827s and BM829s only)."
+  status: captured
+  samples:
+  - raw_hex: 00 2D 00 BF AF 6F AF 40 50 40 40 40 10 00 20 00 82 82 82 82 30 00 00 00
+    mode_byte: "0x06"
+    mode: DC V
+    display_raw: "0.060"
+    value: "0.06"
+    unit: V
+    range_label: ""
+    progress: 0
+    flags:
+      hold: false
+      rel: false
+      auto_range: true
+      min: true
+      max: true
+      avg: false
+      low_battery: false
+      hv_warning: false
+      dc: true
+      peak_min: false
+      peak_max: false
+      lead_error: false
+      comp: false
+      record: true
+      loz: false
+      void: false
+  - raw_hex: 00 2D 00 BF AF 6F AF 40 50 40 40 40 10 00 20 00 82 82 82 82 30 00 00 00
+    mode_byte: "0x06"
+    mode: DC V
+    display_raw: "0.060"
+    value: "0.06"
+    unit: V
+    range_label: ""
+    progress: 0
+    flags:
+      hold: false
+      rel: false
+      auto_range: true
+      min: true
+      max: true
+      avg: false
+      low_battery: false
+      hv_warning: false
+      dc: true
+      peak_min: false
+      peak_max: false
+      lead_error: false
+      comp: false
+      record: true
+      loz: false
+      void: false
+  - raw_hex: 00 2D 00 BF AF 6F AF 40 50 40 40 40 10 00 20 00 82 82 82 82 30 00 00 00
+    mode_byte: "0x06"
+    mode: DC V
+    display_raw: "0.060"
+    value: "0.06"
+    unit: V
+    range_label: ""
+    progress: 0
+    flags:
+      hold: false
+      rel: false
+      auto_range: true
+      min: true
+      max: true
+      avg: false
+      low_battery: false
+      hv_warning: false
+      dc: true
+      peak_min: false
+      peak_max: false
+      lead_error: false
+      comp: false
+      record: true
+      loz: false
+      void: false
+  - raw_hex: 00 2D 00 BF AF 6F AF 40 50 40 40 40 10 00 20 00 82 82 82 82 30 00 00 00
+    mode_byte: "0x06"
+    mode: DC V
+    display_raw: "0.060"
+    value: "0.06"
+    unit: V
+    range_label: ""
+    progress: 0
+    flags:
+      hold: false
+      rel: false
+      auto_range: true
+      min: true
+      max: true
+      avg: false
+      low_battery: false
+      hv_warning: false
+      dc: true
+      peak_min: false
+      peak_max: false
+      lead_error: false
+      comp: false
+      record: true
+      loz: false
+      void: false
+  - raw_hex: 00 2D 00 BF AF 6F AF 40 50 40 40 40 10 00 20 00 82 82 82 82 30 00 00 00
+    mode_byte: "0x06"
+    mode: DC V
+    display_raw: "0.060"
+    value: "0.06"
+    unit: V
+    range_label: ""
+    progress: 0
+    flags:
+      hold: false
+      rel: false
+      auto_range: true
+      min: true
+      max: true
+      avg: false
+      low_battery: false
+      hv_warning: false
+      dc: true
+      peak_min: false
+      peak_max: false
+      lead_error: false
+      comp: false
+      record: true
+      loz: false
+      void: false
+  frames:
+  - at_ms: 68508
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 68654
+    dir: rx
+    hex: 00 2D 00 BF AF 6F AF 40 50 40 40 40 10 00 20 00 82 82 82 82 30 00 00 00
+  - at_ms: 68671
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 68846
+    dir: rx
+    hex: 00 2D 00 BF AF 6F AF 40 50 40 40 40 10 00 20 00 82 82 82 82 30 00 00 00
+  - at_ms: 68862
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 69046
+    dir: rx
+    hex: 00 2D 00 BF AF 6F AF 40 50 40 40 40 10 00 20 00 82 82 82 82 30 00 00 00
+  - at_ms: 69062
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 69246
+    dir: rx
+    hex: 00 2D 00 BF AF 6F AF 40 50 40 40 40 10 00 20 00 82 82 82 82 30 00 00 00
+  - at_ms: 69262
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 69438
+    dir: rx
+    hex: 00 2D 00 BF AF 6F AF 40 50 40 40 40 10 00 20 00 82 82 82 82 30 00 00 00
+- id: rec_avg
+  instruction: "REC: press REC briefly again (AVG shows), then Enter. Hold REC for one second or more afterwards to leave it (BM827s and BM829s only)."
+  status: captured
+  samples:
+  - raw_hex: 00 22 00 BF AF AF AF 40 50 40 40 40 10 00 20 00 82 82 82 82 30 00 00 00
+    mode_byte: "0x06"
+    mode: DC V
+    display_raw: "0.000"
+    value: "0"
+    unit: V
+    range_label: ""
+    progress: 0
+    flags:
+      hold: false
+      rel: false
+      auto_range: true
+      min: false
+      max: false
+      avg: true
+      low_battery: false
+      hv_warning: false
+      dc: true
+      peak_min: false
+      peak_max: false
+      lead_error: false
+      comp: false
+      record: true
+      loz: false
+      void: false
+  - raw_hex: 00 22 00 BF AF AF AF 40 50 40 40 40 10 00 20 00 82 82 82 82 30 00 00 00
+    mode_byte: "0x06"
+    mode: DC V
+    display_raw: "0.000"
+    value: "0"
+    unit: V
+    range_label: ""
+    progress: 0
+    flags:
+      hold: false
+      rel: false
+      auto_range: true
+      min: false
+      max: false
+      avg: true
+      low_battery: false
+      hv_warning: false
+      dc: true
+      peak_min: false
+      peak_max: false
+      lead_error: false
+      comp: false
+      record: true
+      loz: false
+      void: false
+  - raw_hex: 00 22 00 BF AF AF AF 40 50 40 40 40 10 00 20 00 82 82 82 82 30 00 00 00
+    mode_byte: "0x06"
+    mode: DC V
+    display_raw: "0.000"
+    value: "0"
+    unit: V
+    range_label: ""
+    progress: 0
+    flags:
+      hold: false
+      rel: false
+      auto_range: true
+      min: false
+      max: false
+      avg: true
+      low_battery: false
+      hv_warning: false
+      dc: true
+      peak_min: false
+      peak_max: false
+      lead_error: false
+      comp: false
+      record: true
+      loz: false
+      void: false
+  - raw_hex: 00 22 00 BF AF AF AF 40 50 40 40 40 10 00 20 00 82 82 82 82 30 00 00 00
+    mode_byte: "0x06"
+    mode: DC V
+    display_raw: "0.000"
+    value: "0"
+    unit: V
+    range_label: ""
+    progress: 0
+    flags:
+      hold: false
+      rel: false
+      auto_range: true
+      min: false
+      max: false
+      avg: true
+      low_battery: false
+      hv_warning: false
+      dc: true
+      peak_min: false
+      peak_max: false
+      lead_error: false
+      comp: false
+      record: true
+      loz: false
+      void: false
+  - raw_hex: 00 22 00 BF AF AF AF 40 50 40 40 40 10 00 20 00 82 82 82 82 30 00 00 00
+    mode_byte: "0x06"
+    mode: DC V
+    display_raw: "0.000"
+    value: "0"
+    unit: V
+    range_label: ""
+    progress: 0
+    flags:
+      hold: false
+      rel: false
+      auto_range: true
+      min: false
+      max: false
+      avg: true
+      low_battery: false
+      hv_warning: false
+      dc: true
+      peak_min: false
+      peak_max: false
+      lead_error: false
+      comp: false
+      record: true
+      loz: false
+      void: false
+  frames:
+  - at_ms: 83029
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 83206
+    dir: rx
+    hex: 00 22 00 BF AF AF AF 40 50 40 40 40 10 00 20 00 82 82 82 82 30 00 00 00
+  - at_ms: 83222
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 83398
+    dir: rx
+    hex: 00 22 00 BF AF AF AF 40 50 40 40 40 10 00 20 00 82 82 82 82 30 00 00 00
+  - at_ms: 83414
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 83598
+    dir: rx
+    hex: 00 22 00 BF AF AF AF 40 50 40 40 40 10 00 20 00 82 82 82 82 30 00 00 00
+  - at_ms: 83614
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 83790
+    dir: rx
+    hex: 00 22 00 BF AF AF AF 40 50 40 40 40 10 00 20 00 82 82 82 82 30 00 00 00
+  - at_ms: 83806
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 83990
+    dir: rx
+    hex: 00 22 00 BF AF AF AF 40 50 40 40 40 10 00 20 00 82 82 82 82 30 00 00 00
+- id: crest_max
+  instruction: "DCV: press CREST briefly (C and MAX show), then Enter (BM827s and BM829s only; skip this and the next two steps if your meter lacks it)."
+  status: captured
+  samples:
+  - raw_hex: 00 21 00 BF CB 6D EF 00 00 00 00 00 00 00 20 00 82 82 82 82 50 00 00 00
+    mode_byte: "0x06"
+    mode: DC V
+    display_raw: "0.258"
+    value: "0.258"
+    unit: V
+    range_label: ""
+    progress: 0
+    flags:
+      hold: false
+      rel: false
+      auto_range: true
+      min: false
+      max: false
+      avg: false
+      low_battery: false
+      hv_warning: false
+      dc: true
+      peak_min: false
+      peak_max: true
+      lead_error: false
+      comp: false
+      record: false
+      loz: false
+      void: false
+  - raw_hex: 00 21 00 BF CB 6D EF 00 00 00 00 00 00 00 20 00 82 82 82 82 50 00 00 00
+    mode_byte: "0x06"
+    mode: DC V
+    display_raw: "0.258"
+    value: "0.258"
+    unit: V
+    range_label: ""
+    progress: 0
+    flags:
+      hold: false
+      rel: false
+      auto_range: true
+      min: false
+      max: false
+      avg: false
+      low_battery: false
+      hv_warning: false
+      dc: true
+      peak_min: false
+      peak_max: true
+      lead_error: false
+      comp: false
+      record: false
+      loz: false
+      void: false
+  - raw_hex: 00 21 00 BF CB 6D EF 00 00 00 00 00 00 00 20 00 82 82 82 82 50 00 00 00
+    mode_byte: "0x06"
+    mode: DC V
+    display_raw: "0.258"
+    value: "0.258"
+    unit: V
+    range_label: ""
+    progress: 0
+    flags:
+      hold: false
+      rel: false
+      auto_range: true
+      min: false
+      max: false
+      avg: false
+      low_battery: false
+      hv_warning: false
+      dc: true
+      peak_min: false
+      peak_max: true
+      lead_error: false
+      comp: false
+      record: false
+      loz: false
+      void: false
+  - raw_hex: 00 21 00 BF CB 6D EF 00 00 00 00 00 00 00 20 00 82 82 82 82 50 00 00 00
+    mode_byte: "0x06"
+    mode: DC V
+    display_raw: "0.258"
+    value: "0.258"
+    unit: V
+    range_label: ""
+    progress: 0
+    flags:
+      hold: false
+      rel: false
+      auto_range: true
+      min: false
+      max: false
+      avg: false
+      low_battery: false
+      hv_warning: false
+      dc: true
+      peak_min: false
+      peak_max: true
+      lead_error: false
+      comp: false
+      record: false
+      loz: false
+      void: false
+  - raw_hex: 00 21 00 BF CB 6D EF 00 00 00 00 00 00 00 20 00 82 82 82 82 50 00 00 00
+    mode_byte: "0x06"
+    mode: DC V
+    display_raw: "0.258"
+    value: "0.258"
+    unit: V
+    range_label: ""
+    progress: 0
+    flags:
+      hold: false
+      rel: false
+      auto_range: true
+      min: false
+      max: false
+      avg: false
+      low_battery: false
+      hv_warning: false
+      dc: true
+      peak_min: false
+      peak_max: true
+      lead_error: false
+      comp: false
+      record: false
+      loz: false
+      void: false
+  frames:
+  - at_ms: 123156
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 123197
+    dir: rx
+    hex: 00 21 00 BF CB 6D EF 00 00 00 00 00 00 00 20 00 82 82 82 82 50 00 00 00
+  - at_ms: 123213
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 123261
+    dir: rx
+    hex: 00 21 00 BF CB 6D EF 00 00 00 00 00 00 00 20 00 82 82 82 82 50 00 00 00
+  - at_ms: 123278
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 123325
+    dir: rx
+    hex: 00 21 00 BF CB 6D EF 00 00 00 00 00 00 00 20 00 82 82 82 82 50 00 00 00
+  - at_ms: 123341
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 123389
+    dir: rx
+    hex: 00 21 00 BF CB 6D EF 00 00 00 00 00 00 00 20 00 82 82 82 82 50 00 00 00
+  - at_ms: 123405
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 123453
+    dir: rx
+    hex: 00 21 00 BF CB 6D EF 00 00 00 00 00 00 00 20 00 82 82 82 82 50 00 00 00
+- id: crest_min
+  instruction: "CREST: press CREST briefly again (MIN shows), then Enter (BM827s and BM829s only)."
+  status: captured
+  samples:
+  - raw_hex: 00 28 80 BF EF A0 ED 00 00 00 00 00 00 00 20 00 82 82 82 82 50 00 00 00
+    mode_byte: "0x06"
+    mode: DC V
+    display_raw: "-0.819"
+    value: "-0.819"
+    unit: V
+    range_label: ""
+    progress: 0
+    flags:
+      hold: false
+      rel: false
+      auto_range: true
+      min: false
+      max: false
+      avg: false
+      low_battery: false
+      hv_warning: false
+      dc: true
+      peak_min: true
+      peak_max: false
+      lead_error: false
+      comp: false
+      record: false
+      loz: false
+      void: false
+  - raw_hex: 00 28 80 BF EF A0 ED 00 00 00 00 00 00 00 20 00 82 82 82 82 50 00 00 00
+    mode_byte: "0x06"
+    mode: DC V
+    display_raw: "-0.819"
+    value: "-0.819"
+    unit: V
+    range_label: ""
+    progress: 0
+    flags:
+      hold: false
+      rel: false
+      auto_range: true
+      min: false
+      max: false
+      avg: false
+      low_battery: false
+      hv_warning: false
+      dc: true
+      peak_min: true
+      peak_max: false
+      lead_error: false
+      comp: false
+      record: false
+      loz: false
+      void: false
+  - raw_hex: 00 28 80 BF EF A0 ED 00 00 00 00 00 00 00 20 00 82 82 82 82 50 00 00 00
+    mode_byte: "0x06"
+    mode: DC V
+    display_raw: "-0.819"
+    value: "-0.819"
+    unit: V
+    range_label: ""
+    progress: 0
+    flags:
+      hold: false
+      rel: false
+      auto_range: true
+      min: false
+      max: false
+      avg: false
+      low_battery: false
+      hv_warning: false
+      dc: true
+      peak_min: true
+      peak_max: false
+      lead_error: false
+      comp: false
+      record: false
+      loz: false
+      void: false
+  - raw_hex: 00 28 80 BF EF A0 ED 00 00 00 00 00 00 00 20 00 82 82 82 82 50 00 00 00
+    mode_byte: "0x06"
+    mode: DC V
+    display_raw: "-0.819"
+    value: "-0.819"
+    unit: V
+    range_label: ""
+    progress: 0
+    flags:
+      hold: false
+      rel: false
+      auto_range: true
+      min: false
+      max: false
+      avg: false
+      low_battery: false
+      hv_warning: false
+      dc: true
+      peak_min: true
+      peak_max: false
+      lead_error: false
+      comp: false
+      record: false
+      loz: false
+      void: false
+  - raw_hex: 00 28 80 BF EF A0 ED 00 00 00 00 00 00 00 20 00 82 82 82 82 50 00 00 00
+    mode_byte: "0x06"
+    mode: DC V
+    display_raw: "-0.819"
+    value: "-0.819"
+    unit: V
+    range_label: ""
+    progress: 0
+    flags:
+      hold: false
+      rel: false
+      auto_range: true
+      min: false
+      max: false
+      avg: false
+      low_battery: false
+      hv_warning: false
+      dc: true
+      peak_min: true
+      peak_max: false
+      lead_error: false
+      comp: false
+      record: false
+      loz: false
+      void: false
+  frames:
+  - at_ms: 148441
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 148477
+    dir: rx
+    hex: 00 28 80 BF EF A0 ED 00 00 00 00 00 00 00 20 00 82 82 82 82 50 00 00 00
+  - at_ms: 148493
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 148534
+    dir: rx
+    hex: 00 28 80 BF EF A0 ED 00 00 00 00 00 00 00 20 00 82 82 82 82 50 00 00 00
+  - at_ms: 148550
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 148589
+    dir: rx
+    hex: 00 28 80 BF EF A0 ED 00 00 00 00 00 00 00 20 00 82 82 82 82 50 00 00 00
+  - at_ms: 148605
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 148654
+    dir: rx
+    hex: 00 28 80 BF EF A0 ED 00 00 00 00 00 00 00 20 00 82 82 82 82 50 00 00 00
+  - at_ms: 148669
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 148709
+    dir: rx
+    hex: 00 28 80 BF EF A0 ED 00 00 00 00 00 00 00 20 00 82 82 82 82 50 00 00 00
+- id: crest_max_min
+  instruction: "CREST: press CREST briefly again (MAX-MIN shows), then Enter. Hold CREST for one second or more afterwards to leave it (BM827s and BM829s only)."
+  status: captured
+  samples:
+  - raw_hex: 00 2D 00 B8 EF CB E9 00 00 00 00 00 00 00 20 00 82 82 82 82 50 00 00 00
+    mode_byte: "0x06"
+    mode: DC V
+    display_raw: "7.823"
+    value: "7.823"
+    unit: V
+    range_label: ""
+    progress: 0
+    flags:
+      hold: false
+      rel: false
+      auto_range: true
+      min: false
+      max: false
+      avg: false
+      low_battery: false
+      hv_warning: false
+      dc: true
+      peak_min: true
+      peak_max: true
+      lead_error: false
+      comp: false
+      record: false
+      loz: false
+      void: false
+  - raw_hex: 00 2D 00 B8 EF CB E9 00 00 00 00 00 00 00 20 00 82 82 82 82 50 00 00 00
+    mode_byte: "0x06"
+    mode: DC V
+    display_raw: "7.823"
+    value: "7.823"
+    unit: V
+    range_label: ""
+    progress: 0
+    flags:
+      hold: false
+      rel: false
+      auto_range: true
+      min: false
+      max: false
+      avg: false
+      low_battery: false
+      hv_warning: false
+      dc: true
+      peak_min: true
+      peak_max: true
+      lead_error: false
+      comp: false
+      record: false
+      loz: false
+      void: false
+  - raw_hex: 00 2D 00 B8 EF CB E9 00 00 00 00 00 00 00 20 00 82 82 82 82 50 00 00 00
+    mode_byte: "0x06"
+    mode: DC V
+    display_raw: "7.823"
+    value: "7.823"
+    unit: V
+    range_label: ""
+    progress: 0
+    flags:
+      hold: false
+      rel: false
+      auto_range: true
+      min: false
+      max: false
+      avg: false
+      low_battery: false
+      hv_warning: false
+      dc: true
+      peak_min: true
+      peak_max: true
+      lead_error: false
+      comp: false
+      record: false
+      loz: false
+      void: false
+  - raw_hex: 00 2D 00 B8 EF CB E9 00 00 00 00 00 00 00 20 00 82 82 82 82 50 00 00 00
+    mode_byte: "0x06"
+    mode: DC V
+    display_raw: "7.823"
+    value: "7.823"
+    unit: V
+    range_label: ""
+    progress: 0
+    flags:
+      hold: false
+      rel: false
+      auto_range: true
+      min: false
+      max: false
+      avg: false
+      low_battery: false
+      hv_warning: false
+      dc: true
+      peak_min: true
+      peak_max: true
+      lead_error: false
+      comp: false
+      record: false
+      loz: false
+      void: false
+  - raw_hex: 00 2D 00 B8 EF CB E9 00 00 00 00 00 00 00 20 00 82 82 82 82 50 00 00 00
+    mode_byte: "0x06"
+    mode: DC V
+    display_raw: "7.823"
+    value: "7.823"
+    unit: V
+    range_label: ""
+    progress: 0
+    flags:
+      hold: false
+      rel: false
+      auto_range: true
+      min: false
+      max: false
+      avg: false
+      low_battery: false
+      hv_warning: false
+      dc: true
+      peak_min: true
+      peak_max: true
+      lead_error: false
+      comp: false
+      record: false
+      loz: false
+      void: false
+  frames:
+  - at_ms: 174947
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 174997
+    dir: rx
+    hex: 00 2D 00 B8 EF CB E9 00 00 00 00 00 00 00 20 00 82 82 82 82 50 00 00 00
+  - at_ms: 175013
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 175061
+    dir: rx
+    hex: 00 2D 00 B8 EF CB E9 00 00 00 00 00 00 00 20 00 82 82 82 82 50 00 00 00
+  - at_ms: 175077
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 175117
+    dir: rx
+    hex: 00 2D 00 B8 EF CB E9 00 00 00 00 00 00 00 20 00 82 82 82 82 50 00 00 00
+  - at_ms: 175133
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 175181
+    dir: rx
+    hex: 00 2D 00 B8 EF CB E9 00 00 00 00 00 00 00 20 00 82 82 82 82 50 00 00 00
+  - at_ms: 175197
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 175237
+    dir: rx
+    hex: 00 2D 00 B8 EF CB E9 00 00 00 00 00 00 00 20 00 82 82 82 82 50 00 00 00
+- id: dcmv_acmv
+  instruction: "mV⎓ position: press SELECT until the main display shows ⎓ and the small one ~ and mV"
+  status: captured
+  samples:
+  - raw_hex: 00 20 00 AF BF AF AF 40 AF BF AF E4 90 00 60 00 82 82 82 82 10 00 00 00
+    mode_byte: "0x06"
+    mode: DC mV
+    display_raw: "00.00"
+    value: "0"
+    unit: mV
+    range_label: ""
+    progress: 0
+    flags:
+      hold: false
+      rel: false
+      auto_range: true
+      min: false
+      max: false
+      avg: false
+      low_battery: false
+      hv_warning: false
+      dc: true
+      peak_min: false
+      peak_max: false
+      lead_error: false
+      comp: false
+      record: false
+      loz: false
+      void: false
+    aux:
+    - label: AC
+      value: "00.04"
+      unit: mV
+    main_label: DC
+  - raw_hex: 00 20 00 AF BF AF AF 40 AF BF AF E4 90 00 60 00 82 82 82 82 10 00 00 00
+    mode_byte: "0x06"
+    mode: DC mV
+    display_raw: "00.00"
+    value: "0"
+    unit: mV
+    range_label: ""
+    progress: 0
+    flags:
+      hold: false
+      rel: false
+      auto_range: true
+      min: false
+      max: false
+      avg: false
+      low_battery: false
+      hv_warning: false
+      dc: true
+      peak_min: false
+      peak_max: false
+      lead_error: false
+      comp: false
+      record: false
+      loz: false
+      void: false
+    aux:
+    - label: AC
+      value: "00.04"
+      unit: mV
+    main_label: DC
+  - raw_hex: 00 20 00 AF BF AF AF 40 AF BF AF E9 90 00 60 00 82 82 82 82 10 00 00 00
+    mode_byte: "0x06"
+    mode: DC mV
+    display_raw: "00.00"
+    value: "0"
+    unit: mV
+    range_label: ""
+    progress: 0
+    flags:
+      hold: false
+      rel: false
+      auto_range: true
+      min: false
+      max: false
+      avg: false
+      low_battery: false
+      hv_warning: false
+      dc: true
+      peak_min: false
+      peak_max: false
+      lead_error: false
+      comp: false
+      record: false
+      loz: false
+      void: false
+    aux:
+    - label: AC
+      value: "00.03"
+      unit: mV
+    main_label: DC
+  - raw_hex: 00 20 00 AF BF AF AF 40 AF BF AF E9 90 00 60 00 82 82 82 82 10 00 00 00
+    mode_byte: "0x06"
+    mode: DC mV
+    display_raw: "00.00"
+    value: "0"
+    unit: mV
+    range_label: ""
+    progress: 0
+    flags:
+      hold: false
+      rel: false
+      auto_range: true
+      min: false
+      max: false
+      avg: false
+      low_battery: false
+      hv_warning: false
+      dc: true
+      peak_min: false
+      peak_max: false
+      lead_error: false
+      comp: false
+      record: false
+      loz: false
+      void: false
+    aux:
+    - label: AC
+      value: "00.03"
+      unit: mV
+    main_label: DC
+  - raw_hex: 00 20 00 AF BF AF AF 40 AF BF AF E9 90 00 60 00 82 82 82 82 10 00 00 00
+    mode_byte: "0x06"
+    mode: DC mV
+    display_raw: "00.00"
+    value: "0"
+    unit: mV
+    range_label: ""
+    progress: 0
+    flags:
+      hold: false
+      rel: false
+      auto_range: true
+      min: false
+      max: false
+      avg: false
+      low_battery: false
+      hv_warning: false
+      dc: true
+      peak_min: false
+      peak_max: false
+      lead_error: false
+      comp: false
+      record: false
+      loz: false
+      void: false
+    aux:
+    - label: AC
+      value: "00.03"
+      unit: mV
+    main_label: DC
+  frames:
+  - at_ms: 215378
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 215877
+    dir: rx
+    hex: 00 20 00 AF BF AF AF 40 AF BF AF E4 90 00 60 00 82 82 82 82 10 00 00 00
+  - at_ms: 215893
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 216661
+    dir: rx
+    hex: 00 20 00 AF BF AF AF 40 AF BF AF E4 90 00 60 00 82 82 82 82 10 00 00 00
+  - at_ms: 216677
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 217453
+    dir: rx
+    hex: 00 20 00 AF BF AF AF 40 AF BF AF E9 90 00 60 00 82 82 82 82 10 00 00 00
+  - at_ms: 217469
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 218236
+    dir: rx
+    hex: 00 20 00 AF BF AF AF 40 AF BF AF E9 90 00 60 00 82 82 82 82 10 00 00 00
+  - at_ms: 218253
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 219021
+    dir: rx
+    hex: 00 20 00 AF BF AF AF 40 AF BF AF E9 90 00 60 00 82 82 82 82 10 00 00 00
+- id: logic_hz
+  instruction: "mV⎓ position: press SELECT until Hz shows (logic-level Hz)"
+  status: captured
+  samples:
+  - raw_hex: 00 00 00 BF AF AF AF 00 00 00 00 00 00 10 00 00 82 82 82 82 10 00 00 00
+    mode_byte: "0x400"
+    mode: Hz
+    display_raw: "0.000"
+    value: "0"
+    unit: Hz
+    range_label: ""
+    progress: 0
+    flags:
+      hold: false
+      rel: false
+      auto_range: true
+      min: false
+      max: false
+      avg: false
+      low_battery: false
+      hv_warning: false
+      dc: false
+      peak_min: false
+      peak_max: false
+      lead_error: false
+      comp: false
+      record: false
+      loz: false
+      void: false
+  - raw_hex: 00 00 00 BF AF AF AF 00 00 00 00 00 00 10 00 00 82 82 82 82 10 00 00 00
+    mode_byte: "0x400"
+    mode: Hz
+    display_raw: "0.000"
+    value: "0"
+    unit: Hz
+    range_label: ""
+    progress: 0
+    flags:
+      hold: false
+      rel: false
+      auto_range: true
+      min: false
+      max: false
+      avg: false
+      low_battery: false
+      hv_warning: false
+      dc: false
+      peak_min: false
+      peak_max: false
+      lead_error: false
+      comp: false
+      record: false
+      loz: false
+      void: false
+  - raw_hex: 00 00 00 BF AF AF AF 00 00 00 00 00 00 10 00 00 82 82 82 82 10 00 00 00
+    mode_byte: "0x400"
+    mode: Hz
+    display_raw: "0.000"
+    value: "0"
+    unit: Hz
+    range_label: ""
+    progress: 0
+    flags:
+      hold: false
+      rel: false
+      auto_range: true
+      min: false
+      max: false
+      avg: false
+      low_battery: false
+      hv_warning: false
+      dc: false
+      peak_min: false
+      peak_max: false
+      lead_error: false
+      comp: false
+      record: false
+      loz: false
+      void: false
+  - raw_hex: 00 00 00 BF AF AF AF 00 00 00 00 00 00 10 00 00 82 82 82 82 10 00 00 00
+    mode_byte: "0x400"
+    mode: Hz
+    display_raw: "0.000"
+    value: "0"
+    unit: Hz
+    range_label: ""
+    progress: 0
+    flags:
+      hold: false
+      rel: false
+      auto_range: true
+      min: false
+      max: false
+      avg: false
+      low_battery: false
+      hv_warning: false
+      dc: false
+      peak_min: false
+      peak_max: false
+      lead_error: false
+      comp: false
+      record: false
+      loz: false
+      void: false
+  - raw_hex: 00 00 00 BF AF AF AF 00 00 00 00 00 00 10 00 00 82 82 82 82 10 00 00 00
+    mode_byte: "0x400"
+    mode: Hz
+    display_raw: "0.000"
+    value: "0"
+    unit: Hz
+    range_label: ""
+    progress: 0
+    flags:
+      hold: false
+      rel: false
+      auto_range: true
+      min: false
+      max: false
+      avg: false
+      low_battery: false
+      hv_warning: false
+      dc: false
+      peak_min: false
+      peak_max: false
+      lead_error: false
+      comp: false
+      record: false
+      loz: false
+      void: false
+  frames:
+  - at_ms: 230010
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 230844
+    dir: rx
+    hex: 00 00 00 BF AF AF AF 00 00 00 00 00 00 10 00 00 82 82 82 82 10 00 00 00
+  - at_ms: 230861
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 231876
+    dir: rx
+    hex: 00 00 00 BF AF AF AF 00 00 00 00 00 00 10 00 00 82 82 82 82 10 00 00 00
+  - at_ms: 231892
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 232908
+    dir: rx
+    hex: 00 00 00 BF AF AF AF 00 00 00 00 00 00 10 00 00 82 82 82 82 10 00 00 00
+  - at_ms: 232924
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 233932
+    dir: rx
+    hex: 00 00 00 BF AF AF AF 00 00 00 00 00 00 10 00 00 82 82 82 82 10 00 00 00
+  - at_ms: 233948
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 234964
+    dir: rx
+    hex: 00 00 00 BF AF AF AF 00 00 00 00 00 00 10 00 00 82 82 82 82 10 00 00 00
+- id: duty
+  instruction: "mV⎓ position: press SELECT until D% shows (duty cycle)"
+  status: captured
+  samples:
+  - raw_hex: 00 00 00 AF BF AF AF 00 00 00 00 00 00 00 04 00 82 82 82 82 10 00 00 00
+    mode_byte: "0x800"
+    mode: Duty %
+    display_raw: "00.00"
+    value: "0"
+    unit: "%"
+    range_label: ""
+    progress: 0
+    flags:
+      hold: false
+      rel: false
+      auto_range: true
+      min: false
+      max: false
+      avg: false
+      low_battery: false
+      hv_warning: false
+      dc: false
+      peak_min: false
+      peak_max: false
+      lead_error: false
+      comp: false
+      record: false
+      loz: false
+      void: false
+  - raw_hex: 00 00 00 AF BF AF AF 00 00 00 00 00 00 00 04 00 82 82 82 82 10 00 00 00
+    mode_byte: "0x800"
+    mode: Duty %
+    display_raw: "00.00"
+    value: "0"
+    unit: "%"
+    range_label: ""
+    progress: 0
+    flags:
+      hold: false
+      rel: false
+      auto_range: true
+      min: false
+      max: false
+      avg: false
+      low_battery: false
+      hv_warning: false
+      dc: false
+      peak_min: false
+      peak_max: false
+      lead_error: false
+      comp: false
+      record: false
+      loz: false
+      void: false
+  - raw_hex: 00 00 00 AF BF AF AF 00 00 00 00 00 00 00 04 00 82 82 82 82 10 00 00 00
+    mode_byte: "0x800"
+    mode: Duty %
+    display_raw: "00.00"
+    value: "0"
+    unit: "%"
+    range_label: ""
+    progress: 0
+    flags:
+      hold: false
+      rel: false
+      auto_range: true
+      min: false
+      max: false
+      avg: false
+      low_battery: false
+      hv_warning: false
+      dc: false
+      peak_min: false
+      peak_max: false
+      lead_error: false
+      comp: false
+      record: false
+      loz: false
+      void: false
+  - raw_hex: 00 00 00 AF BF AF AF 00 00 00 00 00 00 00 04 00 82 82 82 82 10 00 00 00
+    mode_byte: "0x800"
+    mode: Duty %
+    display_raw: "00.00"
+    value: "0"
+    unit: "%"
+    range_label: ""
+    progress: 0
+    flags:
+      hold: false
+      rel: false
+      auto_range: true
+      min: false
+      max: false
+      avg: false
+      low_battery: false
+      hv_warning: false
+      dc: false
+      peak_min: false
+      peak_max: false
+      lead_error: false
+      comp: false
+      record: false
+      loz: false
+      void: false
+  - raw_hex: 00 00 00 AF BF AF AF 00 00 00 00 00 00 00 04 00 82 82 82 82 10 00 00 00
+    mode_byte: "0x800"
+    mode: Duty %
+    display_raw: "00.00"
+    value: "0"
+    unit: "%"
+    range_label: ""
+    progress: 0
+    flags:
+      hold: false
+      rel: false
+      auto_range: true
+      min: false
+      max: false
+      avg: false
+      low_battery: false
+      hv_warning: false
+      dc: false
+      peak_min: false
+      peak_max: false
+      lead_error: false
+      comp: false
+      record: false
+      loz: false
+      void: false
+  frames:
+  - at_ms: 274170
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 274380
+    dir: rx
+    hex: 00 00 00 AF BF AF AF 00 00 00 00 00 00 00 04 00 82 82 82 82 10 00 00 00
+  - at_ms: 274396
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 275412
+    dir: rx
+    hex: 00 00 00 AF BF AF AF 00 00 00 00 00 00 00 04 00 82 82 82 82 10 00 00 00
+  - at_ms: 275428
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 276444
+    dir: rx
+    hex: 00 00 00 AF BF AF AF 00 00 00 00 00 00 00 04 00 82 82 82 82 10 00 00 00
+  - at_ms: 276460
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 277476
+    dir: rx
+    hex: 00 00 00 AF BF AF AF 00 00 00 00 00 00 00 04 00 82 82 82 82 10 00 00 00
+  - at_ms: 277492
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 278508
+    dir: rx
+    hex: 00 00 00 AF BF AF AF 00 00 00 00 00 00 00 04 00 82 82 82 82 10 00 00 00
+- id: acmv
+  instruction: Set the dial to Hz mV~, leads open, and press SELECT until the main display shows ~ and mV and the small one Hz
+  status: captured
+  samples:
+  - raw_hex: 00 10 00 A0 B0 A8 CB 00 6D FD ED AF 00 01 60 0C 82 82 82 82 1F 00 00 00
+    mode_byte: "0x05"
+    mode: AC mV
+    display_raw: "11.72"
+    value: "11.72"
+    unit: mV
+    range_label: ""
+    progress: 0
+    flags:
+      hold: false
+      rel: false
+      auto_range: true
+      min: false
+      max: false
+      avg: false
+      low_battery: false
+      hv_warning: false
+      dc: false
+      peak_min: false
+      peak_max: false
+      lead_error: false
+      comp: false
+      record: false
+      loz: false
+      void: false
+    aux:
+    - label: Frequency
+      value: "59.90"
+      unit: Hz
+  - raw_hex: 00 10 00 A0 B0 6F E4 00 6D FD ED AF 00 01 60 0C 82 82 82 82 1F 00 00 00
+    mode_byte: "0x05"
+    mode: AC mV
+    display_raw: "11.64"
+    value: "11.64"
+    unit: mV
+    range_label: ""
+    progress: 0
+    flags:
+      hold: false
+      rel: false
+      auto_range: true
+      min: false
+      max: false
+      avg: false
+      low_battery: false
+      hv_warning: false
+      dc: false
+      peak_min: false
+      peak_max: false
+      lead_error: false
+      comp: false
+      record: false
+      loz: false
+      void: false
+    aux:
+    - label: Frequency
+      value: "59.90"
+      unit: Hz
+  - raw_hex: 00 10 00 A0 B0 A8 E9 00 6D FD ED AF 00 01 60 0C 82 82 82 82 1F 00 00 00
+    mode_byte: "0x05"
+    mode: AC mV
+    display_raw: "11.73"
+    value: "11.73"
+    unit: mV
+    range_label: ""
+    progress: 0
+    flags:
+      hold: false
+      rel: false
+      auto_range: true
+      min: false
+      max: false
+      avg: false
+      low_battery: false
+      hv_warning: false
+      dc: false
+      peak_min: false
+      peak_max: false
+      lead_error: false
+      comp: false
+      record: false
+      loz: false
+      void: false
+    aux:
+    - label: Frequency
+      value: "59.90"
+      unit: Hz
+  - raw_hex: 00 10 00 A0 B0 A8 E9 00 6D FD ED 6F 00 01 60 0C 82 82 82 82 1F 00 00 00
+    mode_byte: "0x05"
+    mode: AC mV
+    display_raw: "11.73"
+    value: "11.73"
+    unit: mV
+    range_label: ""
+    progress: 0
+    flags:
+      hold: false
+      rel: false
+      auto_range: true
+      min: false
+      max: false
+      avg: false
+      low_battery: false
+      hv_warning: false
+      dc: false
+      peak_min: false
+      peak_max: false
+      lead_error: false
+      comp: false
+      record: false
+      loz: false
+      void: false
+    aux:
+    - label: Frequency
+      value: "59.96"
+      unit: Hz
+  - raw_hex: 00 10 00 A0 B0 ED E9 00 6D FD ED 6F 00 01 60 0C 82 82 82 82 1F 00 00 00
+    mode_byte: "0x05"
+    mode: AC mV
+    display_raw: "11.93"
+    value: "11.93"
+    unit: mV
+    range_label: ""
+    progress: 0
+    flags:
+      hold: false
+      rel: false
+      auto_range: true
+      min: false
+      max: false
+      avg: false
+      low_battery: false
+      hv_warning: false
+      dc: false
+      peak_min: false
+      peak_max: false
+      lead_error: false
+      comp: false
+      record: false
+      loz: false
+      void: false
+    aux:
+    - label: Frequency
+      value: "59.96"
+      unit: Hz
+  frames:
+  - at_ms: 356185
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 356379
+    dir: rx
+    hex: 00 10 00 A0 B0 A8 CB 00 6D FD ED AF 00 01 60 0C 82 82 82 82 1F 00 00 00
+  - at_ms: 356395
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 356435
+    dir: rx
+    hex: 00 10 00 A0 B0 6F E4 00 6D FD ED AF 00 01 60 0C 82 82 82 82 1F 00 00 00
+  - at_ms: 356452
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 356596
+    dir: rx
+    hex: 00 10 00 A0 B0 A8 E9 00 6D FD ED AF 00 01 60 0C 82 82 82 82 1F 00 00 00
+  - at_ms: 356612
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 356668
+    dir: rx
+    hex: 00 10 00 A0 B0 A8 E9 00 6D FD ED 6F 00 01 60 0C 82 82 82 82 1F 00 00 00
+  - at_ms: 356683
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 356795
+    dir: rx
+    hex: 00 10 00 A0 B0 ED E9 00 6D FD ED 6F 00 01 60 0C 82 82 82 82 1F 00 00 00
+- id: hz_acmv
+  instruction: "Hz mV~ position: press SELECT until the main display shows Hz and the small one mV"
+  status: captured
+  samples:
+  - raw_hex: 00 00 00 6F BF AF A0 40 A0 DB 6F A0 90 10 00 00 82 82 82 82 10 00 00 00
+    mode_byte: "0x400"
+    mode: Hz
+    display_raw: "60.01"
+    value: "60.01"
+    unit: Hz
+    range_label: ""
+    progress: 0
+    flags:
+      hold: false
+      rel: false
+      auto_range: true
+      min: false
+      max: false
+      avg: false
+      low_battery: false
+      hv_warning: false
+      dc: false
+      peak_min: false
+      peak_max: false
+      lead_error: false
+      comp: false
+      record: false
+      loz: false
+      void: false
+    aux:
+    - label: AC
+      value: "12.61"
+      unit: mV
+  - raw_hex: 00 00 00 6F BF AF CB 40 A0 DB 6F A0 90 10 00 00 82 82 82 82 10 00 00 00
+    mode_byte: "0x400"
+    mode: Hz
+    display_raw: "60.02"
+    value: "60.02"
+    unit: Hz
+    range_label: ""
+    progress: 0
+    flags:
+      hold: false
+      rel: false
+      auto_range: true
+      min: false
+      max: false
+      avg: false
+      low_battery: false
+      hv_warning: false
+      dc: false
+      peak_min: false
+      peak_max: false
+      lead_error: false
+      comp: false
+      record: false
+      loz: false
+      void: false
+    aux:
+    - label: AC
+      value: "12.61"
+      unit: mV
+  - raw_hex: 00 00 00 6F BF AF CB 40 A0 DB A8 E9 90 10 00 00 82 82 82 82 10 00 00 00
+    mode_byte: "0x400"
+    mode: Hz
+    display_raw: "60.02"
+    value: "60.02"
+    unit: Hz
+    range_label: ""
+    progress: 0
+    flags:
+      hold: false
+      rel: false
+      auto_range: true
+      min: false
+      max: false
+      avg: false
+      low_battery: false
+      hv_warning: false
+      dc: false
+      peak_min: false
+      peak_max: false
+      lead_error: false
+      comp: false
+      record: false
+      loz: false
+      void: false
+    aux:
+    - label: AC
+      value: "12.73"
+      unit: mV
+  - raw_hex: 00 00 00 6F BF AF CB 40 A0 DB EF CB 90 10 00 00 82 82 82 82 10 00 00 00
+    mode_byte: "0x400"
+    mode: Hz
+    display_raw: "60.02"
+    value: "60.02"
+    unit: Hz
+    range_label: ""
+    progress: 0
+    flags:
+      hold: false
+      rel: false
+      auto_range: true
+      min: false
+      max: false
+      avg: false
+      low_battery: false
+      hv_warning: false
+      dc: false
+      peak_min: false
+      peak_max: false
+      lead_error: false
+      comp: false
+      record: false
+      loz: false
+      void: false
+    aux:
+    - label: AC
+      value: "12.82"
+      unit: mV
+  - raw_hex: 00 00 00 6F BF AF CB 40 A0 DB EF ED 90 10 00 00 82 82 82 82 10 00 00 00
+    mode_byte: "0x400"
+    mode: Hz
+    display_raw: "60.02"
+    value: "60.02"
+    unit: Hz
+    range_label: ""
+    progress: 0
+    flags:
+      hold: false
+      rel: false
+      auto_range: true
+      min: false
+      max: false
+      avg: false
+      low_battery: false
+      hv_warning: false
+      dc: false
+      peak_min: false
+      peak_max: false
+      lead_error: false
+      comp: false
+      record: false
+      loz: false
+      void: false
+    aux:
+    - label: AC
+      value: "12.89"
+      unit: mV
+  frames:
+  - at_ms: 373032
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 373108
+    dir: rx
+    hex: 00 00 00 6F BF AF A0 40 A0 DB 6F A0 90 10 00 00 82 82 82 82 10 00 00 00
+  - at_ms: 373124
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 373244
+    dir: rx
+    hex: 00 00 00 6F BF AF CB 40 A0 DB 6F A0 90 10 00 00 82 82 82 82 10 00 00 00
+  - at_ms: 373260
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 373308
+    dir: rx
+    hex: 00 00 00 6F BF AF CB 40 A0 DB A8 E9 90 10 00 00 82 82 82 82 10 00 00 00
+  - at_ms: 373324
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 373500
+    dir: rx
+    hex: 00 00 00 6F BF AF CB 40 A0 DB EF CB 90 10 00 00 82 82 82 82 10 00 00 00
+  - at_ms: 373516
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 373699
+    dir: rx
+    hex: 00 00 00 6F BF AF CB 40 A0 DB EF ED 90 10 00 00 82 82 82 82 10 00 00 00
+- id: cont
+  instruction: Set the dial to the continuity symbol, or to Ω and press SELECT until the continuity symbol shows; touch the probe tips together
+  status: captured
+  samples:
+  - raw_hex: 00 00 00 AF AF BF A8 01 00 00 00 00 00 20 00 0C 82 82 82 82 00 00 00 00
+    mode_byte: "0x180"
+    mode: Continuity
+    display_raw: "000.7"
+    value: "0.7"
+    unit: Ω
+    range_label: ""
+    progress: 0
+    flags:
+      hold: false
+      rel: false
+      auto_range: false
+      min: false
+      max: false
+      avg: false
+      low_battery: false
+      hv_warning: false
+      dc: false
+      peak_min: false
+      peak_max: false
+      lead_error: false
+      comp: false
+      record: false
+      loz: false
+      void: false
+  - raw_hex: 00 00 00 AF AF BF A8 01 00 00 00 00 00 20 00 0C 82 82 82 82 00 00 00 00
+    mode_byte: "0x180"
+    mode: Continuity
+    display_raw: "000.7"
+    value: "0.7"
+    unit: Ω
+    range_label: ""
+    progress: 0
+    flags:
+      hold: false
+      rel: false
+      auto_range: false
+      min: false
+      max: false
+      avg: false
+      low_battery: false
+      hv_warning: false
+      dc: false
+      peak_min: false
+      peak_max: false
+      lead_error: false
+      comp: false
+      record: false
+      loz: false
+      void: false
+  - raw_hex: 00 00 00 AF AF BF A8 01 00 00 00 00 00 20 00 0C 82 82 82 82 00 00 00 00
+    mode_byte: "0x180"
+    mode: Continuity
+    display_raw: "000.7"
+    value: "0.7"
+    unit: Ω
+    range_label: ""
+    progress: 0
+    flags:
+      hold: false
+      rel: false
+      auto_range: false
+      min: false
+      max: false
+      avg: false
+      low_battery: false
+      hv_warning: false
+      dc: false
+      peak_min: false
+      peak_max: false
+      lead_error: false
+      comp: false
+      record: false
+      loz: false
+      void: false
+  - raw_hex: 00 00 00 AF AF BF 6F 01 00 00 00 00 00 20 00 0C 82 82 82 82 00 00 00 00
+    mode_byte: "0x180"
+    mode: Continuity
+    display_raw: "000.6"
+    value: "0.6"
+    unit: Ω
+    range_label: ""
+    progress: 0
+    flags:
+      hold: false
+      rel: false
+      auto_range: false
+      min: false
+      max: false
+      avg: false
+      low_battery: false
+      hv_warning: false
+      dc: false
+      peak_min: false
+      peak_max: false
+      lead_error: false
+      comp: false
+      record: false
+      loz: false
+      void: false
+  - raw_hex: 00 00 00 AF AF BF 6F 01 00 00 00 00 00 20 00 0C 82 82 82 82 00 00 00 00
+    mode_byte: "0x180"
+    mode: Continuity
+    display_raw: "000.6"
+    value: "0.6"
+    unit: Ω
+    range_label: ""
+    progress: 0
+    flags:
+      hold: false
+      rel: false
+      auto_range: false
+      min: false
+      max: false
+      avg: false
+      low_battery: false
+      hv_warning: false
+      dc: false
+      peak_min: false
+      peak_max: false
+      lead_error: false
+      comp: false
+      record: false
+      loz: false
+      void: false
+  frames:
+  - at_ms: 405050
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 405139
+    dir: rx
+    hex: 00 00 00 AF AF BF A8 01 00 00 00 00 00 20 00 0C 82 82 82 82 00 00 00 00
+  - at_ms: 405155
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 405347
+    dir: rx
+    hex: 00 00 00 AF AF BF A8 01 00 00 00 00 00 20 00 0C 82 82 82 82 00 00 00 00
+  - at_ms: 405363
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 405539
+    dir: rx
+    hex: 00 00 00 AF AF BF A8 01 00 00 00 00 00 20 00 0C 82 82 82 82 00 00 00 00
+  - at_ms: 405555
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 405731
+    dir: rx
+    hex: 00 00 00 AF AF BF 6F 01 00 00 00 00 00 20 00 0C 82 82 82 82 00 00 00 00
+  - at_ms: 405747
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 405931
+    dir: rx
+    hex: 00 00 00 AF AF BF 6F 01 00 00 00 00 00 20 00 0C 82 82 82 82 00 00 00 00
+- id: ns
+  instruction: "Ω position: press SELECT until nS shows, leads open (BM827s and BM829s only; skip if your meter lacks it)"
+  status: captured
+  samples:
+  - raw_hex: 00 00 00 AF BF AF 6D 00 00 00 00 00 00 00 0A 00 82 82 82 82 00 00 00 00
+    mode_byte: "0x1000"
+    mode: nS
+    display_raw: "00.05"
+    value: "0.05"
+    unit: nS
+    range_label: ""
+    progress: 0
+    flags:
+      hold: false
+      rel: false
+      auto_range: false
+      min: false
+      max: false
+      avg: false
+      low_battery: false
+      hv_warning: false
+      dc: false
+      peak_min: false
+      peak_max: false
+      lead_error: false
+      comp: false
+      record: false
+      loz: false
+      void: false
+  - raw_hex: 00 00 00 AF BF AF 6D 00 00 00 00 00 00 00 0A 00 82 82 82 82 00 00 00 00
+    mode_byte: "0x1000"
+    mode: nS
+    display_raw: "00.05"
+    value: "0.05"
+    unit: nS
+    range_label: ""
+    progress: 0
+    flags:
+      hold: false
+      rel: false
+      auto_range: false
+      min: false
+      max: false
+      avg: false
+      low_battery: false
+      hv_warning: false
+      dc: false
+      peak_min: false
+      peak_max: false
+      lead_error: false
+      comp: false
+      record: false
+      loz: false
+      void: false
+  - raw_hex: 00 00 00 AF BF AF 6D 00 00 00 00 00 00 00 0A 00 82 82 82 82 00 00 00 00
+    mode_byte: "0x1000"
+    mode: nS
+    display_raw: "00.05"
+    value: "0.05"
+    unit: nS
+    range_label: ""
+    progress: 0
+    flags:
+      hold: false
+      rel: false
+      auto_range: false
+      min: false
+      max: false
+      avg: false
+      low_battery: false
+      hv_warning: false
+      dc: false
+      peak_min: false
+      peak_max: false
+      lead_error: false
+      comp: false
+      record: false
+      loz: false
+      void: false
+  - raw_hex: 00 00 00 AF BF AF 6D 00 00 00 00 00 00 00 0A 00 82 82 82 82 00 00 00 00
+    mode_byte: "0x1000"
+    mode: nS
+    display_raw: "00.05"
+    value: "0.05"
+    unit: nS
+    range_label: ""
+    progress: 0
+    flags:
+      hold: false
+      rel: false
+      auto_range: false
+      min: false
+      max: false
+      avg: false
+      low_battery: false
+      hv_warning: false
+      dc: false
+      peak_min: false
+      peak_max: false
+      lead_error: false
+      comp: false
+      record: false
+      loz: false
+      void: false
+  - raw_hex: 00 00 00 AF BF AF E4 00 00 00 00 00 00 00 0A 00 82 82 82 82 00 00 00 00
+    mode_byte: "0x1000"
+    mode: nS
+    display_raw: "00.04"
+    value: "0.04"
+    unit: nS
+    range_label: ""
+    progress: 0
+    flags:
+      hold: false
+      rel: false
+      auto_range: false
+      min: false
+      max: false
+      avg: false
+      low_battery: false
+      hv_warning: false
+      dc: false
+      peak_min: false
+      peak_max: false
+      lead_error: false
+      comp: false
+      record: false
+      loz: false
+      void: false
+  frames:
+  - at_ms: 417682
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 417915
+    dir: rx
+    hex: 00 00 00 AF BF AF 6D 00 00 00 00 00 00 00 0A 00 82 82 82 82 00 00 00 00
+  - at_ms: 417931
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 418107
+    dir: rx
+    hex: 00 00 00 AF BF AF 6D 00 00 00 00 00 00 00 0A 00 82 82 82 82 00 00 00 00
+  - at_ms: 418123
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 418307
+    dir: rx
+    hex: 00 00 00 AF BF AF 6D 00 00 00 00 00 00 00 0A 00 82 82 82 82 00 00 00 00
+  - at_ms: 418323
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 418499
+    dir: rx
+    hex: 00 00 00 AF BF AF 6D 00 00 00 00 00 00 00 0A 00 82 82 82 82 00 00 00 00
+  - at_ms: 418515
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 418699
+    dir: rx
+    hex: 00 00 00 AF BF AF E4 00 00 00 00 00 00 00 0A 00 82 82 82 82 00 00 00 00
+- id: t1_open
+  instruction: Unplug the test leads, then set the dial to T1 T2; on a BM829s press RANGE until T1 shows with nothing on the small display (BM827s and BM829s only; skip this and the temperature steps after it if your meter lacks it)
+  status: captured
+  samples:
+  - raw_hex: 00 00 01 40 40 40 0F 00 00 00 00 00 00 00 00 00 82 82 82 82 00 00 00 00
+    mode_byte: "0x8020"
+    mode: T1
+    display_raw: ""
+    value: "---"
+    unit: °C
+    range_label: ""
+    progress: 0
+    flags:
+      hold: false
+      rel: false
+      auto_range: false
+      min: false
+      max: false
+      avg: false
+      low_battery: false
+      hv_warning: false
+      dc: false
+      peak_min: false
+      peak_max: false
+      lead_error: false
+      comp: false
+      record: false
+      loz: false
+      void: false
+  - raw_hex: 00 00 01 40 40 40 0F 00 00 00 00 00 00 00 00 00 82 82 82 82 00 00 00 00
+    mode_byte: "0x8020"
+    mode: T1
+    display_raw: ""
+    value: "---"
+    unit: °C
+    range_label: ""
+    progress: 0
+    flags:
+      hold: false
+      rel: false
+      auto_range: false
+      min: false
+      max: false
+      avg: false
+      low_battery: false
+      hv_warning: false
+      dc: false
+      peak_min: false
+      peak_max: false
+      lead_error: false
+      comp: false
+      record: false
+      loz: false
+      void: false
+  - raw_hex: 00 00 01 40 40 40 0F 00 00 00 00 00 00 00 00 00 82 82 82 82 00 00 00 00
+    mode_byte: "0x8020"
+    mode: T1
+    display_raw: ""
+    value: "---"
+    unit: °C
+    range_label: ""
+    progress: 0
+    flags:
+      hold: false
+      rel: false
+      auto_range: false
+      min: false
+      max: false
+      avg: false
+      low_battery: false
+      hv_warning: false
+      dc: false
+      peak_min: false
+      peak_max: false
+      lead_error: false
+      comp: false
+      record: false
+      loz: false
+      void: false
+  - raw_hex: 00 00 01 40 40 40 0F 00 00 00 00 00 00 00 00 00 82 82 82 82 00 00 00 00
+    mode_byte: "0x8020"
+    mode: T1
+    display_raw: ""
+    value: "---"
+    unit: °C
+    range_label: ""
+    progress: 0
+    flags:
+      hold: false
+      rel: false
+      auto_range: false
+      min: false
+      max: false
+      avg: false
+      low_battery: false
+      hv_warning: false
+      dc: false
+      peak_min: false
+      peak_max: false
+      lead_error: false
+      comp: false
+      record: false
+      loz: false
+      void: false
+  - raw_hex: 00 00 01 40 40 40 0F 00 00 00 00 00 00 00 00 00 82 82 82 82 00 00 00 00
+    mode_byte: "0x8020"
+    mode: T1
+    display_raw: ""
+    value: "---"
+    unit: °C
+    range_label: ""
+    progress: 0
+    flags:
+      hold: false
+      rel: false
+      auto_range: false
+      min: false
+      max: false
+      avg: false
+      low_battery: false
+      hv_warning: false
+      dc: false
+      peak_min: false
+      peak_max: false
+      lead_error: false
+      comp: false
+      record: false
+      loz: false
+      void: false
+  frames:
+  - at_ms: 438279
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 438355
+    dir: rx
+    hex: 00 00 01 40 40 40 0F 00 00 00 00 00 00 00 00 00 82 82 82 82 00 00 00 00
+  - at_ms: 438371
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 438547
+    dir: rx
+    hex: 00 00 01 40 40 40 0F 00 00 00 00 00 00 00 00 00 82 82 82 82 00 00 00 00
+  - at_ms: 438563
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 438747
+    dir: rx
+    hex: 00 00 01 40 40 40 0F 00 00 00 00 00 00 00 00 00 82 82 82 82 00 00 00 00
+  - at_ms: 438763
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 438939
+    dir: rx
+    hex: 00 00 01 40 40 40 0F 00 00 00 00 00 00 00 00 00 82 82 82 82 00 00 00 00
+  - at_ms: 438955
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 439139
+    dir: rx
+    hex: 00 00 01 40 40 40 0F 00 00 00 00 00 00 00 00 00 82 82 82 82 00 00 00 00
+  - at_ms: 439155
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 439339
+    dir: rx
+    hex: 00 00 01 40 40 40 0F 00 00 00 00 00 00 00 00 00 82 82 82 82 00 00 00 00
+  - at_ms: 439355
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 439531
+    dir: rx
+    hex: 00 00 01 40 40 40 0F 00 00 00 00 00 00 00 00 00 82 82 82 82 00 00 00 00
+  - at_ms: 439547
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 439731
+    dir: rx
+    hex: 00 00 01 40 40 40 0F 00 00 00 00 00 00 00 00 00 82 82 82 82 00 00 00 00
+  - at_ms: 439747
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 439923
+    dir: rx
+    hex: 00 00 01 40 40 40 0F 00 00 00 00 00 00 00 00 00 82 82 82 82 00 00 00 00
+  - at_ms: 439939
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 440123
+    dir: rx
+    hex: 00 00 01 40 40 40 0F 00 00 00 00 00 00 00 00 00 82 82 82 82 00 00 00 00
+  - at_ms: 440139
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 440315
+    dir: rx
+    hex: 00 00 01 40 40 40 0F 00 00 00 00 00 00 00 00 00 82 82 82 82 00 00 00 00
+  - at_ms: 440331
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 440515
+    dir: rx
+    hex: 00 00 01 40 40 40 0F 00 00 00 00 00 00 00 00 00 82 82 82 82 00 00 00 00
+  - at_ms: 440531
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 440715
+    dir: rx
+    hex: 00 00 01 40 40 40 0F 00 00 00 00 00 00 00 00 00 82 82 82 82 00 00 00 00
+  - at_ms: 440731
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 440907
+    dir: rx
+    hex: 00 00 01 40 40 40 0F 00 00 00 00 00 00 00 00 00 82 82 82 82 00 00 00 00
+  - at_ms: 440923
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 441107
+    dir: rx
+    hex: 00 00 01 40 40 40 0F 00 00 00 00 00 00 00 00 00 82 82 82 82 00 00 00 00
+  - at_ms: 441123
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 441299
+    dir: rx
+    hex: 00 00 01 40 40 40 0F 00 00 00 00 00 00 00 00 00 82 82 82 82 00 00 00 00
+  - at_ms: 441315
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 441499
+    dir: rx
+    hex: 00 00 01 40 40 40 0F 00 00 00 00 00 00 00 00 00 82 82 82 82 00 00 00 00
+  - at_ms: 441515
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 441691
+    dir: rx
+    hex: 00 00 01 40 40 40 0F 00 00 00 00 00 00 00 00 00 82 82 82 82 00 00 00 00
+  - at_ms: 441707
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 441891
+    dir: rx
+    hex: 00 00 01 40 40 40 0F 00 00 00 00 00 00 00 00 00 82 82 82 82 00 00 00 00
+  - at_ms: 441907
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 442091
+    dir: rx
+    hex: 00 00 01 40 40 40 0F 00 00 00 00 00 00 00 00 00 82 82 82 82 00 00 00 00
+  - at_ms: 442107
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 442283
+    dir: rx
+    hex: 00 00 01 40 40 40 0F 00 00 00 00 00 00 00 00 00 82 82 82 82 00 00 00 00
+  - at_ms: 442299
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 442483
+    dir: rx
+    hex: 00 00 01 40 40 40 0F 00 00 00 00 00 00 00 00 00 82 82 82 82 00 00 00 00
+  - at_ms: 442499
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 442675
+    dir: rx
+    hex: 00 00 01 40 40 40 0F 00 00 00 00 00 00 00 00 00 82 82 82 82 00 00 00 00
+  - at_ms: 442691
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 442875
+    dir: rx
+    hex: 00 00 01 40 40 40 0F 00 00 00 00 00 00 00 00 00 82 82 82 82 00 00 00 00
+  - at_ms: 442891
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 443067
+    dir: rx
+    hex: 00 00 01 40 40 40 0F 00 00 00 00 00 00 00 00 00 82 82 82 82 00 00 00 00
+  - at_ms: 443083
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 443267
+    dir: rx
+    hex: 00 00 01 40 40 40 0F 00 00 00 00 00 00 00 00 00 82 82 82 82 00 00 00 00
+  - at_ms: 443283
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 443459
+    dir: rx
+    hex: 00 00 01 40 40 40 0F 00 00 00 00 00 00 00 00 00 82 82 82 82 00 00 00 00
+  - at_ms: 443475
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 443659
+    dir: rx
+    hex: 00 00 01 40 40 40 0F 00 00 00 00 00 00 00 00 00 82 82 82 82 00 00 00 00
+  - at_ms: 443675
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 443859
+    dir: rx
+    hex: 00 00 01 40 40 40 0F 00 00 00 00 00 00 00 00 00 82 82 82 82 00 00 00 00
+- id: t1
+  instruction: "Temperature: plug a type-K thermocouple into ΩV (+) and COM (−) (BM827s and BM829s only)"
+  status: captured
+  samples:
+  - raw_hex: 00 00 01 AF CB A0 0F 00 00 00 00 00 00 00 00 00 82 82 82 82 00 00 00 00
+    mode_byte: "0x8020"
+    mode: T1
+    display_raw: "021"
+    value: "21"
+    unit: °C
+    range_label: ""
+    progress: 0
+    flags:
+      hold: false
+      rel: false
+      auto_range: false
+      min: false
+      max: false
+      avg: false
+      low_battery: false
+      hv_warning: false
+      dc: false
+      peak_min: false
+      peak_max: false
+      lead_error: false
+      comp: false
+      record: false
+      loz: false
+      void: false
+  - raw_hex: 00 00 01 AF CB A0 0F 00 00 00 00 00 00 00 00 00 82 82 82 82 00 00 00 00
+    mode_byte: "0x8020"
+    mode: T1
+    display_raw: "021"
+    value: "21"
+    unit: °C
+    range_label: ""
+    progress: 0
+    flags:
+      hold: false
+      rel: false
+      auto_range: false
+      min: false
+      max: false
+      avg: false
+      low_battery: false
+      hv_warning: false
+      dc: false
+      peak_min: false
+      peak_max: false
+      lead_error: false
+      comp: false
+      record: false
+      loz: false
+      void: false
+  - raw_hex: 00 00 01 AF CB A0 0F 00 00 00 00 00 00 00 00 00 82 82 82 82 00 00 00 00
+    mode_byte: "0x8020"
+    mode: T1
+    display_raw: "021"
+    value: "21"
+    unit: °C
+    range_label: ""
+    progress: 0
+    flags:
+      hold: false
+      rel: false
+      auto_range: false
+      min: false
+      max: false
+      avg: false
+      low_battery: false
+      hv_warning: false
+      dc: false
+      peak_min: false
+      peak_max: false
+      lead_error: false
+      comp: false
+      record: false
+      loz: false
+      void: false
+  - raw_hex: 00 00 01 AF CB A0 0F 00 00 00 00 00 00 00 00 00 82 82 82 82 00 00 00 00
+    mode_byte: "0x8020"
+    mode: T1
+    display_raw: "021"
+    value: "21"
+    unit: °C
+    range_label: ""
+    progress: 0
+    flags:
+      hold: false
+      rel: false
+      auto_range: false
+      min: false
+      max: false
+      avg: false
+      low_battery: false
+      hv_warning: false
+      dc: false
+      peak_min: false
+      peak_max: false
+      lead_error: false
+      comp: false
+      record: false
+      loz: false
+      void: false
+  - raw_hex: 00 00 01 AF CB A0 0F 00 00 00 00 00 00 00 00 00 82 82 82 82 00 00 00 00
+    mode_byte: "0x8020"
+    mode: T1
+    display_raw: "021"
+    value: "21"
+    unit: °C
+    range_label: ""
+    progress: 0
+    flags:
+      hold: false
+      rel: false
+      auto_range: false
+      min: false
+      max: false
+      avg: false
+      low_battery: false
+      hv_warning: false
+      dc: false
+      peak_min: false
+      peak_max: false
+      lead_error: false
+      comp: false
+      record: false
+      loz: false
+      void: false
+  frames:
+  - at_ms: 462593
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 462723
+    dir: rx
+    hex: 00 00 01 AF CB A0 0F 00 00 00 00 00 00 00 00 00 82 82 82 82 00 00 00 00
+  - at_ms: 462739
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 462923
+    dir: rx
+    hex: 00 00 01 AF CB A0 0F 00 00 00 00 00 00 00 00 00 82 82 82 82 00 00 00 00
+  - at_ms: 462939
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 463115
+    dir: rx
+    hex: 00 00 01 AF CB A0 0F 00 00 00 00 00 00 00 00 00 82 82 82 82 00 00 00 00
+  - at_ms: 463131
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 463315
+    dir: rx
+    hex: 00 00 01 AF CB A0 0F 00 00 00 00 00 00 00 00 00 82 82 82 82 00 00 00 00
+  - at_ms: 463331
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 463506
+    dir: rx
+    hex: 00 00 01 AF CB A0 0F 00 00 00 00 00 00 00 00 00 82 82 82 82 00 00 00 00
+- id: temp_unit
+  instruction: "Temperature T1: press SELECT briefly to switch between °C and °F, then Enter. Press SELECT briefly again afterwards (BM827s and BM829s only)."
+  status: captured
+  samples:
+  - raw_hex: 00 00 01 AF A8 AF 4E 00 00 00 00 00 00 00 00 00 82 82 82 82 00 00 00 00
+    mode_byte: "0x8040"
+    mode: T1
+    display_raw: "070"
+    value: "70"
+    unit: °F
+    range_label: ""
+    progress: 0
+    flags:
+      hold: false
+      rel: false
+      auto_range: false
+      min: false
+      max: false
+      avg: false
+      low_battery: false
+      hv_warning: false
+      dc: false
+      peak_min: false
+      peak_max: false
+      lead_error: false
+      comp: false
+      record: false
+      loz: false
+      void: false
+  - raw_hex: 00 00 01 AF A8 AF 4E 00 00 00 00 00 00 00 00 00 82 82 82 82 00 00 00 00
+    mode_byte: "0x8040"
+    mode: T1
+    display_raw: "070"
+    value: "70"
+    unit: °F
+    range_label: ""
+    progress: 0
+    flags:
+      hold: false
+      rel: false
+      auto_range: false
+      min: false
+      max: false
+      avg: false
+      low_battery: false
+      hv_warning: false
+      dc: false
+      peak_min: false
+      peak_max: false
+      lead_error: false
+      comp: false
+      record: false
+      loz: false
+      void: false
+  - raw_hex: 00 00 01 AF A8 AF 4E 00 00 00 00 00 00 00 00 00 82 82 82 82 00 00 00 00
+    mode_byte: "0x8040"
+    mode: T1
+    display_raw: "070"
+    value: "70"
+    unit: °F
+    range_label: ""
+    progress: 0
+    flags:
+      hold: false
+      rel: false
+      auto_range: false
+      min: false
+      max: false
+      avg: false
+      low_battery: false
+      hv_warning: false
+      dc: false
+      peak_min: false
+      peak_max: false
+      lead_error: false
+      comp: false
+      record: false
+      loz: false
+      void: false
+  - raw_hex: 00 00 01 AF A8 AF 4E 00 00 00 00 00 00 00 00 00 82 82 82 82 00 00 00 00
+    mode_byte: "0x8040"
+    mode: T1
+    display_raw: "070"
+    value: "70"
+    unit: °F
+    range_label: ""
+    progress: 0
+    flags:
+      hold: false
+      rel: false
+      auto_range: false
+      min: false
+      max: false
+      avg: false
+      low_battery: false
+      hv_warning: false
+      dc: false
+      peak_min: false
+      peak_max: false
+      lead_error: false
+      comp: false
+      record: false
+      loz: false
+      void: false
+  - raw_hex: 00 00 01 AF A8 AF 4E 00 00 00 00 00 00 00 00 00 82 82 82 82 00 00 00 00
+    mode_byte: "0x8040"
+    mode: T1
+    display_raw: "070"
+    value: "70"
+    unit: °F
+    range_label: ""
+    progress: 0
+    flags:
+      hold: false
+      rel: false
+      auto_range: false
+      min: false
+      max: false
+      avg: false
+      low_battery: false
+      hv_warning: false
+      dc: false
+      peak_min: false
+      peak_max: false
+      lead_error: false
+      comp: false
+      record: false
+      loz: false
+      void: false
+  frames:
+  - at_ms: 476409
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 476482
+    dir: rx
+    hex: 00 00 01 AF A8 AF 4E 00 00 00 00 00 00 00 00 00 82 82 82 82 00 00 00 00
+  - at_ms: 476499
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 476682
+    dir: rx
+    hex: 00 00 01 AF A8 AF 4E 00 00 00 00 00 00 00 00 00 82 82 82 82 00 00 00 00
+  - at_ms: 476698
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 476875
+    dir: rx
+    hex: 00 00 01 AF A8 AF 4E 00 00 00 00 00 00 00 00 00 82 82 82 82 00 00 00 00
+  - at_ms: 476890
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 477074
+    dir: rx
+    hex: 00 00 01 AF A8 AF 4E 00 00 00 00 00 00 00 00 00 82 82 82 82 00 00 00 00
+  - at_ms: 477090
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 477266
+    dir: rx
+    hex: 00 00 01 AF A8 AF 4E 00 00 00 00 00 00 00 00 00 82 82 82 82 00 00 00 00
+- id: cap
+  instruction: Unplug any thermocouple and put the leads back in ΩV and COM, leads open; set the dial to capacitance and press SELECT until diod is gone. A reading can take seconds.
+  status: captured
+  samples:
+  - raw_hex: 00 00 00 AF BF AF 6D 00 00 00 00 00 00 00 09 00 82 82 82 82 10 00 00 00
+    mode_byte: "0x08"
+    mode: Capacitance
+    display_raw: "00.05"
+    value: "0.05"
+    unit: nF
+    range_label: ""
+    progress: 0
+    flags:
+      hold: false
+      rel: false
+      auto_range: true
+      min: false
+      max: false
+      avg: false
+      low_battery: false
+      hv_warning: false
+      dc: false
+      peak_min: false
+      peak_max: false
+      lead_error: false
+      comp: false
+      record: false
+      loz: false
+      void: false
+  - raw_hex: 00 00 00 AF BF AF 6D 00 00 00 00 00 00 00 09 00 82 82 82 82 10 00 00 00
+    mode_byte: "0x08"
+    mode: Capacitance
+    display_raw: "00.05"
+    value: "0.05"
+    unit: nF
+    range_label: ""
+    progress: 0
+    flags:
+      hold: false
+      rel: false
+      auto_range: true
+      min: false
+      max: false
+      avg: false
+      low_battery: false
+      hv_warning: false
+      dc: false
+      peak_min: false
+      peak_max: false
+      lead_error: false
+      comp: false
+      record: false
+      loz: false
+      void: false
+  - raw_hex: 00 00 00 AF BF AF 6D 00 00 00 00 00 00 00 09 00 82 82 82 82 10 00 00 00
+    mode_byte: "0x08"
+    mode: Capacitance
+    display_raw: "00.05"
+    value: "0.05"
+    unit: nF
+    range_label: ""
+    progress: 0
+    flags:
+      hold: false
+      rel: false
+      auto_range: true
+      min: false
+      max: false
+      avg: false
+      low_battery: false
+      hv_warning: false
+      dc: false
+      peak_min: false
+      peak_max: false
+      lead_error: false
+      comp: false
+      record: false
+      loz: false
+      void: false
+  - raw_hex: 00 00 00 AF BF AF 6D 00 00 00 00 00 00 00 09 00 82 82 82 82 10 00 00 00
+    mode_byte: "0x08"
+    mode: Capacitance
+    display_raw: "00.05"
+    value: "0.05"
+    unit: nF
+    range_label: ""
+    progress: 0
+    flags:
+      hold: false
+      rel: false
+      auto_range: true
+      min: false
+      max: false
+      avg: false
+      low_battery: false
+      hv_warning: false
+      dc: false
+      peak_min: false
+      peak_max: false
+      lead_error: false
+      comp: false
+      record: false
+      loz: false
+      void: false
+  - raw_hex: 00 00 00 AF BF AF 6D 00 00 00 00 00 00 00 09 00 82 82 82 82 10 00 00 00
+    mode_byte: "0x08"
+    mode: Capacitance
+    display_raw: "00.05"
+    value: "0.05"
+    unit: nF
+    range_label: ""
+    progress: 0
+    flags:
+      hold: false
+      rel: false
+      auto_range: true
+      min: false
+      max: false
+      avg: false
+      low_battery: false
+      hv_warning: false
+      dc: false
+      peak_min: false
+      peak_max: false
+      lead_error: false
+      comp: false
+      record: false
+      loz: false
+      void: false
+  frames:
+  - at_ms: 525711
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 525914
+    dir: rx
+    hex: 00 00 00 AF BF AF 6D 00 00 00 00 00 00 00 09 00 82 82 82 82 10 00 00 00
+  - at_ms: 525930
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 526178
+    dir: rx
+    hex: 00 00 00 AF BF AF 6D 00 00 00 00 00 00 00 09 00 82 82 82 82 10 00 00 00
+  - at_ms: 526194
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 526442
+    dir: rx
+    hex: 00 00 00 AF BF AF 6D 00 00 00 00 00 00 00 09 00 82 82 82 82 10 00 00 00
+  - at_ms: 526458
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 526706
+    dir: rx
+    hex: 00 00 00 AF BF AF 6D 00 00 00 00 00 00 00 09 00 82 82 82 82 10 00 00 00
+  - at_ms: 526722
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 526970
+    dir: rx
+    hex: 00 00 00 AF BF AF 6D 00 00 00 00 00 00 00 09 00 82 82 82 82 10 00 00 00
+- id: diode
+  instruction: "Capacitance position: press SELECT until diod shows on the small display, leads open"
+  status: captured
+  samples:
+  - raw_hex: 00 00 00 10 AF 07 00 00 E3 20 63 E3 00 00 20 00 82 82 82 82 00 00 00 00
+    mode_byte: "0x04"
+    mode: Diode
+    display_raw: ""
+    value: OL
+    unit: V
+    range_label: ""
+    progress: 0
+    flags:
+      hold: false
+      rel: false
+      auto_range: false
+      min: false
+      max: false
+      avg: false
+      low_battery: false
+      hv_warning: false
+      dc: false
+      peak_min: false
+      peak_max: false
+      lead_error: false
+      comp: false
+      record: false
+      loz: false
+      void: false
+  - raw_hex: 00 00 00 10 AF 07 00 00 E3 20 63 E3 00 00 20 00 82 82 82 82 00 00 00 00
+    mode_byte: "0x04"
+    mode: Diode
+    display_raw: ""
+    value: OL
+    unit: V
+    range_label: ""
+    progress: 0
+    flags:
+      hold: false
+      rel: false
+      auto_range: false
+      min: false
+      max: false
+      avg: false
+      low_battery: false
+      hv_warning: false
+      dc: false
+      peak_min: false
+      peak_max: false
+      lead_error: false
+      comp: false
+      record: false
+      loz: false
+      void: false
+  - raw_hex: 00 00 00 10 AF 07 00 00 E3 20 63 E3 00 00 20 00 82 82 82 82 00 00 00 00
+    mode_byte: "0x04"
+    mode: Diode
+    display_raw: ""
+    value: OL
+    unit: V
+    range_label: ""
+    progress: 0
+    flags:
+      hold: false
+      rel: false
+      auto_range: false
+      min: false
+      max: false
+      avg: false
+      low_battery: false
+      hv_warning: false
+      dc: false
+      peak_min: false
+      peak_max: false
+      lead_error: false
+      comp: false
+      record: false
+      loz: false
+      void: false
+  - raw_hex: 00 00 00 10 AF 07 00 00 E3 20 63 E3 00 00 20 00 82 82 82 82 00 00 00 00
+    mode_byte: "0x04"
+    mode: Diode
+    display_raw: ""
+    value: OL
+    unit: V
+    range_label: ""
+    progress: 0
+    flags:
+      hold: false
+      rel: false
+      auto_range: false
+      min: false
+      max: false
+      avg: false
+      low_battery: false
+      hv_warning: false
+      dc: false
+      peak_min: false
+      peak_max: false
+      lead_error: false
+      comp: false
+      record: false
+      loz: false
+      void: false
+  - raw_hex: 00 00 00 10 AF 07 00 00 E3 20 63 E3 00 00 20 00 82 82 82 82 00 00 00 00
+    mode_byte: "0x04"
+    mode: Diode
+    display_raw: ""
+    value: OL
+    unit: V
+    range_label: ""
+    progress: 0
+    flags:
+      hold: false
+      rel: false
+      auto_range: false
+      min: false
+      max: false
+      avg: false
+      low_battery: false
+      hv_warning: false
+      dc: false
+      peak_min: false
+      peak_max: false
+      lead_error: false
+      comp: false
+      record: false
+      loz: false
+      void: false
+  frames:
+  - at_ms: 547848
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 547890
+    dir: rx
+    hex: 00 00 00 10 AF 07 00 00 E3 20 63 E3 00 00 20 00 82 82 82 82 00 00 00 00
+  - at_ms: 547906
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 548082
+    dir: rx
+    hex: 00 00 00 10 AF 07 00 00 E3 20 63 E3 00 00 20 00 82 82 82 82 00 00 00 00
+  - at_ms: 548098
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 548282
+    dir: rx
+    hex: 00 00 00 10 AF 07 00 00 E3 20 63 E3 00 00 20 00 82 82 82 82 00 00 00 00
+  - at_ms: 548298
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 548482
+    dir: rx
+    hex: 00 00 00 10 AF 07 00 00 E3 20 63 E3 00 00 20 00 82 82 82 82 00 00 00 00
+  - at_ms: 548498
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 548674
+    dir: rx
+    hex: 00 00 00 10 AF 07 00 00 E3 20 63 E3 00 00 20 00 82 82 82 82 00 00 00 00
+- id: dcua
+  instruction: Move the red lead to mA µA, leads open; set the dial to µA and press SELECT until ⎓ shows with nothing on the small display, then Enter.
+  status: captured
+  samples:
+  - raw_hex: 00 10 00 AF BF AF 6F 00 BF AF AF AF 00 01 50 0C 82 82 82 82 10 00 00 00
+    mode_byte: "0x201"
+    mode: AC mA
+    display_raw: "00.06"
+    value: "0.06"
+    unit: mA
+    range_label: ""
+    progress: 0
+    flags:
+      hold: false
+      rel: false
+      auto_range: true
+      min: false
+      max: false
+      avg: false
+      low_battery: false
+      hv_warning: false
+      dc: false
+      peak_min: false
+      peak_max: false
+      lead_error: false
+      comp: false
+      record: false
+      loz: false
+      void: false
+    aux:
+    - label: Frequency
+      value: "0.000"
+      unit: Hz
+  - raw_hex: 00 10 00 AF BF AF 6F 00 BF AF AF AF 00 01 50 0C 82 82 82 82 10 00 00 00
+    mode_byte: "0x201"
+    mode: AC mA
+    display_raw: "00.06"
+    value: "0.06"
+    unit: mA
+    range_label: ""
+    progress: 0
+    flags:
+      hold: false
+      rel: false
+      auto_range: true
+      min: false
+      max: false
+      avg: false
+      low_battery: false
+      hv_warning: false
+      dc: false
+      peak_min: false
+      peak_max: false
+      lead_error: false
+      comp: false
+      record: false
+      loz: false
+      void: false
+    aux:
+    - label: Frequency
+      value: "0.000"
+      unit: Hz
+  - raw_hex: 00 10 00 AF BF AF 6F 00 BF AF AF AF 00 01 50 0C 82 82 82 82 10 00 00 00
+    mode_byte: "0x201"
+    mode: AC mA
+    display_raw: "00.06"
+    value: "0.06"
+    unit: mA
+    range_label: ""
+    progress: 0
+    flags:
+      hold: false
+      rel: false
+      auto_range: true
+      min: false
+      max: false
+      avg: false
+      low_battery: false
+      hv_warning: false
+      dc: false
+      peak_min: false
+      peak_max: false
+      lead_error: false
+      comp: false
+      record: false
+      loz: false
+      void: false
+    aux:
+    - label: Frequency
+      value: "0.000"
+      unit: Hz
+  - raw_hex: 00 10 00 AF BF AF 6F 00 BF AF AF AF 00 01 50 0C 82 82 82 82 10 00 00 00
+    mode_byte: "0x201"
+    mode: AC mA
+    display_raw: "00.06"
+    value: "0.06"
+    unit: mA
+    range_label: ""
+    progress: 0
+    flags:
+      hold: false
+      rel: false
+      auto_range: true
+      min: false
+      max: false
+      avg: false
+      low_battery: false
+      hv_warning: false
+      dc: false
+      peak_min: false
+      peak_max: false
+      lead_error: false
+      comp: false
+      record: false
+      loz: false
+      void: false
+    aux:
+    - label: Frequency
+      value: "0.000"
+      unit: Hz
+  - raw_hex: 00 10 00 AF BF AF 6F 00 BF AF AF AF 00 01 50 0C 82 82 82 82 10 00 00 00
+    mode_byte: "0x201"
+    mode: AC mA
+    display_raw: "00.06"
+    value: "0.06"
+    unit: mA
+    range_label: ""
+    progress: 0
+    flags:
+      hold: false
+      rel: false
+      auto_range: true
+      min: false
+      max: false
+      avg: false
+      low_battery: false
+      hv_warning: false
+      dc: false
+      peak_min: false
+      peak_max: false
+      lead_error: false
+      comp: false
+      record: false
+      loz: false
+      void: false
+    aux:
+    - label: Frequency
+      value: "0.000"
+      unit: Hz
+  frames:
+  - at_ms: 606614
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 606665
+    dir: rx
+    hex: 00 10 00 AF BF AF 6F 00 BF AF AF AF 00 01 50 0C 82 82 82 82 10 00 00 00
+  - at_ms: 606681
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 606858
+    dir: rx
+    hex: 00 10 00 AF BF AF 6F 00 BF AF AF AF 00 01 50 0C 82 82 82 82 10 00 00 00
+  - at_ms: 606873
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 607050
+    dir: rx
+    hex: 00 10 00 AF BF AF 6F 00 BF AF AF AF 00 01 50 0C 82 82 82 82 10 00 00 00
+  - at_ms: 607066
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 607249
+    dir: rx
+    hex: 00 10 00 AF BF AF 6F 00 BF AF AF AF 00 01 50 0C 82 82 82 82 10 00 00 00
+  - at_ms: 607266
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 607458
+    dir: rx
+    hex: 00 10 00 AF BF AF 6F 00 BF AF AF AF 00 01 50 0C 82 82 82 82 10 00 00 00
+- id: acdcua
+  instruction: "µA position: press SELECT until the main display shows ⎓ and ~ both (skip if SELECT never shows it; it may be missing on the BM821s and BM822s)"
+  status: captured
+  samples:
+  - raw_hex: 00 20 00 AF BF AF AF 40 AF BF AF CB A0 00 50 00 82 82 82 82 10 00 00 00
+    mode_byte: "0x202"
+    mode: DC mA
+    display_raw: "00.00"
+    value: "0"
+    unit: mA
+    range_label: ""
+    progress: 0
+    flags:
+      hold: false
+      rel: false
+      auto_range: true
+      min: false
+      max: false
+      avg: false
+      low_battery: false
+      hv_warning: false
+      dc: true
+      peak_min: false
+      peak_max: false
+      lead_error: false
+      comp: false
+      record: false
+      loz: false
+      void: false
+    aux:
+    - label: AC
+      value: "00.02"
+      unit: mA
+    main_label: DC
+  - raw_hex: 00 20 00 AF BF AF AF 40 AF BF AF CB A0 00 50 00 82 82 82 82 10 00 00 00
+    mode_byte: "0x202"
+    mode: DC mA
+    display_raw: "00.00"
+    value: "0"
+    unit: mA
+    range_label: ""
+    progress: 0
+    flags:
+      hold: false
+      rel: false
+      auto_range: true
+      min: false
+      max: false
+      avg: false
+      low_battery: false
+      hv_warning: false
+      dc: true
+      peak_min: false
+      peak_max: false
+      lead_error: false
+      comp: false
+      record: false
+      loz: false
+      void: false
+    aux:
+    - label: AC
+      value: "00.02"
+      unit: mA
+    main_label: DC
+  - raw_hex: 00 20 00 AF BF AF AF 40 AF BF AF CB A0 00 50 00 82 82 82 82 10 00 00 00
+    mode_byte: "0x202"
+    mode: DC mA
+    display_raw: "00.00"
+    value: "0"
+    unit: mA
+    range_label: ""
+    progress: 0
+    flags:
+      hold: false
+      rel: false
+      auto_range: true
+      min: false
+      max: false
+      avg: false
+      low_battery: false
+      hv_warning: false
+      dc: true
+      peak_min: false
+      peak_max: false
+      lead_error: false
+      comp: false
+      record: false
+      loz: false
+      void: false
+    aux:
+    - label: AC
+      value: "00.02"
+      unit: mA
+    main_label: DC
+  - raw_hex: 00 20 00 AF BF AF AF 40 AF BF AF CB A0 00 50 00 82 82 82 82 10 00 00 00
+    mode_byte: "0x202"
+    mode: DC mA
+    display_raw: "00.00"
+    value: "0"
+    unit: mA
+    range_label: ""
+    progress: 0
+    flags:
+      hold: false
+      rel: false
+      auto_range: true
+      min: false
+      max: false
+      avg: false
+      low_battery: false
+      hv_warning: false
+      dc: true
+      peak_min: false
+      peak_max: false
+      lead_error: false
+      comp: false
+      record: false
+      loz: false
+      void: false
+    aux:
+    - label: AC
+      value: "00.02"
+      unit: mA
+    main_label: DC
+  - raw_hex: 00 20 00 AF BF AF AF 40 AF BF AF CB A0 00 50 00 82 82 82 82 10 00 00 00
+    mode_byte: "0x202"
+    mode: DC mA
+    display_raw: "00.00"
+    value: "0"
+    unit: mA
+    range_label: ""
+    progress: 0
+    flags:
+      hold: false
+      rel: false
+      auto_range: true
+      min: false
+      max: false
+      avg: false
+      low_battery: false
+      hv_warning: false
+      dc: true
+      peak_min: false
+      peak_max: false
+      lead_error: false
+      comp: false
+      record: false
+      loz: false
+      void: false
+    aux:
+    - label: AC
+      value: "00.02"
+      unit: mA
+    main_label: DC
+  frames:
+  - at_ms: 624341
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 625137
+    dir: rx
+    hex: 00 20 00 AF BF AF AF 40 AF BF AF CB A0 00 50 00 82 82 82 82 10 00 00 00
+  - at_ms: 625153
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 625921
+    dir: rx
+    hex: 00 20 00 AF BF AF AF 40 AF BF AF CB A0 00 50 00 82 82 82 82 10 00 00 00
+  - at_ms: 625937
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 626705
+    dir: rx
+    hex: 00 20 00 AF BF AF AF 40 AF BF AF CB A0 00 50 00 82 82 82 82 10 00 00 00
+  - at_ms: 626721
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 627489
+    dir: rx
+    hex: 00 20 00 AF BF AF AF 40 AF BF AF CB A0 00 50 00 82 82 82 82 10 00 00 00
+  - at_ms: 627505
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 628281
+    dir: rx
+    hex: 00 20 00 AF BF AF AF 40 AF BF AF CB A0 00 50 00 82 82 82 82 10 00 00 00
+- id: acua
+  instruction: "µA position: press SELECT until the main display shows ~ and the small one Hz"
+  status: captured
+  samples:
+  - raw_hex: 00 10 00 AF BF AF A0 00 BF AF AF AF 00 01 50 0C 82 82 82 82 10 00 00 00
+    mode_byte: "0x201"
+    mode: AC mA
+    display_raw: "00.01"
+    value: "0.01"
+    unit: mA
+    range_label: ""
+    progress: 0
+    flags:
+      hold: false
+      rel: false
+      auto_range: true
+      min: false
+      max: false
+      avg: false
+      low_battery: false
+      hv_warning: false
+      dc: false
+      peak_min: false
+      peak_max: false
+      lead_error: false
+      comp: false
+      record: false
+      loz: false
+      void: false
+    aux:
+    - label: Frequency
+      value: "0.000"
+      unit: Hz
+  - raw_hex: 00 10 00 AF BF AF A0 00 BF AF AF AF 00 01 50 0C 82 82 82 82 10 00 00 00
+    mode_byte: "0x201"
+    mode: AC mA
+    display_raw: "00.01"
+    value: "0.01"
+    unit: mA
+    range_label: ""
+    progress: 0
+    flags:
+      hold: false
+      rel: false
+      auto_range: true
+      min: false
+      max: false
+      avg: false
+      low_battery: false
+      hv_warning: false
+      dc: false
+      peak_min: false
+      peak_max: false
+      lead_error: false
+      comp: false
+      record: false
+      loz: false
+      void: false
+    aux:
+    - label: Frequency
+      value: "0.000"
+      unit: Hz
+  - raw_hex: 00 10 00 AF BF AF A0 00 BF AF AF AF 00 01 50 0C 82 82 82 82 10 00 00 00
+    mode_byte: "0x201"
+    mode: AC mA
+    display_raw: "00.01"
+    value: "0.01"
+    unit: mA
+    range_label: ""
+    progress: 0
+    flags:
+      hold: false
+      rel: false
+      auto_range: true
+      min: false
+      max: false
+      avg: false
+      low_battery: false
+      hv_warning: false
+      dc: false
+      peak_min: false
+      peak_max: false
+      lead_error: false
+      comp: false
+      record: false
+      loz: false
+      void: false
+    aux:
+    - label: Frequency
+      value: "0.000"
+      unit: Hz
+  - raw_hex: 00 10 00 AF BF AF A0 00 BF AF AF AF 00 01 50 0C 82 82 82 82 10 00 00 00
+    mode_byte: "0x201"
+    mode: AC mA
+    display_raw: "00.01"
+    value: "0.01"
+    unit: mA
+    range_label: ""
+    progress: 0
+    flags:
+      hold: false
+      rel: false
+      auto_range: true
+      min: false
+      max: false
+      avg: false
+      low_battery: false
+      hv_warning: false
+      dc: false
+      peak_min: false
+      peak_max: false
+      lead_error: false
+      comp: false
+      record: false
+      loz: false
+      void: false
+    aux:
+    - label: Frequency
+      value: "0.000"
+      unit: Hz
+  - raw_hex: 00 10 00 AF BF AF A0 00 BF AF AF AF 00 01 50 0C 82 82 82 82 10 00 00 00
+    mode_byte: "0x201"
+    mode: AC mA
+    display_raw: "00.01"
+    value: "0.01"
+    unit: mA
+    range_label: ""
+    progress: 0
+    flags:
+      hold: false
+      rel: false
+      auto_range: true
+      min: false
+      max: false
+      avg: false
+      low_battery: false
+      hv_warning: false
+      dc: false
+      peak_min: false
+      peak_max: false
+      lead_error: false
+      comp: false
+      record: false
+      loz: false
+      void: false
+    aux:
+    - label: Frequency
+      value: "0.000"
+      unit: Hz
+  frames:
+  - at_ms: 658669
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 658745
+    dir: rx
+    hex: 00 10 00 AF BF AF A0 00 BF AF AF AF 00 01 50 0C 82 82 82 82 10 00 00 00
+  - at_ms: 658761
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 658953
+    dir: rx
+    hex: 00 10 00 AF BF AF A0 00 BF AF AF AF 00 01 50 0C 82 82 82 82 10 00 00 00
+  - at_ms: 658969
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 659137
+    dir: rx
+    hex: 00 10 00 AF BF AF A0 00 BF AF AF AF 00 01 50 0C 82 82 82 82 10 00 00 00
+  - at_ms: 659153
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 659345
+    dir: rx
+    hex: 00 10 00 AF BF AF A0 00 BF AF AF AF 00 01 50 0C 82 82 82 82 10 00 00 00
+  - at_ms: 659361
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 659529
+    dir: rx
+    hex: 00 10 00 AF BF AF A0 00 BF AF AF AF 00 01 50 0C 82 82 82 82 10 00 00 00
+- id: dcma
+  instruction: "Red lead still in mA µA: set the dial to A mA and press SELECT until ⎓ shows with nothing on the small display, then Enter."
+  status: captured
+  samples:
+  - raw_hex: 00 20 00 AF BF AF AF 00 00 00 00 00 00 00 50 0C 82 82 82 82 10 00 00 00
+    mode_byte: "0x202"
+    mode: DC mA
+    display_raw: "00.00"
+    value: "0"
+    unit: mA
+    range_label: ""
+    progress: 0
+    flags:
+      hold: false
+      rel: false
+      auto_range: true
+      min: false
+      max: false
+      avg: false
+      low_battery: false
+      hv_warning: false
+      dc: true
+      peak_min: false
+      peak_max: false
+      lead_error: false
+      comp: false
+      record: false
+      loz: false
+      void: false
+  - raw_hex: 00 20 00 AF BF AF AF 00 00 00 00 00 00 00 50 0C 82 82 82 82 10 00 00 00
+    mode_byte: "0x202"
+    mode: DC mA
+    display_raw: "00.00"
+    value: "0"
+    unit: mA
+    range_label: ""
+    progress: 0
+    flags:
+      hold: false
+      rel: false
+      auto_range: true
+      min: false
+      max: false
+      avg: false
+      low_battery: false
+      hv_warning: false
+      dc: true
+      peak_min: false
+      peak_max: false
+      lead_error: false
+      comp: false
+      record: false
+      loz: false
+      void: false
+  - raw_hex: 00 20 00 AF BF AF AF 00 00 00 00 00 00 00 50 0C 82 82 82 82 10 00 00 00
+    mode_byte: "0x202"
+    mode: DC mA
+    display_raw: "00.00"
+    value: "0"
+    unit: mA
+    range_label: ""
+    progress: 0
+    flags:
+      hold: false
+      rel: false
+      auto_range: true
+      min: false
+      max: false
+      avg: false
+      low_battery: false
+      hv_warning: false
+      dc: true
+      peak_min: false
+      peak_max: false
+      lead_error: false
+      comp: false
+      record: false
+      loz: false
+      void: false
+  - raw_hex: 00 20 00 AF BF AF AF 00 00 00 00 00 00 00 50 0C 82 82 82 82 10 00 00 00
+    mode_byte: "0x202"
+    mode: DC mA
+    display_raw: "00.00"
+    value: "0"
+    unit: mA
+    range_label: ""
+    progress: 0
+    flags:
+      hold: false
+      rel: false
+      auto_range: true
+      min: false
+      max: false
+      avg: false
+      low_battery: false
+      hv_warning: false
+      dc: true
+      peak_min: false
+      peak_max: false
+      lead_error: false
+      comp: false
+      record: false
+      loz: false
+      void: false
+  - raw_hex: 00 20 00 AF BF AF AF 00 00 00 00 00 00 00 50 0C 82 82 82 82 10 00 00 00
+    mode_byte: "0x202"
+    mode: DC mA
+    display_raw: "00.00"
+    value: "0"
+    unit: mA
+    range_label: ""
+    progress: 0
+    flags:
+      hold: false
+      rel: false
+      auto_range: true
+      min: false
+      max: false
+      avg: false
+      low_battery: false
+      hv_warning: false
+      dc: true
+      peak_min: false
+      peak_max: false
+      lead_error: false
+      comp: false
+      record: false
+      loz: false
+      void: false
+  frames:
+  - at_ms: 698925
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 699040
+    dir: rx
+    hex: 00 20 00 AF BF AF AF 00 00 00 00 00 00 00 50 0C 82 82 82 82 10 00 00 00
+  - at_ms: 699056
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 699240
+    dir: rx
+    hex: 00 20 00 AF BF AF AF 00 00 00 00 00 00 00 50 0C 82 82 82 82 10 00 00 00
+  - at_ms: 699256
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 699424
+    dir: rx
+    hex: 00 20 00 AF BF AF AF 00 00 00 00 00 00 00 50 0C 82 82 82 82 10 00 00 00
+  - at_ms: 699440
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 699633
+    dir: rx
+    hex: 00 20 00 AF BF AF AF 00 00 00 00 00 00 00 50 0C 82 82 82 82 10 00 00 00
+  - at_ms: 699648
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 699817
+    dir: rx
+    hex: 00 20 00 AF BF AF AF 00 00 00 00 00 00 00 50 0C 82 82 82 82 10 00 00 00
+- id: acdcma
+  instruction: "A mA position, lead in mA µA: press SELECT until the main display shows ⎓ and ~ both (skip if SELECT never shows it; it may be missing on the BM821s and BM822s)"
+  status: captured
+  samples:
+  - raw_hex: 00 20 00 AF BF AF AF 40 AF BF AF AF A0 00 50 00 82 82 82 82 10 00 00 00
+    mode_byte: "0x202"
+    mode: DC mA
+    display_raw: "00.00"
+    value: "0"
+    unit: mA
+    range_label: ""
+    progress: 0
+    flags:
+      hold: false
+      rel: false
+      auto_range: true
+      min: false
+      max: false
+      avg: false
+      low_battery: false
+      hv_warning: false
+      dc: true
+      peak_min: false
+      peak_max: false
+      lead_error: false
+      comp: false
+      record: false
+      loz: false
+      void: false
+    aux:
+    - label: AC
+      value: "00.00"
+      unit: mA
+    main_label: DC
+  - raw_hex: 00 20 00 AF BF AF AF 40 AF BF AF AF A0 00 50 00 82 82 82 82 10 00 00 00
+    mode_byte: "0x202"
+    mode: DC mA
+    display_raw: "00.00"
+    value: "0"
+    unit: mA
+    range_label: ""
+    progress: 0
+    flags:
+      hold: false
+      rel: false
+      auto_range: true
+      min: false
+      max: false
+      avg: false
+      low_battery: false
+      hv_warning: false
+      dc: true
+      peak_min: false
+      peak_max: false
+      lead_error: false
+      comp: false
+      record: false
+      loz: false
+      void: false
+    aux:
+    - label: AC
+      value: "00.00"
+      unit: mA
+    main_label: DC
+  - raw_hex: 00 20 00 AF BF AF AF 40 AF BF AF AF A0 00 50 00 82 82 82 82 10 00 00 00
+    mode_byte: "0x202"
+    mode: DC mA
+    display_raw: "00.00"
+    value: "0"
+    unit: mA
+    range_label: ""
+    progress: 0
+    flags:
+      hold: false
+      rel: false
+      auto_range: true
+      min: false
+      max: false
+      avg: false
+      low_battery: false
+      hv_warning: false
+      dc: true
+      peak_min: false
+      peak_max: false
+      lead_error: false
+      comp: false
+      record: false
+      loz: false
+      void: false
+    aux:
+    - label: AC
+      value: "00.00"
+      unit: mA
+    main_label: DC
+  - raw_hex: 00 20 00 AF BF AF AF 40 AF BF AF AF A0 00 50 00 82 82 82 82 10 00 00 00
+    mode_byte: "0x202"
+    mode: DC mA
+    display_raw: "00.00"
+    value: "0"
+    unit: mA
+    range_label: ""
+    progress: 0
+    flags:
+      hold: false
+      rel: false
+      auto_range: true
+      min: false
+      max: false
+      avg: false
+      low_battery: false
+      hv_warning: false
+      dc: true
+      peak_min: false
+      peak_max: false
+      lead_error: false
+      comp: false
+      record: false
+      loz: false
+      void: false
+    aux:
+    - label: AC
+      value: "00.00"
+      unit: mA
+    main_label: DC
+  - raw_hex: 00 20 00 AF BF AF AF 40 AF BF AF AF A0 00 50 00 82 82 82 82 10 00 00 00
+    mode_byte: "0x202"
+    mode: DC mA
+    display_raw: "00.00"
+    value: "0"
+    unit: mA
+    range_label: ""
+    progress: 0
+    flags:
+      hold: false
+      rel: false
+      auto_range: true
+      min: false
+      max: false
+      avg: false
+      low_battery: false
+      hv_warning: false
+      dc: true
+      peak_min: false
+      peak_max: false
+      lead_error: false
+      comp: false
+      record: false
+      loz: false
+      void: false
+    aux:
+    - label: AC
+      value: "00.00"
+      unit: mA
+    main_label: DC
+  frames:
+  - at_ms: 732757
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 733424
+    dir: rx
+    hex: 00 20 00 AF BF AF AF 40 AF BF AF AF A0 00 50 00 82 82 82 82 10 00 00 00
+  - at_ms: 733440
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 734216
+    dir: rx
+    hex: 00 20 00 AF BF AF AF 40 AF BF AF AF A0 00 50 00 82 82 82 82 10 00 00 00
+  - at_ms: 734232
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 735001
+    dir: rx
+    hex: 00 20 00 AF BF AF AF 40 AF BF AF AF A0 00 50 00 82 82 82 82 10 00 00 00
+  - at_ms: 735016
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 735784
+    dir: rx
+    hex: 00 20 00 AF BF AF AF 40 AF BF AF AF A0 00 50 00 82 82 82 82 10 00 00 00
+  - at_ms: 735800
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 736576
+    dir: rx
+    hex: 00 20 00 AF BF AF AF 40 AF BF AF AF A0 00 50 00 82 82 82 82 10 00 00 00
+- id: acma
+  instruction: "A mA position, lead in mA µA: press SELECT until the main display shows ~ and the small one Hz"
+  status: captured
+  samples:
+  - raw_hex: 00 10 00 AF BF AF AF 00 BF AF AF AF 00 01 50 0C 82 82 82 82 10 00 00 00
+    mode_byte: "0x201"
+    mode: AC mA
+    display_raw: "00.00"
+    value: "0"
+    unit: mA
+    range_label: ""
+    progress: 0
+    flags:
+      hold: false
+      rel: false
+      auto_range: true
+      min: false
+      max: false
+      avg: false
+      low_battery: false
+      hv_warning: false
+      dc: false
+      peak_min: false
+      peak_max: false
+      lead_error: false
+      comp: false
+      record: false
+      loz: false
+      void: false
+    aux:
+    - label: Frequency
+      value: "0.000"
+      unit: Hz
+  - raw_hex: 00 10 00 AF BF AF AF 00 BF AF AF AF 00 01 50 0C 82 82 82 82 10 00 00 00
+    mode_byte: "0x201"
+    mode: AC mA
+    display_raw: "00.00"
+    value: "0"
+    unit: mA
+    range_label: ""
+    progress: 0
+    flags:
+      hold: false
+      rel: false
+      auto_range: true
+      min: false
+      max: false
+      avg: false
+      low_battery: false
+      hv_warning: false
+      dc: false
+      peak_min: false
+      peak_max: false
+      lead_error: false
+      comp: false
+      record: false
+      loz: false
+      void: false
+    aux:
+    - label: Frequency
+      value: "0.000"
+      unit: Hz
+  - raw_hex: 00 10 00 AF BF AF AF 00 BF AF AF AF 00 01 50 0C 82 82 82 82 10 00 00 00
+    mode_byte: "0x201"
+    mode: AC mA
+    display_raw: "00.00"
+    value: "0"
+    unit: mA
+    range_label: ""
+    progress: 0
+    flags:
+      hold: false
+      rel: false
+      auto_range: true
+      min: false
+      max: false
+      avg: false
+      low_battery: false
+      hv_warning: false
+      dc: false
+      peak_min: false
+      peak_max: false
+      lead_error: false
+      comp: false
+      record: false
+      loz: false
+      void: false
+    aux:
+    - label: Frequency
+      value: "0.000"
+      unit: Hz
+  - raw_hex: 00 10 00 AF BF AF AF 00 BF AF AF AF 00 01 50 0C 82 82 82 82 10 00 00 00
+    mode_byte: "0x201"
+    mode: AC mA
+    display_raw: "00.00"
+    value: "0"
+    unit: mA
+    range_label: ""
+    progress: 0
+    flags:
+      hold: false
+      rel: false
+      auto_range: true
+      min: false
+      max: false
+      avg: false
+      low_battery: false
+      hv_warning: false
+      dc: false
+      peak_min: false
+      peak_max: false
+      lead_error: false
+      comp: false
+      record: false
+      loz: false
+      void: false
+    aux:
+    - label: Frequency
+      value: "0.000"
+      unit: Hz
+  - raw_hex: 00 10 00 AF BF AF AF 00 BF AF AF AF 00 01 50 0C 82 82 82 82 10 00 00 00
+    mode_byte: "0x201"
+    mode: AC mA
+    display_raw: "00.00"
+    value: "0"
+    unit: mA
+    range_label: ""
+    progress: 0
+    flags:
+      hold: false
+      rel: false
+      auto_range: true
+      min: false
+      max: false
+      avg: false
+      low_battery: false
+      hv_warning: false
+      dc: false
+      peak_min: false
+      peak_max: false
+      lead_error: false
+      comp: false
+      record: false
+      loz: false
+      void: false
+    aux:
+    - label: Frequency
+      value: "0.000"
+      unit: Hz
+  frames:
+  - at_ms: 764125
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 764288
+    dir: rx
+    hex: 00 10 00 AF BF AF AF 00 BF AF AF AF 00 01 50 0C 82 82 82 82 10 00 00 00
+  - at_ms: 764304
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 764496
+    dir: rx
+    hex: 00 10 00 AF BF AF AF 00 BF AF AF AF 00 01 50 0C 82 82 82 82 10 00 00 00
+  - at_ms: 764512
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 764680
+    dir: rx
+    hex: 00 10 00 AF BF AF AF 00 BF AF AF AF 00 01 50 0C 82 82 82 82 10 00 00 00
+  - at_ms: 764696
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 764872
+    dir: rx
+    hex: 00 10 00 AF BF AF AF 00 BF AF AF AF 00 01 50 0C 82 82 82 82 10 00 00 00
+  - at_ms: 764888
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 765080
+    dir: rx
+    hex: 00 10 00 AF BF AF AF 00 BF AF AF AF 00 01 50 0C 82 82 82 82 10 00 00 00
+- id: dca
+  instruction: "Move the red lead to A, leads open; A mA position: press SELECT until ⎓ shows with nothing on the small display"
+  status: captured
+  samples:
+  - raw_hex: 00 20 00 AF BF AF AF 00 00 00 00 00 00 00 50 0C 82 82 82 82 10 00 00 00
+    mode_byte: "0x202"
+    mode: DC mA
+    display_raw: "00.00"
+    value: "0"
+    unit: mA
+    range_label: ""
+    progress: 0
+    flags:
+      hold: false
+      rel: false
+      auto_range: true
+      min: false
+      max: false
+      avg: false
+      low_battery: false
+      hv_warning: false
+      dc: true
+      peak_min: false
+      peak_max: false
+      lead_error: false
+      comp: false
+      record: false
+      loz: false
+      void: false
+  - raw_hex: 00 20 00 AF BF AF AF 00 00 00 00 00 00 00 50 0C 82 82 82 82 10 00 00 00
+    mode_byte: "0x202"
+    mode: DC mA
+    display_raw: "00.00"
+    value: "0"
+    unit: mA
+    range_label: ""
+    progress: 0
+    flags:
+      hold: false
+      rel: false
+      auto_range: true
+      min: false
+      max: false
+      avg: false
+      low_battery: false
+      hv_warning: false
+      dc: true
+      peak_min: false
+      peak_max: false
+      lead_error: false
+      comp: false
+      record: false
+      loz: false
+      void: false
+  - raw_hex: 00 20 00 AF BF AF AF 00 00 00 00 00 00 00 50 0C 82 82 82 82 10 00 00 00
+    mode_byte: "0x202"
+    mode: DC mA
+    display_raw: "00.00"
+    value: "0"
+    unit: mA
+    range_label: ""
+    progress: 0
+    flags:
+      hold: false
+      rel: false
+      auto_range: true
+      min: false
+      max: false
+      avg: false
+      low_battery: false
+      hv_warning: false
+      dc: true
+      peak_min: false
+      peak_max: false
+      lead_error: false
+      comp: false
+      record: false
+      loz: false
+      void: false
+  - raw_hex: 00 20 00 AF BF AF AF 00 00 00 00 00 00 00 50 0C 82 82 82 82 10 00 00 00
+    mode_byte: "0x202"
+    mode: DC mA
+    display_raw: "00.00"
+    value: "0"
+    unit: mA
+    range_label: ""
+    progress: 0
+    flags:
+      hold: false
+      rel: false
+      auto_range: true
+      min: false
+      max: false
+      avg: false
+      low_battery: false
+      hv_warning: false
+      dc: true
+      peak_min: false
+      peak_max: false
+      lead_error: false
+      comp: false
+      record: false
+      loz: false
+      void: false
+  - raw_hex: 00 20 00 AF BF AF AF 00 00 00 00 00 00 00 50 0C 82 82 82 82 10 00 00 00
+    mode_byte: "0x202"
+    mode: DC mA
+    display_raw: "00.00"
+    value: "0"
+    unit: mA
+    range_label: ""
+    progress: 0
+    flags:
+      hold: false
+      rel: false
+      auto_range: true
+      min: false
+      max: false
+      avg: false
+      low_battery: false
+      hv_warning: false
+      dc: true
+      peak_min: false
+      peak_max: false
+      lead_error: false
+      comp: false
+      record: false
+      loz: false
+      void: false
+  frames:
+  - at_ms: 772156
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 772352
+    dir: rx
+    hex: 00 20 00 AF BF AF AF 00 00 00 00 00 00 00 50 0C 82 82 82 82 10 00 00 00
+  - at_ms: 772368
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 772536
+    dir: rx
+    hex: 00 20 00 AF BF AF AF 00 00 00 00 00 00 00 50 0C 82 82 82 82 10 00 00 00
+  - at_ms: 772552
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 772736
+    dir: rx
+    hex: 00 20 00 AF BF AF AF 00 00 00 00 00 00 00 50 0C 82 82 82 82 10 00 00 00
+  - at_ms: 772752
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 772936
+    dir: rx
+    hex: 00 20 00 AF BF AF AF 00 00 00 00 00 00 00 50 0C 82 82 82 82 10 00 00 00
+  - at_ms: 772952
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 773136
+    dir: rx
+    hex: 00 20 00 AF BF AF AF 00 00 00 00 00 00 00 50 0C 82 82 82 82 10 00 00 00
+- id: acdca
+  instruction: "A mA position, lead in A: press SELECT until the main display shows ⎓ and ~ both (skip if SELECT never shows it; it may be missing on the BM821s and BM822s)"
+  status: captured
+  samples:
+  - raw_hex: 00 20 00 AF BF AF CB 40 AF BF AF AF A0 00 50 00 82 82 82 82 10 00 00 00
+    mode_byte: "0x202"
+    mode: DC mA
+    display_raw: "00.02"
+    value: "0.02"
+    unit: mA
+    range_label: ""
+    progress: 0
+    flags:
+      hold: false
+      rel: false
+      auto_range: true
+      min: false
+      max: false
+      avg: false
+      low_battery: false
+      hv_warning: false
+      dc: true
+      peak_min: false
+      peak_max: false
+      lead_error: false
+      comp: false
+      record: false
+      loz: false
+      void: false
+    aux:
+    - label: AC
+      value: "00.00"
+      unit: mA
+    main_label: DC
+  - raw_hex: 00 20 00 AF BF AF A0 40 AF BF AF AF A0 00 50 00 82 82 82 82 10 00 00 00
+    mode_byte: "0x202"
+    mode: DC mA
+    display_raw: "00.01"
+    value: "0.01"
+    unit: mA
+    range_label: ""
+    progress: 0
+    flags:
+      hold: false
+      rel: false
+      auto_range: true
+      min: false
+      max: false
+      avg: false
+      low_battery: false
+      hv_warning: false
+      dc: true
+      peak_min: false
+      peak_max: false
+      lead_error: false
+      comp: false
+      record: false
+      loz: false
+      void: false
+    aux:
+    - label: AC
+      value: "00.00"
+      unit: mA
+    main_label: DC
+  - raw_hex: 00 20 00 AF BF AF A0 40 AF BF AF AF A0 00 50 00 82 82 82 82 10 00 00 00
+    mode_byte: "0x202"
+    mode: DC mA
+    display_raw: "00.01"
+    value: "0.01"
+    unit: mA
+    range_label: ""
+    progress: 0
+    flags:
+      hold: false
+      rel: false
+      auto_range: true
+      min: false
+      max: false
+      avg: false
+      low_battery: false
+      hv_warning: false
+      dc: true
+      peak_min: false
+      peak_max: false
+      lead_error: false
+      comp: false
+      record: false
+      loz: false
+      void: false
+    aux:
+    - label: AC
+      value: "00.00"
+      unit: mA
+    main_label: DC
+  - raw_hex: 00 20 00 AF BF AF A0 40 AF BF AF AF A0 00 50 00 82 82 82 82 10 00 00 00
+    mode_byte: "0x202"
+    mode: DC mA
+    display_raw: "00.01"
+    value: "0.01"
+    unit: mA
+    range_label: ""
+    progress: 0
+    flags:
+      hold: false
+      rel: false
+      auto_range: true
+      min: false
+      max: false
+      avg: false
+      low_battery: false
+      hv_warning: false
+      dc: true
+      peak_min: false
+      peak_max: false
+      lead_error: false
+      comp: false
+      record: false
+      loz: false
+      void: false
+    aux:
+    - label: AC
+      value: "00.00"
+      unit: mA
+    main_label: DC
+  - raw_hex: 00 20 00 AF BF AF A0 40 AF BF AF AF A0 00 50 00 82 82 82 82 10 00 00 00
+    mode_byte: "0x202"
+    mode: DC mA
+    display_raw: "00.01"
+    value: "0.01"
+    unit: mA
+    range_label: ""
+    progress: 0
+    flags:
+      hold: false
+      rel: false
+      auto_range: true
+      min: false
+      max: false
+      avg: false
+      low_battery: false
+      hv_warning: false
+      dc: true
+      peak_min: false
+      peak_max: false
+      lead_error: false
+      comp: false
+      record: false
+      loz: false
+      void: false
+    aux:
+    - label: AC
+      value: "00.00"
+      unit: mA
+    main_label: DC
+  frames:
+  - at_ms: 806437
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 806544
+    dir: rx
+    hex: 00 20 00 AF BF AF CB 40 AF BF AF AF A0 00 50 00 82 82 82 82 10 00 00 00
+  - at_ms: 806560
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 807327
+    dir: rx
+    hex: 00 20 00 AF BF AF A0 40 AF BF AF AF A0 00 50 00 82 82 82 82 10 00 00 00
+  - at_ms: 807343
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 808111
+    dir: rx
+    hex: 00 20 00 AF BF AF A0 40 AF BF AF AF A0 00 50 00 82 82 82 82 10 00 00 00
+  - at_ms: 808128
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 808895
+    dir: rx
+    hex: 00 20 00 AF BF AF A0 40 AF BF AF AF A0 00 50 00 82 82 82 82 10 00 00 00
+  - at_ms: 808911
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 809688
+    dir: rx
+    hex: 00 20 00 AF BF AF A0 40 AF BF AF AF A0 00 50 00 82 82 82 82 10 00 00 00
+- id: aca
+  instruction: "A mA position, lead in A: press SELECT until the main display shows ~ and the small one Hz"
+  status: captured
+  samples:
+  - raw_hex: 00 10 00 AF BF AF AF 00 BF AF AF AF 00 01 50 0C 82 82 82 82 10 00 00 00
+    mode_byte: "0x201"
+    mode: AC mA
+    display_raw: "00.00"
+    value: "0"
+    unit: mA
+    range_label: ""
+    progress: 0
+    flags:
+      hold: false
+      rel: false
+      auto_range: true
+      min: false
+      max: false
+      avg: false
+      low_battery: false
+      hv_warning: false
+      dc: false
+      peak_min: false
+      peak_max: false
+      lead_error: false
+      comp: false
+      record: false
+      loz: false
+      void: false
+    aux:
+    - label: Frequency
+      value: "0.000"
+      unit: Hz
+  - raw_hex: 00 10 00 AF BF AF AF 00 BF AF AF AF 00 01 50 0C 82 82 82 82 10 00 00 00
+    mode_byte: "0x201"
+    mode: AC mA
+    display_raw: "00.00"
+    value: "0"
+    unit: mA
+    range_label: ""
+    progress: 0
+    flags:
+      hold: false
+      rel: false
+      auto_range: true
+      min: false
+      max: false
+      avg: false
+      low_battery: false
+      hv_warning: false
+      dc: false
+      peak_min: false
+      peak_max: false
+      lead_error: false
+      comp: false
+      record: false
+      loz: false
+      void: false
+    aux:
+    - label: Frequency
+      value: "0.000"
+      unit: Hz
+  - raw_hex: 00 10 00 AF BF AF AF 00 BF AF AF AF 00 01 50 0C 82 82 82 82 10 00 00 00
+    mode_byte: "0x201"
+    mode: AC mA
+    display_raw: "00.00"
+    value: "0"
+    unit: mA
+    range_label: ""
+    progress: 0
+    flags:
+      hold: false
+      rel: false
+      auto_range: true
+      min: false
+      max: false
+      avg: false
+      low_battery: false
+      hv_warning: false
+      dc: false
+      peak_min: false
+      peak_max: false
+      lead_error: false
+      comp: false
+      record: false
+      loz: false
+      void: false
+    aux:
+    - label: Frequency
+      value: "0.000"
+      unit: Hz
+  - raw_hex: 00 10 00 AF BF AF AF 00 BF AF AF AF 00 01 50 0C 82 82 82 82 10 00 00 00
+    mode_byte: "0x201"
+    mode: AC mA
+    display_raw: "00.00"
+    value: "0"
+    unit: mA
+    range_label: ""
+    progress: 0
+    flags:
+      hold: false
+      rel: false
+      auto_range: true
+      min: false
+      max: false
+      avg: false
+      low_battery: false
+      hv_warning: false
+      dc: false
+      peak_min: false
+      peak_max: false
+      lead_error: false
+      comp: false
+      record: false
+      loz: false
+      void: false
+    aux:
+    - label: Frequency
+      value: "0.000"
+      unit: Hz
+  - raw_hex: 00 10 00 AF BF AF AF 00 BF AF AF AF 00 01 50 0C 82 82 82 82 10 00 00 00
+    mode_byte: "0x201"
+    mode: AC mA
+    display_raw: "00.00"
+    value: "0"
+    unit: mA
+    range_label: ""
+    progress: 0
+    flags:
+      hold: false
+      rel: false
+      auto_range: true
+      min: false
+      max: false
+      avg: false
+      low_battery: false
+      hv_warning: false
+      dc: false
+      peak_min: false
+      peak_max: false
+      lead_error: false
+      comp: false
+      record: false
+      loz: false
+      void: false
+    aux:
+    - label: Frequency
+      value: "0.000"
+      unit: Hz
+  frames:
+  - at_ms: 818612
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 818735
+    dir: rx
+    hex: 00 10 00 AF BF AF AF 00 BF AF AF AF 00 01 50 0C 82 82 82 82 10 00 00 00
+  - at_ms: 818752
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 818928
+    dir: rx
+    hex: 00 10 00 AF BF AF AF 00 BF AF AF AF 00 01 50 0C 82 82 82 82 10 00 00 00
+  - at_ms: 818943
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 819127
+    dir: rx
+    hex: 00 10 00 AF BF AF AF 00 BF AF AF AF 00 01 50 0C 82 82 82 82 10 00 00 00
+  - at_ms: 819143
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 819319
+    dir: rx
+    hex: 00 10 00 AF BF AF AF 00 BF AF AF AF 00 01 50 0C 82 82 82 82 10 00 00 00
+  - at_ms: 819336
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 819511
+    dir: rx
+    hex: 00 10 00 AF BF AF AF 00 BF AF AF AF 00 01 50 0C 82 82 82 82 10 00 00 00
+- id: iner
+  instruction: "Red lead still in A: set the dial to V⎓, leads open (the meter beeps and shows InEr)"
+  status: captured
+  samples:
+  - raw_hex: 00 20 00 BF AF AF AF 40 BF AF E9 CB 10 00 20 00 82 82 82 82 10 00 00 00
+    mode_byte: "0x06"
+    mode: DC V
+    display_raw: "0.000"
+    value: "0"
+    unit: V
+    range_label: ""
+    progress: 0
+    flags:
+      hold: false
+      rel: false
+      auto_range: true
+      min: false
+      max: false
+      avg: false
+      low_battery: false
+      hv_warning: false
+      dc: true
+      peak_min: false
+      peak_max: false
+      lead_error: false
+      comp: false
+      record: false
+      loz: false
+      void: false
+    aux:
+    - label: AC
+      value: "0.032"
+      unit: V
+    main_label: DC
+  - raw_hex: 00 20 00 BF AF AF AF 40 BF AF E9 CB 10 00 20 00 82 82 82 82 10 00 00 00
+    mode_byte: "0x06"
+    mode: DC V
+    display_raw: "0.000"
+    value: "0"
+    unit: V
+    range_label: ""
+    progress: 0
+    flags:
+      hold: false
+      rel: false
+      auto_range: true
+      min: false
+      max: false
+      avg: false
+      low_battery: false
+      hv_warning: false
+      dc: true
+      peak_min: false
+      peak_max: false
+      lead_error: false
+      comp: false
+      record: false
+      loz: false
+      void: false
+    aux:
+    - label: AC
+      value: "0.032"
+      unit: V
+    main_label: DC
+  - raw_hex: 00 20 00 BF AF AF AF 40 BF AF CB 6D 10 00 20 00 82 82 82 82 10 00 00 00
+    mode_byte: "0x06"
+    mode: DC V
+    display_raw: "0.000"
+    value: "0"
+    unit: V
+    range_label: ""
+    progress: 0
+    flags:
+      hold: false
+      rel: false
+      auto_range: true
+      min: false
+      max: false
+      avg: false
+      low_battery: false
+      hv_warning: false
+      dc: true
+      peak_min: false
+      peak_max: false
+      lead_error: false
+      comp: false
+      record: false
+      loz: false
+      void: false
+    aux:
+    - label: AC
+      value: "0.025"
+      unit: V
+    main_label: DC
+  - raw_hex: 00 20 00 BF AF AF AF 40 BF AF CB 6D 10 00 20 00 82 82 82 82 10 00 00 00
+    mode_byte: "0x06"
+    mode: DC V
+    display_raw: "0.000"
+    value: "0"
+    unit: V
+    range_label: ""
+    progress: 0
+    flags:
+      hold: false
+      rel: false
+      auto_range: true
+      min: false
+      max: false
+      avg: false
+      low_battery: false
+      hv_warning: false
+      dc: true
+      peak_min: false
+      peak_max: false
+      lead_error: false
+      comp: false
+      record: false
+      loz: false
+      void: false
+    aux:
+    - label: AC
+      value: "0.025"
+      unit: V
+    main_label: DC
+  - raw_hex: 00 20 00 BF AF AF AF 40 BF AF CB CB 10 00 20 00 82 82 82 82 10 00 00 00
+    mode_byte: "0x06"
+    mode: DC V
+    display_raw: "0.000"
+    value: "0"
+    unit: V
+    range_label: ""
+    progress: 0
+    flags:
+      hold: false
+      rel: false
+      auto_range: true
+      min: false
+      max: false
+      avg: false
+      low_battery: false
+      hv_warning: false
+      dc: true
+      peak_min: false
+      peak_max: false
+      lead_error: false
+      comp: false
+      record: false
+      loz: false
+      void: false
+    aux:
+    - label: AC
+      value: "0.022"
+      unit: V
+    main_label: DC
+  frames:
+  - at_ms: 913901
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 914047
+    dir: rx
+    hex: 00 20 00 BF AF AF AF 40 BF AF E9 CB 10 00 20 00 82 82 82 82 10 00 00 00
+  - at_ms: 914063
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 914831
+    dir: rx
+    hex: 00 20 00 BF AF AF AF 40 BF AF E9 CB 10 00 20 00 82 82 82 82 10 00 00 00
+  - at_ms: 914847
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 915615
+    dir: rx
+    hex: 00 20 00 BF AF AF AF 40 BF AF CB 6D 10 00 20 00 82 82 82 82 10 00 00 00
+  - at_ms: 915631
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 916399
+    dir: rx
+    hex: 00 20 00 BF AF AF AF 40 BF AF CB 6D 10 00 20 00 82 82 82 82 10 00 00 00
+  - at_ms: 916415
+    dir: tx
+    hex: 00 82 66
+  - at_ms: 917191
+    dir: rx
+    hex: 00 20 00 BF AF AF AF 40 BF AF CB CB 10 00 20 00 82 82 82 82 10 00 00 00
