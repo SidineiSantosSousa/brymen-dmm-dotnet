@@ -26,6 +26,8 @@ var psi = new ProcessStartInfo(args[0])
     UseShellExecute = false,
 };
 foreach (var a in args.Skip(1)) psi.ArgumentList.Add(a);
+// O BM52x (ET-2615A = BM525s) tem etapas que o BM82x não tem, e outras com instruções diferentes.
+bool isBm52x = args.Skip(1).Any(a => a.Equals("bm52x", StringComparison.OrdinalIgnoreCase));
 psi.Environment["NO_COLOR"] = "1";
 
 using var proc = Process.Start(psi)!;
@@ -92,10 +94,11 @@ void Write(TextWriter writer, string text)
     lock (consoleLock) { writer.Write(text); writer.Flush(); }
 }
 
-static string Translate(string line)
+string Translate(string line)
 {
     var m = StepLine.Match(line);
-    if (m.Success && Steps.TryGetValue(m.Groups[2].Value, out var pt))
+    if (m.Success && (isBm52x && Bm52xSteps.TryGetValue(m.Groups[2].Value, out var pt)
+                      || Steps.TryGetValue(m.Groups[2].Value, out pt)))
         line = $"{m.Groups[1].Value}[{m.Groups[2].Value}] {pt}{m.Groups[3].Value}";
 
     var cov = Covered.Match(line);
@@ -223,5 +226,29 @@ partial class Program
         ["aca"] = "A mA, vermelha em A: SELECT até o grande mostrar ~ e o pequeno Hz",
         ["iner"] = "Vermelha ainda em A: chave em V⎓, pontas abertas (o medidor apita e mostra InEr). Depois volte a vermelha para ΩV",
         ["detect"] = "Desligue e ligue o medidor; o programa confere se a detecção automática o encontra",
+    };
+
+    // BM52x (ET-2615A = BM525s): o que muda em relação ao BM82x.
+    static readonly Dictionary<string, string> Bm52xSteps = new()
+    {
+        ["autocheck"] = "Chave em Auto Check, pontas abertas (aparece Auto)",
+        ["autocheck_dc"] = "Auto Check: pontas numa fonte DC acima de 1,5 V, como uma bateria de 9 V",
+        ["autocheck_ac"] = "Auto Check: pontas numa fonte AC baixa acima de 3 V, como a saída de um transformador (s se não tiver)",
+        ["autocheck_ohm"] = "Auto Check: segure uma ponta em cada mão",
+        ["acdcv"] = "V⎓: SELECT até o grande mostrar ⎓ e ~ juntos",
+        ["rec"] = "V DC: toque REC (aparece R e MAX MIN); Enter",
+        ["rec_max_min"] = "REC: toque REC de novo (aparece MAX-MIN); Enter. Depois segure REC 1 s para sair",
+        ["acdcmv"] = "mV⎓: SELECT até o grande mostrar ⎓ e ~ juntos",
+        ["cont"] = "Chave em Ω, SELECT até aparecer o símbolo de continuidade (bip); encoste as pontas",
+        ["t1_open"] = "Tire as pontas de prova, chave em T1 T2 e RANGE até aparecer T1 sem nada no visor pequeno",
+        ["t2"] = "Temperatura: passe o termopar para mA µA (+) e A (−) e RANGE até aparecer T2",
+        ["t1_t2"] = "Temperatura: um segundo termopar em ΩV (+) e COM (−), RANGE até o grande mostrar T1 e o pequeno T2 (s se só tiver um)",
+        ["t1_minus_t2"] = "Temperatura, os dois termopares ligados: RANGE até aparecer T1-T2 (s se só tiver um)",
+        ["log_left"] = "Vermelha de volta em ΩV, pontas abertas, chave em V⎓. Segure Yes ▲ 1 s: aparece LEFt e os pontos livres; Enter. NÃO aperte ▼ Erase (apaga todos os registros). Se quiser guardar os registros do medidor, pule esta e as próximas (s)",
+        ["log_start"] = "Registro: toque Yes ▲ para iniciar uma sessão sem apagar as outras (t0.05, depois Strt, depois a leitura volta); Enter. NÃO aperte ▼ Erase",
+        ["log_pause"] = "Registro: toque Yes ▲ para pausar (aparece PAUS); Enter",
+        ["log_continue"] = "Registro: toque Yes ▲ de novo para continuar (aparece Cont); Enter",
+        ["log_stop"] = "Registro: segure Yes ▲ 1 s para parar (aparece StoP); Enter",
+        ["recall"] = "Aperte Yes ▲ e ▼ Erase juntos para o Recall: página P.nnn, depois a última leitura com R e C; Enter. Depois gire a chave para sair do Recall",
     };
 }
