@@ -1,7 +1,8 @@
-// Tradutor pt-BR para a captura guiada do dmm-cli (dmm-tools): roda o dmm-cli com a entrada e a saída redirecionadas,
-// troca as mensagens e as instruções das etapas por português e repassa o que se digita. O YAML gerado não muda
-// (continua em inglês, para o mantenedor). Uso:
-//   dotnet run captura-ptbr.cs -- <caminho do dmm-cli.exe> --device bm82x capture -o saida.yaml
+// Brazilian Portuguese (pt-BR) front end for dmm-cli's guided capture (dmm-tools). It runs dmm-cli with stdin and stdout
+// redirected, rewrites the prompts and step instructions in Portuguese and passes what the user types straight through.
+// The YAML report is unchanged (it stays in English, for the maintainer). Since stdio is piped, dmm-cli skips the end
+// review and the `detect` step. Usage:
+//   dotnet run captura-ptbr.cs -- <path to dmm-cli.exe> --device bm82x capture -o out.yaml
 using System.Diagnostics;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -26,7 +27,7 @@ var psi = new ProcessStartInfo(args[0])
     UseShellExecute = false,
 };
 foreach (var a in args.Skip(1)) psi.ArgumentList.Add(a);
-// O BM52x (ET-2615A = BM525s) tem etapas que o BM82x não tem, e outras com instruções diferentes.
+// The BM52x (ET-2615A = BM525s) has steps the BM82x lacks, and others with different instructions.
 bool isBm52x = args.Skip(1).Any(a => a.Equals("bm52x", StringComparison.OrdinalIgnoreCase));
 psi.Environment["NO_COLOR"] = "1";
 
@@ -36,7 +37,7 @@ var consoleLock = new Lock();
 var outPump = Task.Run(() => Pump(proc.StandardOutput, Console.Out));
 var errPump = Task.Run(() => Pump(proc.StandardError, Console.Error));
 
-// O que se digita vai direto para o dmm-cli, uma linha por vez.
+// Whatever the user types goes straight to dmm-cli, one line at a time.
 var inPump = new Thread(() =>
 {
     try
@@ -59,8 +60,8 @@ proc.WaitForExit();
 await Task.WhenAll(outPump, errPump);
 return proc.ExitCode;
 
-// Lê caractere a caractere: as linhas inteiras saem traduzidas; um pedaço sem quebra de linha (um prompt esperando
-// resposta) sai traduzido depois de 150 ms sem nada novo.
+// Reads one character at a time: complete lines are translated as they end; a fragment without a newline (a prompt
+// waiting for an answer) is translated after 150 ms with no new output.
 async Task Pump(StreamReader reader, TextWriter writer)
 {
     var buf = new StringBuilder();
@@ -111,11 +112,11 @@ string Translate(string line)
 
 partial class Program
 {
-    // "[dcv] Leads in ΩV ..." e, nas etapas que o dmm-cli reconhece sozinho, um "(gate)" no fim.
+    // "[dcv] Leads in ΩV ...", with a trailing "(gate)" on the steps dmm-cli detects by itself.
     static readonly Regex StepLine = new(@"^(\s*)\[([a-z0-9_]+)\] (?:.*?)(\s*\(gate\))?$");
     static readonly Regex Covered = new(@"^Covered (\d+) of (\d+) unverified steps for (.*)\.$");
 
-    // Ordem importa: as frases mais longas antes das que são parte delas.
+    // Order matters: longer phrases come before the ones they contain.
     static readonly (string En, string Pt)[] Phrases =
     [
         ("━━━ Measurement Modes ━━━", "━━━ Modos de medição ━━━"),
@@ -167,7 +168,7 @@ partial class Program
         ("Device:", "Aparelho:"),
     ];
 
-    // Instruções das etapas do BM82x (ET-2517A = BM827s). "Pule (s)" = só existe no BM829s.
+    // Step instructions for the BM82x (ET-2517A = BM827s), keyed by step id. "pule (s)" (skip) marks BM829s-only steps.
     static readonly Dictionary<string, string> Steps = new()
     {
         ["dcv"] = "Pontas em ΩV e COM: chave em V⎓, SELECT até aparecer ⎓ sem nada no visor pequeno, pontas abertas",
@@ -230,7 +231,7 @@ partial class Program
         ["detect"] = "Desligue e ligue o medidor; o programa confere se a detecção automática o encontra",
     };
 
-    // BM52x (ET-2615A = BM525s): o que muda em relação ao BM82x.
+    // BM52x (ET-2615A = BM525s): only the steps that differ from the BM82x.
     static readonly Dictionary<string, string> Bm52xSteps = new()
     {
         ["autocheck"] = "Chave em Auto Check, pontas abertas (aparece Auto)",
