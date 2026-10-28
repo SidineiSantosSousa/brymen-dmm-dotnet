@@ -135,6 +135,8 @@ partial class Program
         ("any key=capture, s=skip, q=finish:", "Enter=capturar, s=pular, q=terminar:"),
         ("Status: experimental — the protocol is reverse-engineered, not confirmed",
             "Status: experimental — protocolo obtido por engenharia reversa, ainda não confirmado"),
+        ("meter shows: mode is", "o medidor mostra: modo"),
+        ("\", want \"", "\", esperado \""),
         ("We read:", "Lido:"),
         ("Did the meter show this?", "O medidor mostrou isso?"),
         ("(Enter = yes, n = no, r = retake)", "(Enter = sim, n = não, r = refazer)"),
