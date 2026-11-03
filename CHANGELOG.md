@@ -4,6 +4,35 @@ As mudanças relevantes dos pacotes `Brymen.Dmm` e `Brymen.Dmm.Extensions.Hostin
 O formato segue o [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/), e a versão é a do
 [`Directory.Build.props`](Directory.Build.props), a mesma para os pacotes e para a API.
 
+## Não lançado
+
+### Mudado
+
+- **Esperas do tempo real nas funções lentas.** O BM525s e o ET-2517A só respondem ao `66` no fim do ciclo de medição:
+  ≈ 1,02 s no Hz lógico sem sinal e ≈ 2,44 s na capacitância com 1000 µF. Com as esperas da 0.2.0 (1 s no BM52x, 2 s
+  no BM82x), essas funções davam `W7012` em boa parte das consultas, também com o BC-86X original (medido com o
+  firmware BrymenIR, que reproduz a escuta do original). A espera pelo 1º relatório passa a 3,5 s nas duas famílias, o
+  que cobre toda resposta que o cabo pode dar (2 pedidos ópticos e ≈ 3 s de escuta, ≈ 3,3 s):
+  - `BrymenMeterOptions.RealTimeFirstReportTimeout` (novo, padrão
+    `MeterConnection.DefaultRealTimeFirstReportTimeout` = 3,5 s): o 1º relatório de cada consulta do BM52x
+    (`ReportTimeout`, se maior). O `ReportTimeout` (1 s) continua valendo para a memória e para os relatórios seguintes;
+  - `MeterConnection.DefaultRealTimeResendBudget` (e o padrão de `RealTimeResendBudget`): de 2 s para 3,5 s;
+  - a espera longa do 1º `66` também passa a 3,5 s, porque é o maior entre ela e o novo prazo;
+  - as mesmas chaves no Generic Host (`RealTimeFirstReportTimeout`) e na API (`Meter:RealTimeFirstReportTimeout`,
+    10 ms a 1 min; `appsettings.json` com 3,5 s nas duas).
+
+  Com o medidor respondendo, nada fica mais lento (a consulta termina com o quadro). O custo é sem resposta: cada
+  `W7012` leva 3,5 s, e com o medidor desligado o `E9016` da leitura contínua sai mais tarde
+  ([Funções lentas](docs/library.md#funções-lentas-e-a-espera-pelo-1º-relatório)). Para voltar ao comportamento da
+  0.2.0, use `RealTimeFirstReportTimeout = 1 s` e `RealTimeResendBudget = 2 s`.
+
+### Documentado
+
+- `RealTimeStatistics`: `Resends`, `LostRequests` e `RecoveredQueries` contam o lado USB. O cabo descarta os comandos
+  que chegam enquanto ele espera a resposta óptica, e quem recupera um pedido descartado pelo ET-2517A é o 2º pedido
+  óptico do próprio cabo: esses contadores medem consultas que demoraram mais que a janela de 300 ms (no AC+DC, o
+  BM82x mostra 2 "perdidos" por leitura sem perda nenhuma). Só `FailedQueries` mede leituras que faltaram.
+
 ## 0.2.0 - 2026-10-23
 
 Suporte à família **BM82x**, validada no protocolo com o **Minipa ET-2517A** real, ao lado da família **BM52x** do

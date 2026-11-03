@@ -83,8 +83,9 @@ houver; cada uma guarda até 64 leituras não consumidas (as mais antigas saem p
     "Family": "Auto",
     "PollInterval": "00:00:00.500",
     "ReportTimeout": "00:00:01",
+    "RealTimeFirstReportTimeout": "00:00:03.500",
     "RealTimeResendTimeout": "00:00:00.300",
-    "RealTimeResendBudget": "00:00:02",
+    "RealTimeResendBudget": "00:00:03.500",
     "ReconnectDelay": "00:00:02",
     "AutoReconnect": true,
     "LoggerRead": { "VerifyModel": true }
@@ -93,7 +94,7 @@ houver; cada uma guarda até 64 leituras não consumidas (as mais antigas saem p
 ```
 
 `Family` aceita `Auto` (detectada na 1ª leitura), `Bm52x` e `Bm82x`; `RealTimeResendTimeout` e `RealTimeResendBudget`
-ajustam os reenvios do BM82x. `DeviceProvider` e `TimeProvider` não vêm da configuração. Para rodar sem hardware, com o
+ajustam os reenvios do BM82x, e `RealTimeFirstReportTimeout`, a espera do 1º relatório no BM52x. `DeviceProvider` e `TimeProvider` não vêm da configuração. Para rodar sem hardware, com o
 medidor simulado (as capturas reais do BM525s, o mesmo do `BrymenMeter.OpenSimulatedAsync`), ajuste-os por código; as
 duas sobrecargas podem ser chamadas juntas:
 

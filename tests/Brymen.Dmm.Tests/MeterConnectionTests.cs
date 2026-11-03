@@ -107,6 +107,7 @@ public sealed class MeterConnectionTests
         var recording = new TimeoutRecordingProvider(setup.Provider);
         setup.Options.DeviceProvider = recording;
         setup.Options.ReportTimeout = TimeSpan.FromMilliseconds(250);
+        setup.Options.RealTimeFirstReportTimeout = TimeSpan.FromMilliseconds(500);
         setup.Options.RealTimeAfterMemoryTimeout = TimeSpan.FromSeconds(3);
         setup.Options.RealTimeResendTimeout = TimeSpan.FromMilliseconds(400);
         using var connection = new MeterConnection(setup.Options);
@@ -114,17 +115,18 @@ public sealed class MeterConnectionTests
         Assert.True(connection.IsNextRealTimeSlow);
         await connection.ExecuteRealTimeAsync();                     // 1º depois da criação, a detecção: reenvios até 3 s
         Assert.False(connection.IsNextRealTimeSlow);
-        await connection.ExecuteRealTimeAsync();                     // BM52x: ReportTimeout
+        await connection.ExecuteRealTimeAsync();                     // BM52x: RealTimeFirstReportTimeout
         await connection.ExecuteAsync(Bm52xCommands.MemoryHead, 4);  // memória: ReportTimeout
         Assert.True(connection.IsNextRealTimeSlow);
         await connection.ExecuteRealTimeAsync();                     // 1º depois da memória, BM52x: um envio, 3 s
-        await connection.ExecuteRealTimeAsync();                     // ReportTimeout
+        await connection.ExecuteRealTimeAsync();                     // RealTimeFirstReportTimeout
         connection.Close();
-        await connection.ExecuteRealTimeAsync();                     // reabrir não deixa o medidor lento: ReportTimeout
+        await connection.ExecuteRealTimeAsync();                     // reabrir não deixa o medidor lento
 
-        TimeSpan slow = TimeSpan.FromSeconds(3), normal = TimeSpan.FromMilliseconds(250), window = TimeSpan.FromMilliseconds(400);
+        TimeSpan slow = TimeSpan.FromSeconds(3), first = TimeSpan.FromMilliseconds(500), normal = TimeSpan.FromMilliseconds(250),
+            window = TimeSpan.FromMilliseconds(400);
         Assert.Equal(
-            [(0x66, window), (0x66, normal), (0x88, normal), (0x66, slow), (0x66, normal), (0x66, normal)],
+            [(0x66, window), (0x66, first), (0x88, normal), (0x66, slow), (0x66, first), (0x66, first)],
             recording.FirstReportTimeouts.Select(t => ((int)t.Command, t.Timeout)));
     }
 
@@ -173,6 +175,7 @@ public sealed class MeterConnectionTests
             DeviceProvider = new SimulatedHidDeviceProvider(device),
             TimeProvider = time,
             ReportTimeout = TimeSpan.FromSeconds(1),
+            RealTimeFirstReportTimeout = TimeSpan.FromSeconds(1),
             DrainTimeout = TimeSpan.Zero,
             RecoveryDrainTimeout = TimeSpan.Zero,
         };
@@ -195,12 +198,75 @@ public sealed class MeterConnectionTests
         await TestWait.PumpAsync(time, connection.ReadRealTimeAsync(), step, TimeSpan.FromSeconds(5));
         Assert.InRange(time.GetElapsedTime(start), delay, TimeSpan.FromSeconds(3));
 
-        // Um 66 lento fora da janela: o ReportTimeout de 1 s vale, e o resultado é W7012.
+        // Um 66 lento fora da janela: o RealTimeFirstReportTimeout de 1 s vale, e o resultado é W7012.
         slowNext = true;
         start = time.GetTimestamp();
         var ex = await Assert.ThrowsAsync<BrymenMeterException>(() => TestWait.PumpAsync(time, connection.ReadRealTimeAsync(), step, TimeSpan.FromSeconds(5)));
         Assert.Equal(BrymenErrorCodes.NoDataReceived, ex.Code);
         Assert.InRange(time.GetElapsedTime(start), TimeSpan.FromSeconds(1), delay);
+    }
+
+    [Theory]
+    [InlineData(MeterFamilySelection.Bm52x, 1020)]  // Hz lógico sem sinal (ciclo de 1031 ms)
+    [InlineData(MeterFamilySelection.Bm52x, 2440)]  // capacitância com 1000 µF (ciclo de 2457 ms)
+    [InlineData(MeterFamilySelection.Bm82x, 2440)]
+    public async Task Slow_functions_are_read_with_the_default_waits_and_the_cable_discards_the_resends(MeterFamilySelection family, int answerMs)
+    {
+        // O medidor só responde no fim do ciclo de medição, e o cabo, ocupado com a troca óptica, descarta os comandos
+        // que chegam antes disso (como o BC-86X original e o BrymenIR). Com os padrões, toda consulta tem resposta; no
+        // BM82x, os reenvios de 300 ms contam em RealTimeStatistics, mas nenhum chega ao medidor.
+        var time = new FakeTimeProvider();
+        var meter = family == MeterFamilySelection.Bm82x ? SimulatedBm52xMeter.CreateBm82x(timeProvider: time) : SimulatedBm52xMeter.FromCaptures(time);
+        var answer = TimeSpan.FromMilliseconds(answerMs);
+        long busyUntil = 0;
+        int discarded = 0;
+        SimulatedHidDevice device = null!;
+        device = new SimulatedHidDevice((id, data) =>
+        {
+            if (time.GetTimestamp() < busyUntil)
+            {
+                discarded++;
+                return null;
+            }
+            var reports = meter.Respond(id, data);
+            if (reports is null)
+                return null;
+            busyUntil = time.GetTimestamp() + (long)(answer.TotalSeconds * time.TimestampFrequency);
+            foreach (var report in reports)
+                device.EnqueueReport(report, answer);
+            return null;
+        }, timeProvider: time);
+        using var connection = new MeterConnection(new BrymenMeterOptions
+        {
+            DeviceProvider = new SimulatedHidDeviceProvider(device),
+            TimeProvider = time,
+            Family = family,
+            DrainTimeout = TimeSpan.Zero,
+            RecoveryDrainTimeout = TimeSpan.Zero,
+        });
+        var step = TimeSpan.FromMilliseconds(20);
+
+        for (int i = 0; i < 4; i++)
+        {
+            long start = time.GetTimestamp();
+            await TestWait.PumpAsync(time, connection.ReadRealTimeAsync(), step, TimeSpan.FromSeconds(10));
+            Assert.InRange(time.GetElapsedTime(start), answer, answer + TimeSpan.FromMilliseconds(100));
+        }
+
+        var stats = connection.RealTimeStatistics;
+        Assert.Equal((4L, 0L), (stats.Queries, stats.FailedQueries));
+        Assert.Equal(discarded, stats.Resends);
+        if (family == MeterFamilySelection.Bm82x)
+            Assert.Equal((stats.Resends, 4L), (stats.LostRequests, stats.RecoveredQueries));
+        else
+            Assert.Equal((0L, 0L), (stats.Resends, stats.LostRequests));
+
+        // Sem resposta, a consulta só desiste no prazo de 3,5 s.
+        meter.IsPoweredOn = false;
+        long silent = time.GetTimestamp();
+        var ex = await Assert.ThrowsAsync<BrymenMeterException>(() => TestWait.PumpAsync(time, connection.ReadRealTimeAsync(), step, TimeSpan.FromSeconds(10)));
+        Assert.Equal(BrymenErrorCodes.NoDataReceived, ex.Code);
+        Assert.InRange(time.GetElapsedTime(silent), MeterConnection.DefaultRealTimeFirstReportTimeout, MeterConnection.DefaultRealTimeFirstReportTimeout + TimeSpan.FromMilliseconds(100));
     }
 
     [Fact]

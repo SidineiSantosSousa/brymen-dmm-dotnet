@@ -17,6 +17,7 @@ public sealed class MeterFamilyOptionsTests
         Assert.Equal(MeterFamilySelection.Auto, options.Family);
         Assert.Equal(MeterConnection.DefaultRealTimeResendTimeout, options.RealTimeResendTimeout);
         Assert.Equal(MeterConnection.DefaultRealTimeResendBudget, options.RealTimeResendBudget);
+        Assert.Equal(MeterConnection.DefaultRealTimeFirstReportTimeout, options.RealTimeFirstReportTimeout);
         Assert.Equal(SimulatedMeterModel.Bm525s, options.SimulatedModel);
         Assert.True(new MeterOptionsValidator().Validate(null, options).Succeeded);
     }
@@ -59,6 +60,21 @@ public sealed class MeterFamilyOptionsTests
         Assert.Equal(valid, result.Succeeded);
         if (!valid)
             Assert.Contains("Meter:RealTimeResend", result.FailureMessage, StringComparison.Ordinal);
+    }
+
+    [Theory]
+    [InlineData(5, false)]
+    [InlineData(10, true)]
+    [InlineData(3500, true)]
+    [InlineData(60_000, true)]
+    [InlineData(60_001, false)]
+    public void First_report_timeout_is_validated(int timeoutMs, bool valid)
+    {
+        var result = new MeterOptionsValidator().Validate(null, new MeterOptions { RealTimeFirstReportTimeout = TimeSpan.FromMilliseconds(timeoutMs) });
+
+        Assert.Equal(valid, result.Succeeded);
+        if (!valid)
+            Assert.Contains("Meter:RealTimeFirstReportTimeout", result.FailureMessage, StringComparison.Ordinal);
     }
 
     [Fact]

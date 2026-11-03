@@ -57,8 +57,15 @@ public sealed class MeterOptions
     /// </summary>
     public TimeSpan PollInterval { get; set; } = TimeSpan.FromMilliseconds(200);
 
-    /// <summary>Tempo máximo de espera por cada relatório de entrada.</summary>
+    /// <summary>Tempo máximo de espera por cada relatório de entrada (os seguintes ao 1º no tempo real).</summary>
     public TimeSpan ReportTimeout { get; set; } = TimeSpan.FromSeconds(1);
+
+    /// <summary>
+    /// Espera pelo 1º relatório de cada consulta de tempo real do BM52x
+    /// (<see cref="BrymenMeterOptions.RealTimeFirstReportTimeout"/>). Padrão: 3,5 s, que cobre o Hz lógico e a
+    /// capacitância, em que o medidor só responde no fim do ciclo de medição.
+    /// </summary>
+    public TimeSpan RealTimeFirstReportTimeout { get; set; } = MeterConnection.DefaultRealTimeFirstReportTimeout;
 
     /// <summary>
     /// Espera pelo 1º relatório de cada envio do tempo real do BM82x (e da detecção da família) antes de reenviar o mesmo
@@ -68,7 +75,7 @@ public sealed class MeterOptions
 
     /// <summary>
     /// Tempo total de uma consulta de tempo real com reenvios; só quando ele acaba sem resposta a consulta é uma falha
-    /// (W7012) do polling (<see cref="BrymenMeterOptions.RealTimeResendBudget"/>). Padrão: 2 s.
+    /// (W7012) do polling (<see cref="BrymenMeterOptions.RealTimeResendBudget"/>). Padrão: 3,5 s.
     /// </summary>
     public TimeSpan RealTimeResendBudget { get; set; } = MeterConnection.DefaultRealTimeResendBudget;
 
@@ -98,6 +105,7 @@ internal sealed class MeterOptionsValidator : IValidateOptions<MeterOptions>
             errors.Add("Meter:SimulatedModel deve ser Bm525s ou Et2517a.");
         Check(errors, "Meter:PollInterval", options.PollInterval, TimeSpan.Zero, TimeSpan.FromMinutes(1));
         Check(errors, "Meter:ReportTimeout", options.ReportTimeout, TimeSpan.FromMilliseconds(10), TimeSpan.FromSeconds(30));
+        Check(errors, "Meter:RealTimeFirstReportTimeout", options.RealTimeFirstReportTimeout, TimeSpan.FromMilliseconds(10), TimeSpan.FromMinutes(1));
         Check(errors, "Meter:RealTimeResendTimeout", options.RealTimeResendTimeout, TimeSpan.FromMilliseconds(10), TimeSpan.FromSeconds(30));
         Check(errors, "Meter:RealTimeResendBudget", options.RealTimeResendBudget, TimeSpan.FromMilliseconds(10), TimeSpan.FromMinutes(1));
         Check(errors, "Meter:ReconnectDelay", options.ReconnectDelay, TimeSpan.Zero, TimeSpan.FromMinutes(10));

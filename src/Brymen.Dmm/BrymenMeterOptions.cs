@@ -31,8 +31,22 @@ public sealed class BrymenMeterOptions
     /// </summary>
     public TimeSpan PollInterval { get; set; } = TimeSpan.FromMilliseconds(200);
 
-    /// <summary>Tempo máximo de espera por cada relatório de entrada. Padrão: 1 s.</summary>
+    /// <summary>
+    /// Tempo máximo de espera por cada relatório de entrada: os da memória e os seguintes ao 1º no tempo real. O 1º
+    /// relatório do tempo real tem o prazo de <see cref="RealTimeFirstReportTimeout"/> (BM52x) ou de
+    /// <see cref="RealTimeResendBudget"/> (BM82x), se maiores. Padrão: 1 s.
+    /// </summary>
     public TimeSpan ReportTimeout { get; set; } = TimeSpan.FromSeconds(1);
+
+    /// <summary>
+    /// Espera pelo 1º relatório de uma consulta de tempo real do BM52x, que é um envio só (<see cref="ReportTimeout"/>, se
+    /// maior). Padrão: <see cref="MeterConnection.DefaultRealTimeFirstReportTimeout"/> (3,5 s). O 1º relatório só chega no
+    /// fim do ciclo de medição: ≈ 0,26 s nas funções comuns, ≈ 1,02 s no Hz lógico sem sinal e ≈ 2,44 s na capacitância com
+    /// 1000 µF; com 1 s (o padrão até a 0.2.0), essas duas davam W7012 em boa parte das consultas. Com o medidor
+    /// respondendo, o prazo não atrasa nada (a consulta termina com o quadro); ele só pesa sem resposta: com o medidor
+    /// desligado, o <see cref="BrymenErrorCodes.TransmissionTimeout"/> da leitura contínua sai em ≈ 14,8 s, e não em ≈ 11,3 s.
+    /// </summary>
+    public TimeSpan RealTimeFirstReportTimeout { get; set; } = MeterConnection.DefaultRealTimeFirstReportTimeout;
 
     /// <summary>
     /// Prazo da espera longa do 1º <c>66</c> depois da abertura e depois de comandos de memória, quando maior que
@@ -55,9 +69,10 @@ public sealed class BrymenMeterOptions
     public TimeSpan RealTimeResendTimeout { get; set; } = MeterConnection.DefaultRealTimeResendTimeout;
 
     /// <summary>
-    /// Tempo total de uma consulta de tempo real com reenvios (<see cref="RealTimeResendTimeout"/>); só quando ele acaba
-    /// sem resposta a consulta falha com <see cref="BrymenErrorCodes.NoDataReceived"/>. Padrão:
-    /// <see cref="MeterConnection.DefaultRealTimeResendBudget"/> (2 s).
+    /// Tempo total de uma consulta de tempo real com reenvios (<see cref="RealTimeResendTimeout"/>): BM82x e detecção da
+    /// família. Só quando ele acaba sem resposta a consulta falha com <see cref="BrymenErrorCodes.NoDataReceived"/>.
+    /// Padrão: <see cref="MeterConnection.DefaultRealTimeResendBudget"/> (3,5 s; 2 s até a 0.2.0, abaixo dos ≈ 2,44 s da
+    /// capacitância). Como <see cref="RealTimeFirstReportTimeout"/>, cobre a espera mais longa do cabo (≈ 3,3 s).
     /// </summary>
     public TimeSpan RealTimeResendBudget { get; set; } = MeterConnection.DefaultRealTimeResendBudget;
 
@@ -105,6 +120,7 @@ public sealed class BrymenMeterOptions
     {
         RequireAtLeast(PollInterval, TimeSpan.Zero, nameof(PollInterval));
         RequirePositive(ReportTimeout, nameof(ReportTimeout));
+        RequirePositive(RealTimeFirstReportTimeout, nameof(RealTimeFirstReportTimeout));
         RequirePositive(RealTimeAfterMemoryTimeout, nameof(RealTimeAfterMemoryTimeout));
         RequirePositive(RealTimeResendTimeout, nameof(RealTimeResendTimeout));
         RequirePositive(RealTimeResendBudget, nameof(RealTimeResendBudget));
@@ -124,6 +140,7 @@ public sealed class BrymenMeterOptions
             Family = Family,
             PollInterval = PollInterval,
             ReportTimeout = ReportTimeout,
+            RealTimeFirstReportTimeout = RealTimeFirstReportTimeout,
             RealTimeAfterMemoryTimeout = RealTimeAfterMemoryTimeout,
             RealTimeResendTimeout = RealTimeResendTimeout,
             RealTimeResendBudget = RealTimeResendBudget,

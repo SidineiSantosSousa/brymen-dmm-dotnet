@@ -198,11 +198,14 @@ public sealed class MeterFamilyTests
         Assert.Throws<ArgumentOutOfRangeException>(() => new MeterConnection(new BrymenMeterOptions { DeviceProvider = provider, Family = (MeterFamilySelection)0x53 }));
         Assert.Throws<ArgumentOutOfRangeException>(() => new MeterConnection(new BrymenMeterOptions { DeviceProvider = provider, RealTimeResendTimeout = TimeSpan.Zero }));
         Assert.Throws<ArgumentOutOfRangeException>(() => new MeterConnection(new BrymenMeterOptions { DeviceProvider = provider, RealTimeResendBudget = TimeSpan.FromMilliseconds(-1) }));
+        Assert.Throws<ArgumentOutOfRangeException>(() => new MeterConnection(new BrymenMeterOptions { DeviceProvider = provider, RealTimeFirstReportTimeout = TimeSpan.Zero }));
 
         var defaults = new BrymenMeterOptions();
         Assert.Equal(MeterFamilySelection.Auto, defaults.Family);
         Assert.Equal(TimeSpan.FromMilliseconds(300), defaults.RealTimeResendTimeout);
-        Assert.Equal(TimeSpan.FromSeconds(2), defaults.RealTimeResendBudget);
+        Assert.Equal(TimeSpan.FromSeconds(3.5), defaults.RealTimeResendBudget);
+        Assert.Equal((TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(3.5)), (defaults.ReportTimeout, defaults.RealTimeFirstReportTimeout));
+        Assert.Equal(MeterConnection.DefaultRealTimeFirstReportTimeout, defaults.RealTimeFirstReportTimeout);
         Assert.Equal((MeterConnection.DefaultRealTimeResendTimeout, MeterConnection.DefaultRealTimeResendBudget), (defaults.RealTimeResendTimeout, defaults.RealTimeResendBudget));
     }
 }

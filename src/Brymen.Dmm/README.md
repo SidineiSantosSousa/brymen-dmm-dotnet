@@ -98,8 +98,9 @@ Minipa ET-2615A)"` ou `"Minipa ET-2517A (Brymen BM827s, BM82x)"`), e `meter.Supp
 - **Pedidos descartados**: o ET-2517A descarta parte dos pedidos de tempo real, tanto mais quanto maior o intervalo
   entre eles (no medidor real, 0 de 40 a 0 ms, 11 de 40 a 200 ms e 19 de 40 a 500 ms), e esperar mais não adianta. Cada
   consulta do BM82x reenvia o mesmo pedido sem fechar o cabo depois de `RealTimeResendTimeout` (300 ms) sem resposta, até
-  `RealTimeResendBudget` (2 s): só o orçamento esgotado é `W7012`. As perdas recuperadas não geram erro nem evento, e
-  ficam contadas em `meter.RealTimeStatistics`. Um `PollInterval` menor perde menos pedidos.
+  `RealTimeResendBudget` (3,5 s): só o orçamento esgotado é `W7012`. Os reenvios não geram erro nem evento, e ficam
+  contados em `meter.RealTimeStatistics` (o cabo descarta os que chegam enquanto ele espera a resposta óptica: os
+  contadores medem consultas lentas, não pedidos perdidos pelo medidor). Um `PollInterval` menor perde menos pedidos.
 - **Memória**: só o BM52x tem datalogger. No BM82x, `ReadLoggerMemoryAsync` e `ReadLoggerImageAsync` falham com
   `E9014`, sem nenhum comando de memória: na hora, com a família fixa ou confirmada por uma leitura há menos de 2 s; com
   ela desconhecida ou mais antiga, depois de uma consulta de tempo real que a confirma (o medidor pode ter sido trocado).
@@ -156,10 +157,11 @@ depois de um `89` que o medidor processou, checksum por bloco e limite de tentat
 |---|---|---|
 | `DevicePath` | `null` | Caminho do cabo (`/dev/hidraw0`, `/dev/brymen-bu86x`, `\\?\hid#vid_0820...`); `null` = o primeiro VID 0820/PID 0001. |
 | `PollInterval` | 200 ms | Intervalo da leitura contínua. |
-| `ReportTimeout` | 1 s | Espera por cada relatório de 8 bytes. |
+| `ReportTimeout` | 1 s | Espera por cada relatório de 8 bytes (memória, e os seguintes ao 1º no tempo real). |
+| `RealTimeFirstReportTimeout` | 3,5 s | BM52x: espera pelo 1º relatório de cada consulta de tempo real; cobre o Hz lógico e a capacitância, em que o medidor só responde no fim do ciclo. |
 | `Family` | `Auto` | Família do medidor: `Auto` (detectada na 1ª leitura), `Bm52x` ou `Bm82x`. |
 | `RealTimeAfterMemoryTimeout` | 3 s | Prazo do 1º `66` depois da abertura e da leitura da memória (o BM525s leva ≈ 2 s): um envio só no BM52x conhecido; com reenvios na detecção e no BM82x. |
-| `RealTimeResendTimeout`, `RealTimeResendBudget` | 300 ms, 2 s | BM82x: espera pelo 1º relatório antes de reenviar o pedido, e o tempo total da consulta com os reenvios. |
+| `RealTimeResendTimeout`, `RealTimeResendBudget` | 300 ms, 3,5 s | BM82x: espera pelo 1º relatório antes de reenviar o pedido, e o tempo total da consulta com os reenvios. |
 | `ReconnectDelay` | 2 s | Espera antes de reabrir o cabo depois de uma falha persistente. |
 | `AutoReconnect` | `true` | Leitura contínua: reabre o cabo em vez de terminar. |
 | `DrainTimeout`, `RecoveryDrainTimeout` | 5 ms, 100 ms | Descarte de relatórios atrasados antes de cada comando e depois de uma troca interrompida ou com reenvios (depois de uma consulta com reenvios interrompida, pelo menos `RealTimeResendTimeout`). |

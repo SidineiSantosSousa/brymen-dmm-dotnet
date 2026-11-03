@@ -103,9 +103,14 @@ Não há dependências nativas de terceiros. No Linux o acesso ao cabo é feito 
 
   O BM525s nunca mostrou isso: 5 leituras/s, sem lacunas, por minutos.
 - **Reenvio.** No BM82x, cada consulta reenvia o mesmo pedido, sem fechar o cabo, depois de 300 ms sem o 1º relatório
-  (`Meter:RealTimeResendTimeout`), até 2 s (`Meter:RealTimeResendBudget`). Só quando esse orçamento acaba a consulta é
-  uma falha (`W7012`); as perdas recuperadas não geram erro e ficam contadas em `realTimeStatistics` de
-  `GET /api/v1/meter`.
+  (`Meter:RealTimeResendTimeout`), até 3,5 s (`Meter:RealTimeResendBudget`). Só quando esse orçamento acaba a consulta é
+  uma falha (`W7012`); os reenvios não geram erro e ficam contados em `realTimeStatistics` de `GET /api/v1/meter`.
+  O cabo descarta os comandos enquanto espera a resposta óptica, então esses contadores medem consultas que demoraram
+  mais que 300 ms, e não pedidos perdidos pelo medidor ([`docs/library.md`](docs/library.md#pedidos-descartados-e-reenvio)).
+- **Funções lentas.** No Hz lógico sem sinal e na capacitância, o medidor só responde no fim do ciclo de medição (até
+  ≈ 2,8 s com 1000 µF). Por isso a espera pelo 1º relatório é de 3,5 s nas duas famílias
+  (`Meter:RealTimeFirstReportTimeout` no BM52x, `Meter:RealTimeResendBudget` no BM82x); até a 0.2.0 eram 1 s e 2 s, e
+  essas funções davam `W7012`. O custo é só sem resposta: com o medidor desligado, o `E9016` demora mais.
 - **Datalogger.** Só o BM52x tem. Num BM82x, a importação é recusada com `E9014` (409), sem nenhum comando de memória:
   na hora com o polling rodando (ou com `Meter:Family` fixa), e depois de uma consulta de tempo real que confirma a
   família quando o último quadro tem mais de 2 s (o medidor pode ter sido trocado no cabo).
@@ -599,8 +604,9 @@ respondem).
     "Family": "Auto",             // Auto | Bm52x | Bm82x
     "PollInterval": "00:00:00.200",
     "ReportTimeout": "00:00:01",
+    "RealTimeFirstReportTimeout": "00:00:03.500",
     "RealTimeResendTimeout": "00:00:00.300",
-    "RealTimeResendBudget": "00:00:02",
+    "RealTimeResendBudget": "00:00:03.500",
     "ReconnectDelay": "00:00:02",
     "SimulatedModel": "Bm525s"    // Bm525s | Et2517a (só com Transport = Simulated)
   },
@@ -623,9 +629,10 @@ respondem).
 | `Meter:AutoLink` | `Meter__AutoLink` | `true` | Abre o cabo e inicia o polling na partida |
 | `Meter:Family` | `Meter__Family` | `Auto` | `Auto` detecta a família na 1ª leitura (`82 66`); `Bm52x` (sempre `52 66`, como a versão 0.1.0) e `Bm82x` (sempre `82 66`) a fixam, e um medidor da outra família dá `W8011` ([Família e pedidos descartados](#família-e-pedidos-descartados)) |
 | `Meter:PollInterval` | `Meter__PollInterval` | `00:00:00.200` | Intervalo entre o início de duas consultas de tempo real (o original não faz pausa); no ET-2517A, um intervalo menor perde menos pedidos |
-| `Meter:ReportTimeout` | `Meter__ReportTimeout` | `00:00:01` | Espera máxima por relatório HID |
+| `Meter:ReportTimeout` | `Meter__ReportTimeout` | `00:00:01` | Espera máxima por relatório HID (memória, e os seguintes ao 1º no tempo real) |
+| `Meter:RealTimeFirstReportTimeout` | `Meter__RealTimeFirstReportTimeout` | `00:00:03.500` | BM52x: espera pelo 1º relatório de cada consulta de tempo real; cobre o Hz lógico e a capacitância (10 ms a 1 min) |
 | `Meter:RealTimeResendTimeout` | `Meter__RealTimeResendTimeout` | `00:00:00.300` | BM82x e detecção: espera pelo 1º relatório antes de reenviar o mesmo pedido, sem fechar o cabo (10 ms a 30 s) |
-| `Meter:RealTimeResendBudget` | `Meter__RealTimeResendBudget` | `00:00:02` | BM82x e detecção: tempo total de uma consulta com os reenvios; só quando ele acaba a consulta é `W7012` (10 ms a 1 min) |
+| `Meter:RealTimeResendBudget` | `Meter__RealTimeResendBudget` | `00:00:03.500` | BM82x e detecção: tempo total de uma consulta com os reenvios; só quando ele acaba a consulta é `W7012` (10 ms a 1 min) |
 | `Meter:ReconnectDelay` | `Meter__ReconnectDelay` | `00:00:02` | Espera antes de reabrir o cabo após uma falha |
 | `Meter:SimulatedLatency` | `Meter__SimulatedLatency` | `00:00:00.020` | Latência das respostas do transporte simulado |
 | `Meter:SimulatedModel` | `Meter__SimulatedModel` | `Bm525s` | Medidor do transporte simulado: `Bm525s` (com datalogger) ou `Et2517a` (sem datalogger, com o descarte de pedidos do real) ([Modo simulado](#modo-simulado)) |
@@ -994,7 +1001,8 @@ eles aparecem em `realTimeStatistics.resends` de `GET /api/v1/meter`, e não com
 
 - reduza o `Meter:PollInterval` (por exemplo, `00:00:00.100`): quanto menor o intervalo, menos pedidos se perdem (a
   0 ms, nenhum em 40);
-- aumente o `Meter:RealTimeResendBudget` (por exemplo, `00:00:03`), para mais reenvios por consulta;
+- não baixe o `Meter:RealTimeResendBudget` dos 3,5 s: abaixo de ≈ 3,3 s, ele corta a espera do cabo, que repete o pedido
+  óptico sozinho, e a capacitância fica sem leitura;
 - confira o encaixe do cabo na porta óptica e se o medidor não entrou em APO.
 
 ### Linux sem `/dev/hidraw*`

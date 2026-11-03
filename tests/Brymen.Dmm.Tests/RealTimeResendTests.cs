@@ -63,14 +63,14 @@ public sealed class RealTimeResendTests
         long start = time.GetTimestamp();
         var ex = await Assert.ThrowsAsync<BrymenMeterException>(() => TestWait.PumpAsync(time, meter.ReadAsync(), Step, Limit));
 
-        // Envios a cada 300 ms até o orçamento de 2 s: 0, 300, ..., 1800 ms.
-        Assert.InRange(time.GetElapsedTime(start), TimeSpan.FromSeconds(2), TimeSpan.FromMilliseconds(2050));
+        // Envios a cada 300 ms até o orçamento padrão de 3,5 s: 0, 300, ..., 3300 ms.
+        Assert.InRange(time.GetElapsedTime(start), TimeSpan.FromSeconds(3.5), TimeSpan.FromMilliseconds(3550));
         Assert.Equal(BrymenErrorCodes.NoDataReceived, ex.Code);
         var timeout = Assert.IsType<Bu86xTimeoutException>(ex.InnerException);
-        Assert.Equal((0x82, 7, 0), (timeout.Family, timeout.Attempts, timeout.ReportsReceived));
-        Assert.Contains("comando 82 66 em 7 envios", ex.Message, StringComparison.Ordinal);
+        Assert.Equal((0x82, 12, 0), (timeout.Family, timeout.Attempts, timeout.ReportsReceived));
+        Assert.Contains("comando 82 66 em 12 envios", ex.Message, StringComparison.Ordinal);
         Assert.Equal([BrymenErrorCodes.NoDataReceived], events.Errors.Select(e => e.Code));
-        Assert.Equal(new RealTimeStatistics(Queries: 2, Requests: 8, Resends: 6, LostRequests: 7, RecoveredQueries: 0, FailedQueries: 1), meter.RealTimeStatistics);
+        Assert.Equal(new RealTimeStatistics(Queries: 2, Requests: 13, Resends: 11, LostRequests: 12, RecoveredQueries: 0, FailedQueries: 1), meter.RealTimeStatistics);
     }
 
     [Fact]
@@ -96,7 +96,7 @@ public sealed class RealTimeResendTests
     public async Task The_long_wait_resends_with_an_unknown_or_BM82x_family_and_is_a_single_send_with_a_known_BM52x()
     {
         // §8.5.4: na espera longa do 1º 66, o pedido é reenviado na detecção (família desconhecida) e no BM82x, e não no
-        // BM52x conhecido. Depois, o BM82x usa a janela de reenvio e o BM52x, o ReportTimeout.
+        // BM52x conhecido. Depois, o BM82x usa a janela de reenvio e o BM52x, o RealTimeFirstReportTimeout.
         var et2517a = new SimulatedSetup(SimulatedBm52xMeter.CreateBm82x());
         var fixedBm82x = new SimulatedSetup(SimulatedBm52xMeter.CreateBm82x());
         fixedBm82x.Options.Family = MeterFamilySelection.Bm82x;
@@ -191,12 +191,12 @@ public sealed class RealTimeResendTests
         long start = time.GetTimestamp();
         var ex = await Assert.ThrowsAsync<BrymenMeterException>(() => TestWait.PumpAsync(time, meter.ReadAsync(), Step, Limit));
 
-        // 82 66 a cada 300 ms até os 3 s (10 envios), o descarte de recuperação de 300 ms (a janela do reenvio) e o
-        // 52 66 de reserva, com o ReportTimeout de 150 ms.
-        Assert.InRange(time.GetElapsedTime(start), TimeSpan.FromMilliseconds(3450), TimeSpan.FromMilliseconds(3500));
+        // 82 66 a cada 300 ms até os 3,5 s do orçamento, maior que a espera longa de 3 s (12 envios), o descarte de
+        // recuperação de 300 ms (a janela do reenvio) e o 52 66 de reserva, com o ReportTimeout de 150 ms.
+        Assert.InRange(time.GetElapsedTime(start), TimeSpan.FromMilliseconds(3950), TimeSpan.FromMilliseconds(4000));
         Assert.Equal(BrymenErrorCodes.NoDataReceived, ex.Code);
-        Assert.Equal([.. Enumerable.Repeat("8266", 10), "5266"], setup.Requests);
-        Assert.Equal(new RealTimeStatistics(Queries: 1, Requests: 11, Resends: 9, LostRequests: 11, RecoveredQueries: 0, FailedQueries: 1), meter.RealTimeStatistics);
+        Assert.Equal([.. Enumerable.Repeat("8266", 12), "5266"], setup.Requests);
+        Assert.Equal(new RealTimeStatistics(Queries: 1, Requests: 13, Resends: 11, LostRequests: 13, RecoveredQueries: 0, FailedQueries: 1), meter.RealTimeStatistics);
         Assert.Null(meter.Family);
     }
 

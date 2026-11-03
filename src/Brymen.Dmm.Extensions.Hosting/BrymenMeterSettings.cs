@@ -18,6 +18,8 @@ internal sealed class BrymenMeterSettings
 
     public TimeSpan? ReportTimeout { get; set; }
 
+    public TimeSpan? RealTimeFirstReportTimeout { get; set; }
+
     public TimeSpan? RealTimeAfterMemoryTimeout { get; set; }
 
     public TimeSpan? RealTimeResendTimeout { get; set; }
@@ -54,6 +56,8 @@ internal sealed class BrymenMeterSettings
             options.PollInterval = pollInterval;
         if (ReportTimeout is { } reportTimeout)
             options.ReportTimeout = reportTimeout;
+        if (RealTimeFirstReportTimeout is { } realTimeFirstReportTimeout)
+            options.RealTimeFirstReportTimeout = realTimeFirstReportTimeout;
         if (RealTimeAfterMemoryTimeout is { } realTimeAfterMemoryTimeout)
             options.RealTimeAfterMemoryTimeout = realTimeAfterMemoryTimeout;
         if (RealTimeResendTimeout is { } realTimeResendTimeout)

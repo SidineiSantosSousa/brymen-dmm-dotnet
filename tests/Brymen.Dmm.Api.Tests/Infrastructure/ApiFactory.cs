@@ -28,6 +28,7 @@ public class ApiFactory : WebApplicationFactory<Program>
         new("Meter:AutoLink", "true"),
         new("Meter:PollInterval", "00:00:00.040"),
         new("Meter:ReportTimeout", "00:00:00.250"),
+        new("Meter:RealTimeFirstReportTimeout", "00:00:00.250"),
         new("Meter:ReconnectDelay", "00:00:00.200"),
         new("Meter:SimulatedLatency", "00:00:00.002"),
     ];

@@ -181,6 +181,7 @@ public sealed class BrymenMeterTests
     {
         var setup = new SimulatedSetup();
         setup.Options.ReportTimeout = TimeSpan.FromMilliseconds(40);
+        setup.Options.RealTimeFirstReportTimeout = TimeSpan.FromMilliseconds(40);
         setup.Options.RealTimeAfterMemoryTimeout = TimeSpan.FromMilliseconds(40);
         await using var meter = await setup.OpenAsync();
         var events = new EventRecorder(meter);

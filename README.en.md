@@ -106,9 +106,16 @@ There are no third-party native dependencies. On Linux the cable is accessed thr
 
   The BM525s has never shown this: 5 readings/s, with no gaps, for minutes on end.
 - **Resending.** On the BM82x, each query resends the same request, without closing the cable, after 300 ms without
-  the 1st report (`Meter:RealTimeResendTimeout`), for up to 2 s (`Meter:RealTimeResendBudget`). Only when this budget
-  runs out does the query count as a failure (`W7012`); recovered losses do not raise an error and are counted in
-  `realTimeStatistics` of `GET /api/v1/meter`.
+  the 1st report (`Meter:RealTimeResendTimeout`), for up to 3.5 s (`Meter:RealTimeResendBudget`). Only when this
+  budget runs out does the query count as a failure (`W7012`); resends do not raise an error and are counted in
+  `realTimeStatistics` of `GET /api/v1/meter`. The cable discards commands while it waits for the optical answer, so
+  these counters measure queries that took longer than 300 ms, not requests lost by the meter
+  ([`docs/library.md`](docs/library.md#pedidos-descartados-e-reenvio), in Portuguese).
+- **Slow functions.** In logic Hz without a signal and in capacitance, the meter only answers at the end of its
+  measurement cycle (up to ≈ 2.8 s with 1000 µF). That is why the wait for the 1st report is 3.5 s in both families
+  (`Meter:RealTimeFirstReportTimeout` on the BM52x, `Meter:RealTimeResendBudget` on the BM82x); up to 0.2.0 they were
+  1 s and 2 s, and these functions gave `W7012`. The cost only shows without an answer: with the meter switched off,
+  `E9016` takes longer.
 - **Datalogger.** Only the BM52x has one. On a BM82x, the import is rejected with `E9014` (409), without any memory
   command: immediately while polling is running (or with `Meter:Family` pinned), and after a real-time query that
   confirms the family when the last frame is more than 2 s old (the meter may have been swapped on the cable).
@@ -602,8 +609,9 @@ still respond).
     "Family": "Auto",             // Auto | Bm52x | Bm82x
     "PollInterval": "00:00:00.200",
     "ReportTimeout": "00:00:01",
+    "RealTimeFirstReportTimeout": "00:00:03.500",
     "RealTimeResendTimeout": "00:00:00.300",
-    "RealTimeResendBudget": "00:00:02",
+    "RealTimeResendBudget": "00:00:03.500",
     "ReconnectDelay": "00:00:02",
     "SimulatedModel": "Bm525s"    // Bm525s | Et2517a (only with Transport = Simulated)
   },
@@ -626,9 +634,10 @@ still respond).
 | `Meter:AutoLink` | `Meter__AutoLink` | `true` | Opens the cable and starts polling at startup |
 | `Meter:Family` | `Meter__Family` | `Auto` | `Auto` detects the family on the 1st reading (`82 66`); `Bm52x` (always `52 66`, like version 0.1.0) and `Bm82x` (always `82 66`) pin it, and a meter of the other family gives `W8011` ([Family and dropped requests](#family-and-dropped-requests)) |
 | `Meter:PollInterval` | `Meter__PollInterval` | `00:00:00.200` | Interval between the starts of two consecutive real-time queries (the original does not pause); on the ET-2517A, a shorter interval loses fewer requests |
-| `Meter:ReportTimeout` | `Meter__ReportTimeout` | `00:00:01` | Maximum wait for an HID report |
+| `Meter:ReportTimeout` | `Meter__ReportTimeout` | `00:00:01` | Maximum wait for an HID report (memory, and the ones after the 1st in real time) |
+| `Meter:RealTimeFirstReportTimeout` | `Meter__RealTimeFirstReportTimeout` | `00:00:03.500` | BM52x: wait for the 1st report of each real-time query; covers logic Hz and capacitance (10 ms to 1 min) |
 | `Meter:RealTimeResendTimeout` | `Meter__RealTimeResendTimeout` | `00:00:00.300` | BM82x and detection: wait for the 1st report before resending the same request, without closing the cable (10 ms to 30 s) |
-| `Meter:RealTimeResendBudget` | `Meter__RealTimeResendBudget` | `00:00:02` | BM82x and detection: total time of a query, resends included; only when it runs out does the query end in `W7012` (10 ms to 1 min) |
+| `Meter:RealTimeResendBudget` | `Meter__RealTimeResendBudget` | `00:00:03.500` | BM82x and detection: total time of a query, resends included; only when it runs out does the query end in `W7012` (10 ms to 1 min) |
 | `Meter:ReconnectDelay` | `Meter__ReconnectDelay` | `00:00:02` | Wait before reopening the cable after a failure |
 | `Meter:SimulatedLatency` | `Meter__SimulatedLatency` | `00:00:00.020` | Response latency of the simulated transport |
 | `Meter:SimulatedModel` | `Meter__SimulatedModel` | `Bm525s` | Meter of the simulated transport: `Bm525s` (with a datalogger) or `Et2517a` (without a datalogger, with the real meter's request dropping) ([Simulated mode](#simulated-mode)) |
@@ -996,7 +1005,8 @@ they show up in `realTimeStatistics.resends` of `GET /api/v1/meter`, not as erro
 
 - lower `Meter:PollInterval` (for example, `00:00:00.100`): the shorter the interval, the fewer requests are lost (at
   0 ms, none out of 40);
-- raise `Meter:RealTimeResendBudget` (for example, `00:00:03`), for more resends per query;
+- do not lower `Meter:RealTimeResendBudget` below 3.5 s: under ≈ 3.3 s it cuts short the wait of the cable, which
+  repeats the optical request on its own, and capacitance gets no reading;
 - check that the cable is seated in the optical port and that the meter has not entered APO.
 
 ### Linux without `/dev/hidraw*`
