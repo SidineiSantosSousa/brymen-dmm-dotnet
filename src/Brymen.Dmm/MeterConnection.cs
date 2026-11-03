@@ -29,7 +29,8 @@ namespace Brymen.Dmm;
 /// <list type="bullet">
 /// <item>Espera longa (§8.5.4): o 1º <c>66</c> depois da criação da conexão e depois de qualquer comando de memória
 /// (<c>88</c>, <c>89</c>, <c>8A</c>) tem o prazo de <see cref="BrymenMeterOptions.RealTimeAfterMemoryTimeout"/> (3 s;
-/// <see cref="BrymenMeterOptions.ReportTimeout"/>, se maior). No BM525s real, o <c>66</c> seguinte à leitura do último
+/// <see cref="BrymenMeterOptions.RealTimeFirstReportTimeout"/> ou <see cref="BrymenMeterOptions.ReportTimeout"/>, se
+/// maior: 3,5 s com os padrões). No BM525s real, o <c>66</c> seguinte à leitura do último
 /// bloco da memória leva ≈ 2,06 s, e na partida a memória pode ter sido lida por outro programa. Com a família BM52x
 /// conhecida, ou depois de um comando de memória respondido (só o BM52x tem memória), é um envio só, que espera o prazo
 /// inteiro pelo 1º relatório: um reenvio no meio do preparo da resposta poderia gerar uma resposta duplicada. Com a
@@ -38,12 +39,16 @@ namespace Brymen.Dmm;
 /// <see cref="BrymenMeterOptions.RealTimeResendBudget"/>, se maior): o ET-2517A pode descartar justamente esse pedido, o
 /// 1º depois do maior tempo ocioso. É uma espera longa só: o <c>66</c> que termina, com resposta ou sem ela, volta à
 /// política normal. Um <c>66</c> cancelado não conta.</item>
-/// <item>BM52x: um envio, que espera até <see cref="BrymenMeterOptions.ReportTimeout"/> por relatório. O BM525s nunca
-/// descartou pedidos.</item>
+/// <item>BM52x: um envio, que espera até <see cref="BrymenMeterOptions.RealTimeFirstReportTimeout"/> (3,5 s;
+/// <see cref="BrymenMeterOptions.ReportTimeout"/>, se maior) pelo 1º relatório, e <see cref="BrymenMeterOptions.ReportTimeout"/>
+/// pelos seguintes. O BM525s nunca descartou pedidos, mas nas funções lentas (Hz lógico, capacitância) o 1º relatório
+/// só chega no fim do ciclo do medidor, até ≈ 2,8 s depois do pedido.</item>
 /// <item>BM82x e detecção: o mesmo pedido é reenviado, sem fechar o cabo, a cada
 /// <see cref="BrymenMeterOptions.RealTimeResendTimeout"/> (300 ms) sem o 1º relatório, até
-/// <see cref="BrymenMeterOptions.RealTimeResendBudget"/> (2 s): o ET-2517A descarta parte dos pedidos, e esperar mais não
-/// adianta (§8.5). Só o orçamento esgotado é falha; os reenvios ficam em <see cref="RealTimeStatistics"/>.</item>
+/// <see cref="BrymenMeterOptions.RealTimeResendBudget"/> (3,5 s). Só o orçamento esgotado é falha; os reenvios ficam em
+/// <see cref="RealTimeStatistics"/>. Enquanto o cabo espera a resposta óptica (≈ 3,3 s no máximo) ele descarta os
+/// reenvios, e a resposta que chega depois de um reenvio vem do próprio cabo, que repete o pedido óptico (veja
+/// <see cref="Brymen.Dmm.RealTimeStatistics"/>).</item>
 /// </list>
 /// </para>
 /// <para>
@@ -61,8 +66,19 @@ public sealed class MeterConnection : IDisposable
     /// <summary>Padrão de <see cref="BrymenMeterOptions.RealTimeResendTimeout"/>: 300 ms.</summary>
     public static readonly TimeSpan DefaultRealTimeResendTimeout = TimeSpan.FromMilliseconds(300);
 
-    /// <summary>Padrão de <see cref="BrymenMeterOptions.RealTimeResendBudget"/>: 2 s.</summary>
-    public static readonly TimeSpan DefaultRealTimeResendBudget = TimeSpan.FromSeconds(2);
+    /// <summary>
+    /// Padrão de <see cref="BrymenMeterOptions.RealTimeFirstReportTimeout"/>: 3,5 s. Cobre toda resposta que o cabo pode
+    /// dar a um <c>66</c>: ele faz 2 pedidos ópticos e escuta ≈ 3 s depois do 2º (2,72–3,15 s no BC-86X original),
+    /// ≈ 3,3 s ao todo, e descarta todo comando USB nesse tempo. Inclui as funções lentas do medidor: Hz lógico sem sinal
+    /// (ciclo de 1031 ms) e capacitância (2457 ms com 1000 µF), que respondem até ≈ 0,35 s depois do ciclo.
+    /// </summary>
+    public static readonly TimeSpan DefaultRealTimeFirstReportTimeout = TimeSpan.FromSeconds(3.5);
+
+    /// <summary>
+    /// Padrão de <see cref="BrymenMeterOptions.RealTimeResendBudget"/>: 3,5 s, o mesmo de
+    /// <see cref="DefaultRealTimeFirstReportTimeout"/> (até a 0.2.0, 2 s: a capacitância do BM82x dava W7012).
+    /// </summary>
+    public static readonly TimeSpan DefaultRealTimeResendBudget = DefaultRealTimeFirstReportTimeout;
 
     /// <summary>
     /// Consultas de tempo real seguidas sem resposta depois das quais a família é detectada de novo (com
@@ -580,15 +596,15 @@ public sealed class MeterConnection : IDisposable
         }
     }
 
-    // Chamado sob _gate. BM52x (ou depois de memória respondida): um envio, com o prazo da espera longa ou o ReportTimeout;
-    // BM82x e detecção: o pedido reenviado a cada RealTimeResendTimeout, até o prazo da espera longa ou o
-    // RealTimeResendBudget (§8.5.3 e §8.5.4).
+    // Chamado sob _gate. BM52x (ou depois de memória respondida): um envio, com o prazo da espera longa ou o
+    // RealTimeFirstReportTimeout; BM82x e detecção: o pedido reenviado a cada RealTimeResendTimeout, até o prazo da espera
+    // longa ou o RealTimeResendBudget (§8.5.3 e §8.5.4).
     private async Task<byte[]> SendRealTimeAsync(Bu86xLink link, MeterFamily? family, bool slow, QueryCounters query, CancellationToken cancellationToken)
     {
         byte code = family is { } known ? known.Code() : Bm52xCommands.Bm82xFamily;
         if (family == MeterFamily.Bm52x || (slow && _memoryAnswered))
         {
-            var timeout = slow ? LongFirstReportTimeout : _options.ReportTimeout;
+            var timeout = slow ? LongFirstReportTimeout : FirstReportTimeout;
             return await SendOnceAsync(link, code, timeout, query, cancellationToken).ConfigureAwait(false);
         }
         try
@@ -614,7 +630,10 @@ public sealed class MeterConnection : IDisposable
         }
     }
 
-    private TimeSpan LongFirstReportTimeout => Max(_options.ReportTimeout, _options.RealTimeAfterMemoryTimeout);
+    // O 1º relatório de um envio só (BM52x): RealTimeFirstReportTimeout, ou o ReportTimeout, se maior.
+    private TimeSpan FirstReportTimeout => Max(_options.ReportTimeout, _options.RealTimeFirstReportTimeout);
+
+    private TimeSpan LongFirstReportTimeout => Max(FirstReportTimeout, _options.RealTimeAfterMemoryTimeout);
 
     private static TimeSpan Max(TimeSpan a, TimeSpan b) => a >= b ? a : b;
 

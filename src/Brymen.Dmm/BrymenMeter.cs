@@ -223,9 +223,9 @@ public sealed class BrymenMeter : IBrymenMeter, IAsyncDisposable, IDisposable
     /// <summary>
     /// Uma consulta de tempo real decodificada (<c>52 66</c> no BM52x, <c>82 66</c> no BM82x e na detecção da família). A
     /// 1ª depois da abertura ou de uma leitura da memória tem o prazo de <see cref="BrymenMeterOptions.RealTimeAfterMemoryTimeout"/>
-    /// (3 s): um envio só com a família BM52x conhecida, e com os reenvios a cada
+    /// (3 s; 3,5 s com os padrões, pelo prazo da família): um envio só com a família BM52x conhecida, e com os reenvios a cada
     /// <see cref="BrymenMeterOptions.RealTimeResendTimeout"/> na detecção e no BM82x. As demais esperam até
-    /// <see cref="BrymenMeterOptions.ReportTimeout"/> no BM52x, e reenviam até <see cref="BrymenMeterOptions.RealTimeResendBudget"/>
+    /// <see cref="BrymenMeterOptions.RealTimeFirstReportTimeout"/> (3,5 s) no BM52x, e reenviam até <see cref="BrymenMeterOptions.RealTimeResendBudget"/>
     /// no BM82x.
     /// </summary>
     /// <remarks>

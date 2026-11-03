@@ -46,6 +46,7 @@ public sealed class ServiceCollectionTests
             ("Brymen:DevicePath", "/dev/brymen-bu86x"),
             ("Brymen:PollInterval", "00:00:00.500"),
             ("Brymen:ReportTimeout", "00:00:02"),
+            ("Brymen:RealTimeFirstReportTimeout", "00:00:01.400"),
             ("Brymen:RealTimeAfterMemoryTimeout", "00:00:04"),
             ("Brymen:ReconnectDelay", "00:00:05"),
             ("Brymen:AutoReconnect", "false"),
@@ -66,6 +67,7 @@ public sealed class ServiceCollectionTests
         Assert.Equal("/dev/brymen-bu86x", options.DevicePath);
         Assert.Equal(TimeSpan.FromMilliseconds(500), options.PollInterval);
         Assert.Equal(TimeSpan.FromSeconds(2), options.ReportTimeout);
+        Assert.Equal(TimeSpan.FromMilliseconds(1400), options.RealTimeFirstReportTimeout);
         Assert.Equal(TimeSpan.FromSeconds(4), options.RealTimeAfterMemoryTimeout);
         Assert.Equal(TimeSpan.FromSeconds(5), options.ReconnectDelay);
         Assert.False(options.AutoReconnect);
@@ -96,6 +98,7 @@ public sealed class ServiceCollectionTests
         Assert.Same(TimeProvider.System, options.TimeProvider);
         Assert.Null(options.DevicePath);
         Assert.Equal(defaults.ReportTimeout, options.ReportTimeout);
+        Assert.Equal(defaults.RealTimeFirstReportTimeout, options.RealTimeFirstReportTimeout);
         Assert.Equal(defaults.RealTimeAfterMemoryTimeout, options.RealTimeAfterMemoryTimeout);
         Assert.Equal(defaults.ReconnectDelay, options.ReconnectDelay);
         Assert.True(options.AutoReconnect);

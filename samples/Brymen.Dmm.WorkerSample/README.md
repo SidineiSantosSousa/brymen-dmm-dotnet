@@ -59,7 +59,7 @@ dotnet run --project samples/Brymen.Dmm.WorkerSample -- --Brymen:Family=Bm82x   
 O `appsettings.json` usa `PollInterval` de 1 s, para o log não crescer rápido. Com o ET-2517A, um intervalo longo perde
 mais pedidos (cerca de 60 % na 1ª tentativa a 1 s, no medidor real): os reenvios cobrem as perdas, e um intervalo menor,
 como `--Brymen:PollInterval=00:00:00.200`, as reduz. As chaves `RealTimeResendTimeout` (300 ms) e
-`RealTimeResendBudget` (2 s) ajustam os reenvios.
+`RealTimeResendBudget` (3,5 s) ajustam os reenvios, e `RealTimeFirstReportTimeout` (3,5 s), a espera do BM52x.
 
 As chaves aceitas e o restante da integração estão em [`docs/library.md`](../../docs/library.md#integração-com-o-generic-host).
 O `DeviceProvider` (o medidor simulado do `--simulated`) só pode ser ajustado por código, como no

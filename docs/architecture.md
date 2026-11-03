@@ -89,7 +89,7 @@ Endpoints auxiliares: `GET /api/v1/meter` (estado do link, do dispositivo e últ
 | `fullSpeed` | “Full Speed” é o `TimerLogger` de **500 ms**, que copia o último dado válido da thread (RE §9.2). | **Toda leitura** decodificada vira amostra, na cadência do polling (`Meter:PollInterval`, padrão 200 ms, cerca de 5 amostras/s). Para 500 ms como no original, use `Meter:PollInterval=00:00:00.500`. | A port já tem uma cadência mínima configurável no polling; um segundo timer só repetiria ou perderia leituras. Cada amostra corresponde a um quadro real. |
 | Texto das amostras do datalogger | Tela de importação e CSV da sessão com `sprintf("%05.*f")` (`"%04.*f"` sem casas, `"%06.*f"` com sinal) e as casas da faixa: 4 dígitos com zeros à esquerda (287 com 2 casas → `02.87`, 13 com 1 casa → `001.3`, 6 sem casas → `0006`); temperatura com `"%03.0f"` (`025`) [BIN 0x431877..0x4319FA, 0x432015..0x43208B]. Overload sai como `.OL`, `O.L` ou `OL.` conforme a faixa [BIN 0x431A14..0x431AF9]. | `MainData`/`Sub Data` do CSV da sessão como o original, com os zeros à esquerda. O `text` do JSON (`LoggerValueDto`) segue o LCD e o tempo real, sem zeros à esquerda (`2.87`). Overload fica `OL` (`----` em temperatura) nos dois. | O CSV é o formato de troca com o original; o JSON fica coerente com o `text` do tempo real. O texto do overload por faixa só foi lido para V/mV. |
 | Falhas seguidas no polling | 2 reaberturas silenciosas; na **3ª falha seguida**, MessageBox “No data received.” com caption `Error[E9015]`, e a thread termina, desfazendo o link (RE §6.5, §12). | Falhas 1 e 2: `W7012` em `lastError`, reabertura do cabo após 10 ms. **3ª falha seguida: `E9016`** (tempo esgotado), a última leitura deixa de ser servida e o estado vai a `reconnecting`, com nova tentativa a cada `Meter:ReconnectDelay`. O link continua ativo. Quadro inválido (`W8011`) conta como falha. No BM82x, uma falha é uma consulta com o orçamento dos reenvios esgotado, e não um pedido perdido. | Na port, `E9015` quer dizer só “cabo não encontrado” (enumeração), como no Link e na importação do original. Um serviço sem operador precisa se recuperar sozinho quando o medidor volta. |
-| Pedido de tempo real | `82 66` nas duas famílias, sem pausa entre as consultas, com espera de até 4 s pelo 1º relatório; o HID é fechado e reaberto quando a resposta não chega (RE §6.5; §8.5.2 da especificação). | `82 66` na detecção da família e no BM82x; `52 66` no BM52x depois da detecção. No BM82x, o mesmo pedido é reenviado, sem fechar o cabo, depois de `Meter:RealTimeResendTimeout` (300 ms) sem o 1º relatório, até `Meter:RealTimeResendBudget` (2 s). | O `52 66` é o comando validado no BM525s (Windows e Orange Pi 5). O ET-2517A descarta parte dos pedidos, e esperar mais não recupera nada: só o reenvio resolve, e fechar o cabo só aumenta o tempo ocioso, que piora a perda (§8.5). |
+| Pedido de tempo real | `82 66` nas duas famílias, sem pausa entre as consultas, com espera de até 4 s pelo 1º relatório; o HID é fechado e reaberto quando a resposta não chega (RE §6.5; §8.5.2 da especificação). | `82 66` na detecção da família e no BM82x; `52 66` no BM52x depois da detecção. No BM82x, o mesmo pedido é reenviado, sem fechar o cabo, depois de `Meter:RealTimeResendTimeout` (300 ms) sem o 1º relatório, até `Meter:RealTimeResendBudget` (3,5 s; 2 s até a 0.2.0). | O `52 66` é o comando validado no BM525s (Windows e Orange Pi 5). O ET-2517A descarta parte dos pedidos, e esperar mais não recupera nada: só o reenvio resolve, e fechar o cabo só aumenta o tempo ocioso, que piora a perda (§8.5). |
 | Importação num BM82x | Lê o Model ID com `82 66` e mostra `E9017` quando ele não é `52h` (§8.1 da especificação). | **`E9014`** (próprio da biblioteca), 409, sem criar importação e sem nenhum comando de memória. | O medidor responde e a família é conhecida: não é “desligado, desconectado ou sem datalogger” (`E9017`, 503), e sim uma operação que não existe no modelo. |
 
 ## Biblioteca Brymen.Dmm
@@ -156,7 +156,7 @@ Fonte: §8 da [especificação](protocol/bm52x-usb-protocol.md#8-família-bm82x-
 - **Pedidos descartados.** O ET-2517A descarta parte dos pedidos de tempo real (0 de 40 a 0 ms de intervalo, 11 de 40
   a 200 ms, 19 de 40 a 500 ms), e um pedido perdido não recebe resposta atrasada. No BM82x, o `Bu86xLink` reenvia o
   mesmo pedido, sem fechar o cabo, a cada `RealTimeResendTimeout` (300 ms) sem o 1º relatório, até
-  `RealTimeResendBudget` (2 s); aceita o 1º quadro completo de qualquer envio, e o comando seguinte faz o descarte de
+  `RealTimeResendBudget` (3,5 s); aceita o 1º quadro completo de qualquer envio, e o comando seguinte faz o descarte de
   recuperação (`RecoveryDrainTimeout`; depois de uma consulta com reenvios interrompida, pelo menos a janela de 300 ms).
   Só o orçamento esgotado é `W7012`; os reenvios ficam em `RealTimeStatistics` (e em `realTimeStatistics` de
   `GET /api/v1/meter`).
@@ -164,8 +164,13 @@ Fonte: §8 da [especificação](protocol/bm52x-usb-protocol.md#8-família-bm82x-
   pedido é reenviado a cada 300 ms até esse prazo, porque o ET-2517A pode descartar justamente esse pedido; no BM52x
   conhecido (ou depois de um comando de memória respondido), é um envio só, que espera os ≈ 2 s do BM525s depois da
   memória.
-- **Exceção, para manter o comportamento validado do BM525s**: o BM52x conhecido continua com um envio e o
-  `ReportTimeout`.
+- **Exceção, para manter o comportamento validado do BM525s**: o BM52x conhecido continua com um envio, que espera
+  `RealTimeFirstReportTimeout` (3,5 s) pelo 1º relatório.
+- **Funções lentas.** No Hz lógico sem sinal (ciclo de 1031 ms) e na capacitância (2457 ms com 1000 µF), o medidor só
+  responde no fim do ciclo, e o cabo (o original e o BrymenIR) escuta ≈ 3 s depois do 2º pedido óptico, descartando os
+  comandos que chegam nesse tempo. As esperas de 3,5 s (`RealTimeFirstReportTimeout` e `RealTimeResendBudget`) cobrem
+  toda resposta possível do cabo; com 1 s e 2 s (até a 0.2.0), essas funções davam `W7012`
+  ([`docs/library.md`](library.md#funções-lentas-e-a-espera-pelo-1º-relatório)).
 - **Sem datalogger.** Num BM82x, a leitura da memória falha com `E9014` (`BrymenErrorCodes.DataLoggerNotSupported`),
   sem nenhum comando de memória; a API responde 409 em `POST /api/v1/logger/imports`, sem criar importação. A recusa é
   imediata com a família fixa ou confirmada por um quadro de tempo real há menos de 2 s
@@ -369,8 +374,9 @@ amostras gravadas continuam em `GET /api/v1/acquisition/samples`.
     "Family": "Auto",             // Auto | Bm52x | Bm82x
     "PollInterval": "00:00:00.200",
     "ReportTimeout": "00:00:01",
+    "RealTimeFirstReportTimeout": "00:00:03.500",
     "RealTimeResendTimeout": "00:00:00.300",
-    "RealTimeResendBudget": "00:00:02",
+    "RealTimeResendBudget": "00:00:03.500",
     "ReconnectDelay": "00:00:02",
     "SimulatedLatency": "00:00:00.020",
     "SimulatedModel": "Bm525s"    // Bm525s | Et2517a
@@ -401,7 +407,8 @@ Chaves novas da versão 0.2.0:
 |---|---|---|
 | `Meter:Family` | `Auto` | Família do medidor: `Auto` (detectada na 1ª leitura), `Bm52x` ou `Bm82x` (fixas). |
 | `Meter:RealTimeResendTimeout` | `00:00:00.300` | BM82x e detecção: espera pelo 1º relatório antes de reenviar o mesmo pedido (10 ms a 30 s). |
-| `Meter:RealTimeResendBudget` | `00:00:02` | BM82x e detecção: tempo total da consulta com os reenvios; esgotado, `W7012` (10 ms a 1 min). |
+| `Meter:RealTimeResendBudget` | `00:00:02` | BM82x e detecção: tempo total da consulta com os reenvios; esgotado, `W7012` (10 ms a 1 min). Depois da 0.2.0, 3,5 s. |
+| `Meter:RealTimeFirstReportTimeout` (depois da 0.2.0) | `00:00:03.500` | BM52x: espera pelo 1º relatório de cada consulta de tempo real (10 ms a 1 min). |
 | `Meter:SimulatedModel` | `Bm525s` | Medidor do transporte `Simulated`: `Bm525s` ou `Et2517a`. |
 
 Chaves acrescentadas durante o desenvolvimento da versão 0.1.0:

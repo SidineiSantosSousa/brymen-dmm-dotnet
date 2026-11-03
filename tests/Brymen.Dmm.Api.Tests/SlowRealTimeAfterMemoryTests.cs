@@ -12,7 +12,7 @@ namespace Brymen.Dmm.Api.Tests;
 /// <summary>
 /// Medidor simulado com o atraso do BM525s real: o 1º <c>66</c> depois de comandos de memória (e na partida, quando a
 /// memória pode ter sido lida por outro programa) só começa a ser respondido depois de <see cref="SlowRealTimeMeter.Delay"/>,
-/// maior que o <c>Meter:ReportTimeout</c> dos testes (250 ms). No medidor real são ≈ 2,06 s depois do último bloco.
+/// maior que o <c>Meter:RealTimeFirstReportTimeout</c> dos testes (250 ms). No medidor real são ≈ 2,06 s depois do último bloco.
 /// </summary>
 public sealed class SlowRealTimeFactory : ApiFactory
 {

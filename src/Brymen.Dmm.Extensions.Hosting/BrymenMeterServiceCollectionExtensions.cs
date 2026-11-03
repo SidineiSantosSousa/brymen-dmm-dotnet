@@ -43,8 +43,8 @@ public static class BrymenMeterServiceCollectionExtensions
     /// <remarks>
     /// <para>
     /// Chaves aceitas (as ausentes mantêm o valor atual): <c>DevicePath</c>, <c>PollInterval</c>, <c>ReportTimeout</c>,
-    /// <c>RealTimeAfterMemoryTimeout</c>, <c>ReconnectDelay</c>, <c>AutoReconnect</c>, <c>DrainTimeout</c>,
-    /// <c>RecoveryDrainTimeout</c> e a seção <c>LoggerRead</c> (<c>VerifyModel</c>, <c>HeadSettleDelay</c>,
+    /// <c>RealTimeFirstReportTimeout</c>, <c>RealTimeAfterMemoryTimeout</c>, <c>ReconnectDelay</c>, <c>AutoReconnect</c>,
+    /// <c>DrainTimeout</c>, <c>RecoveryDrainTimeout</c> e a seção <c>LoggerRead</c> (<c>VerifyModel</c>, <c>HeadSettleDelay</c>,
     /// <c>RetryDelay</c>, <c>MaxHeadAttempts</c>, <c>MaxBlockAttempts</c>, <c>MaxRestarts</c>). Os intervalos usam o formato
     /// invariante do <see cref="TimeSpan"/> (<c>"00:00:00.200"</c> = 200 ms).
     /// </para>

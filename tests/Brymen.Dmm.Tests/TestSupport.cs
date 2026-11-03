@@ -38,6 +38,7 @@ internal sealed class SimulatedSetup
             TimeProvider = Time,
             PollInterval = TimeSpan.FromMilliseconds(10),
             ReportTimeout = TimeSpan.FromMilliseconds(150),
+            RealTimeFirstReportTimeout = TimeSpan.FromMilliseconds(150),
             RealTimeAfterMemoryTimeout = TimeSpan.FromMilliseconds(300),
             ReconnectDelay = TimeSpan.FromMilliseconds(50),
             DrainTimeout = TimeSpan.Zero,

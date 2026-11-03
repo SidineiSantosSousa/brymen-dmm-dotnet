@@ -141,7 +141,7 @@ bytes 20 a 23 do quadro (o Model ID, os quatro iguais) dizem a família, e não 
 | Tempo real | `52 66`; também responde ao `82 66`, com o mesmo quadro | só `82 66`; o `52 66` fica sem resposta |
 | Datalogger | sim: `52 88`, `52 89` e `52 8A` | não: `E9014`, sem comandos de memória |
 | Pedidos de tempo real descartados | nunca observados | sim, tanto mais quanto maior o intervalo entre as consultas |
-| Política de cada consulta | um envio, até `ReportTimeout` por relatório | reenvios a cada `RealTimeResendTimeout`, até `RealTimeResendBudget` |
+| Política de cada consulta | um envio, até `RealTimeFirstReportTimeout` (3,5 s) pelo 1º relatório | reenvios a cada `RealTimeResendTimeout`, até `RealTimeResendBudget` (3,5 s) |
 
 A família fica em `BrymenMeter.Family` e em cada `DmmReading.Family`. `ModelDescription` a descreve
 (`"Minipa ET-2615A (Brymen BM525s, BM52x)"` ou `"Minipa ET-2517A (Brymen BM827s, BM82x)"`), e `SupportsDataLogger` diz se a leitura da
@@ -154,8 +154,8 @@ Com `BrymenMeterOptions.Family = MeterFamilySelection.Auto` (o padrão):
 
 1. A abertura não faz consulta. `Family` fica `null` até a 1ª leitura.
 2. A 1ª consulta de tempo real envia `82 66`, que as duas famílias aceitam, e já é uma leitura: o Model ID do quadro dá a
-   família. Como é o 1º `66` da conexão, ela faz a espera longa: o prazo é `RealTimeAfterMemoryTimeout` (3 s), e o
-   pedido é reenviado a cada `RealTimeResendTimeout` (300 ms) sem o 1º relatório, porque o ET-2517A pode descartar
+   família. Como é o 1º `66` da conexão, ela faz a espera longa: o prazo é o maior entre `RealTimeAfterMemoryTimeout`
+   (3 s) e `RealTimeResendBudget` (3,5 s), e o pedido é reenviado a cada `RealTimeResendTimeout` (300 ms) sem o 1º relatório, porque o ET-2517A pode descartar
    justamente esse pedido, o que vem depois do maior tempo ocioso (§8.5.4). Sem nenhum relatório até o prazo, um `52 66`
    de reserva (com `ReportTimeout`) cobre um BM52x que ignore o `82 66`, o que nunca foi observado.
 3. Depois, o BM52x é lido com `52 66` (o comando validado no BM525s, no Windows e no Orange Pi 5) e o BM82x com `82 66`.
@@ -192,8 +192,8 @@ A política de cada consulta de tempo real do BM82x e da detecção:
 - sem ele, envia o **mesmo pedido** de novo, sem fechar o cabo: fechar e reabrir não recupera nada e só aumenta o tempo
   ocioso, que piora a perda;
 - aceita o 1º quadro completo de qualquer um dos envios; uma resposta incompleta é descartada e o pedido, reenviado;
-- para quando `RealTimeResendBudget` (2 s, contado do 1º envio; 3 s na espera longa) acaba: só então a consulta falha
-  com `W7012`;
+- para quando `RealTimeResendBudget` (3,5 s, contado do 1º envio, também na espera longa) acaba: só então a consulta
+  falha com `W7012`. Até a 0.2.0 eram 2 s, abaixo dos ≈ 2,44 s da capacitância ([Funções lentas](#funções-lentas-e-a-espera-pelo-1º-relatório));
 - depois de um reenvio, o comando seguinte começa com o descarte de recuperação (`RecoveryDrainTimeout`, 100 ms), para
   que a resposta atrasada de um envio anterior não seja tomada pela dele. É o melhor esforço: um pedido descartado nunca
   é respondido (§8.5.2), e a resposta de um envio atendido chega dentro da janela de 300 ms, mas uma resposta que chegue
@@ -202,8 +202,8 @@ A política de cada consulta de tempo real do BM82x e da detecção:
   seguinte no mesmo cabo aberto um silêncio de pelo menos `RealTimeResendTimeout`, que cobre a latência do ET-2517A (até
   ≈ 260 ms). Depois de fechar e reabrir o cabo, vale o `RecoveryDrainTimeout`.
 
-As perdas recuperadas não são falhas: não geram `W7012`, `LastError` nem `ErrorOccurred`, e não contam para as 3 falhas
-seguidas da leitura contínua. Elas só aparecem em `RealTimeStatistics`:
+Os reenvios não são falhas: não geram `W7012`, `LastError` nem `ErrorOccurred`, e não contam para as 3 falhas seguidas
+da leitura contínua. Eles só aparecem em `RealTimeStatistics`:
 
 ```csharp
 RealTimeStatistics s = meter.RealTimeStatistics;
@@ -214,13 +214,28 @@ Console.WriteLine($"{s.Queries} consultas, {s.Requests} pedidos, {s.Resends} ree
 | Contador | O que conta |
 |---|---|
 | `Queries` | Consultas de tempo real terminadas, com ou sem resposta (as canceladas não contam). |
-| `Requests` | Pedidos `66` enviados: o 1º de cada consulta, os reenvios e o `52 66` de reserva da detecção. |
-| `Resends` | Reenvios depois da janela do 1º relatório. |
-| `LostRequests` | Pedidos sem resposta: os reenviados e os das consultas que falharam. |
-| `RecoveredQueries` | Consultas que só tiveram resposta depois de ao menos um reenvio. |
+| `Requests` | Pedidos `66` enviados ao cabo: o 1º de cada consulta, os reenvios e o `52 66` de reserva da detecção. |
+| `Resends` | Reenvios depois da janela do 1º relatório, inclusive os que o cabo descartou por estar ocupado. |
+| `LostRequests` | Pedidos sem o 1º relatório dentro da janela: os reenviados e os das consultas que falharam. |
+| `RecoveredQueries` | Consultas cujo quadro chegou depois de ao menos um reenvio. |
 | `FailedQueries` | Consultas sem resposta completa (cada uma é um `W7012`). |
 
 Os contadores são da conexão, desde a abertura do `BrymenMeter`, e são lidos um a um, sem um instantâneo atômico.
+
+**O que os contadores não dizem.** Eles veem só o lado USB. O cabo BC-86X (o original e o cabo compatível BrymenIR)
+faz ele mesmo 2 pedidos ópticos por comando, escuta
+≈ 3 s depois do 2º (2,72–3,15 s no original), e descarta todo comando USB que chega nesse tempo. Daí:
+
+- nas funções em que o medidor só responde no fim de um ciclo mais longo que a janela de 300 ms (AC+DC ≈ 0,78 s, Hz
+  lógico ≈ 1,03 s, capacitância), toda consulta do BM82x conta reenvios, pedidos "perdidos" e uma consulta
+  "recuperada", sem nenhuma perda no medidor: em 20 s de AC+DC, 50 pedidos perdidos e 25 consultas recuperadas;
+- quando o ET-2517A descarta um pedido, quem recupera a leitura é o 2º pedido óptico do próprio cabo, e não o reenvio
+  da biblioteca, que chega com o cabo ocupado. As medições da §8.5 com reenvio foram feitas com o cabo original e valem
+  como estão, mas o mecanismo é esse.
+
+Leia `Resends`, `LostRequests` e `RecoveredQueries` como "consultas que demoraram mais que a janela", e só
+`FailedQueries` como leituras que faltaram. Os reenvios continuam: são inofensivos (o cabo ocupado os descarta, sem
+resposta duplicada) e cobrem um cabo que tenha desistido antes do fim do orçamento.
 
 **Intervalo de polling.** Com o ET-2517A, um `PollInterval` menor perde menos pedidos (a 0 ms, nenhum em 40), mas não
 dispensa os reenvios. O padrão continua 200 ms, com os reenvios cobrindo as perdas: conferido com o ET-2517A simulado e,
@@ -229,7 +244,8 @@ no ET-2517A real, numa sessão sem perdas reais e com descartes injetados no hos
 pausa nenhuma, o que equivale a `PollInterval = TimeSpan.Zero`.
 
 **A espera longa.** O 1º `66` depois da abertura e depois de comandos de memória tem o prazo de
-`RealTimeAfterMemoryTimeout` (3 s), como na §8.5.4 da especificação:
+`RealTimeAfterMemoryTimeout` (3 s; o prazo normal da família, se maior: 3,5 s com os padrões), como na §8.5.4 da
+especificação:
 
 - com a família desconhecida (a detecção) ou BM82x, o pedido é reenviado a cada `RealTimeResendTimeout` até esse prazo:
   o 1º pedido depois da abertura vem depois do maior tempo ocioso, e é o que o ET-2517A mais descarta (60 % na 1ª
@@ -320,10 +336,11 @@ aberto. Também é a opção do `MeterConnection`, que ignora `PollInterval`, `R
 | `string? DevicePath` | `null` | — | Caminho do cabo; `null` ou vazio = o primeiro da enumeração. |
 | `MeterFamilySelection Family` | `Auto` | um valor do enum | `Auto` detecta a família na 1ª leitura; `Bm52x` e `Bm82x` a fixam ([Detecção](#detecção)). |
 | `TimeSpan PollInterval` | 200 ms | ≥ 0 | Intervalo da leitura contínua; `TimeSpan.Zero` consulta sem pausa, como o original. No BM82x, um intervalo menor perde menos pedidos. |
-| `TimeSpan ReportTimeout` | 1 s | > 0 | Espera por cada relatório de entrada (no BM52x, também pelo 1º). |
+| `TimeSpan ReportTimeout` | 1 s | > 0 | Espera por cada relatório de entrada: os da memória e os seguintes ao 1º no tempo real. |
+| `TimeSpan RealTimeFirstReportTimeout` | 3,5 s (`MeterConnection.DefaultRealTimeFirstReportTimeout`) | > 0 | BM52x: espera pelo 1º relatório de cada consulta de tempo real, num envio só (`ReportTimeout`, se maior). Cobre as funções lentas ([Funções lentas](#funções-lentas-e-a-espera-pelo-1º-relatório)). |
 | `TimeSpan RealTimeAfterMemoryTimeout` | 3 s (`MeterConnection.DefaultRealTimeAfterMemoryTimeout`) | > 0 | Prazo da espera longa do 1º `66` depois da abertura e de comandos de memória: um envio só no BM52x conhecido; com reenvios na detecção e no BM82x. |
 | `TimeSpan RealTimeResendTimeout` | 300 ms (`MeterConnection.DefaultRealTimeResendTimeout`) | > 0 | BM82x e detecção: espera pelo 1º relatório de cada envio antes de reenviar o mesmo pedido, sem fechar o cabo. |
-| `TimeSpan RealTimeResendBudget` | 2 s (`MeterConnection.DefaultRealTimeResendBudget`) | > 0 | BM82x e detecção: tempo total de uma consulta com os reenvios; só quando ele acaba a consulta é `W7012`. |
+| `TimeSpan RealTimeResendBudget` | 3,5 s (`MeterConnection.DefaultRealTimeResendBudget`) | > 0 | BM82x e detecção: tempo total de uma consulta com os reenvios; só quando ele acaba a consulta é `W7012`. |
 | `TimeSpan ReconnectDelay` | 2 s | ≥ 0 | Espera antes de reabrir o cabo depois de uma falha persistente. |
 | `bool AutoReconnect` | `true` | — | Leitura contínua: reabre o cabo em vez de terminar. |
 | `TimeSpan DrainTimeout` | 5 ms | ≥ 0 | Silêncio para descartar relatórios atrasados antes de cada comando. |
@@ -377,7 +394,7 @@ Para quem precisa de controle fino (a API REST usa estes blocos para não duplic
 
 | Tipo | Descrição |
 |---|---|
-| `sealed class MeterConnection : IDisposable` | Conexão com o cabo, que o `BrymenMeter` compõe. `MeterConnection(BrymenMeterOptions? options = null)`; `HidDeviceInfo Open()`, `HidDeviceInfo Reopen()`, `void Close()` (de qualquer thread, interrompe o comando em andamento); `Task<byte[]> ExecuteAsync(byte command, int reportCount, CancellationToken)` e `Task<MeterCommandResult> TryExecuteAsync(...)` (a falha volta no resultado), que enviam `00 52 cc`, e as sobrecargas com a família, `ExecuteAsync(byte family, byte command, int reportCount, CancellationToken)` e `TryExecuteAsync(byte family, ...)` (`00 family cc`), todas sem detecção nem reenvio, só com a espera longa do 1º `66`; `Task<byte[]> ExecuteRealTimeAsync(CancellationToken)` e `Task<DmmReading> ReadRealTimeAsync(CancellationToken)`, com a família da conexão, a detecção e os reenvios; `Task<LoggerMemoryImage> ReadLoggerImageAsync(IProgress<LoggerReadProgress>?, CancellationToken)` (`E9014` numa família sem datalogger: na hora com ela confirmada, senão depois da conferência do modelo); `IsOpen`, `Device`, `DeviceProvider`, `TimeProvider`, `Family`, `IsFamilyConfirmed` (fixa, ou confirmada por um quadro há menos de `FamilyConfirmationWindow`), `SupportsDataLogger`, `RealTimeStatistics`, `IsNextRealTimeSlow`, `LastCommandReportsReceived`; `static FindDevices(IHidDeviceProvider?)`; `DefaultRealTimeAfterMemoryTimeout` (3 s), `DefaultRealTimeResendTimeout` (300 ms), `DefaultRealTimeResendBudget` (2 s), `FamilyConfirmationWindow` (2 s) e `const int FailuresBeforeRedetection = 3`. Os comandos são serializados entre si e abrem o cabo se ele estiver fechado; uma falha não o fecha (quem chama decide). A família continua depois de `Close` e `Reopen`. |
+| `sealed class MeterConnection : IDisposable` | Conexão com o cabo, que o `BrymenMeter` compõe. `MeterConnection(BrymenMeterOptions? options = null)`; `HidDeviceInfo Open()`, `HidDeviceInfo Reopen()`, `void Close()` (de qualquer thread, interrompe o comando em andamento); `Task<byte[]> ExecuteAsync(byte command, int reportCount, CancellationToken)` e `Task<MeterCommandResult> TryExecuteAsync(...)` (a falha volta no resultado), que enviam `00 52 cc`, e as sobrecargas com a família, `ExecuteAsync(byte family, byte command, int reportCount, CancellationToken)` e `TryExecuteAsync(byte family, ...)` (`00 family cc`), todas sem detecção nem reenvio, só com a espera longa do 1º `66`; `Task<byte[]> ExecuteRealTimeAsync(CancellationToken)` e `Task<DmmReading> ReadRealTimeAsync(CancellationToken)`, com a família da conexão, a detecção e os reenvios; `Task<LoggerMemoryImage> ReadLoggerImageAsync(IProgress<LoggerReadProgress>?, CancellationToken)` (`E9014` numa família sem datalogger: na hora com ela confirmada, senão depois da conferência do modelo); `IsOpen`, `Device`, `DeviceProvider`, `TimeProvider`, `Family`, `IsFamilyConfirmed` (fixa, ou confirmada por um quadro há menos de `FamilyConfirmationWindow`), `SupportsDataLogger`, `RealTimeStatistics`, `IsNextRealTimeSlow`, `LastCommandReportsReceived`; `static FindDevices(IHidDeviceProvider?)`; `DefaultRealTimeAfterMemoryTimeout` (3 s), `DefaultRealTimeResendTimeout` (300 ms), `DefaultRealTimeFirstReportTimeout` (3,5 s), `DefaultRealTimeResendBudget` (3,5 s), `FamilyConfirmationWindow` (2 s) e `const int FailuresBeforeRedetection = 3`. Os comandos são serializados entre si e abrem o cabo se ele estiver fechado; uma falha não o fecha (quem chama decide). A família continua depois de `Close` e `Reopen`. |
 | `sealed class LoggerMemoryReader` | O algoritmo da memória sobre qualquer transporte: `LoggerMemoryReader(ILoggerMemoryTransport transport, LoggerReadOptions? options = null, IProgress<LoggerReadProgress>? progress = null, TimeProvider? timeProvider = null)`, `Task<LoggerMemoryImage> ReadAsync(CancellationToken)`, `const int MaxTotalBytes = 0x20000`. Uma leitura por instância (a 2ª chamada lança `InvalidOperationException`). Um quadro da conferência do modelo com o Model ID `82h` dá `E9014`. |
 | `interface ILoggerMemoryTransport` | `Task<MeterCommandResult> ExecuteAsync(byte command, int reportCount, CancellationToken)` (falha no resultado, não como exceção) e `Task ResetAsync(CancellationToken)` (fecha o cabo para uma nova tentativa). O transporte escolhe o “Command 2”: o do `MeterConnection` faz a conferência do modelo (`66`) com a família da conexão e os comandos de memória com `52`. |
 | `readonly record struct MeterCommandResult(byte[]? Frame, Exception? Error, int ReportsReceived)` | `bool Succeeded`. Com `ReportsReceived` ≥ 1, o medidor certamente processou o comando. |
@@ -420,8 +437,9 @@ stateDiagram-v2
   dela. `OpenAsync` é a exceção: a procura e a abertura do cabo são síncronas e curtas.
 - **Transportes.** No Windows, a `hid.dll` é lida por um `FileStream` assíncrono (overlapped). No Linux, o
   `ReadReportAsync` do hidraw devolve na hora um relatório que já está na fila do kernel; senão, o `poll()` em fatias de
-  50 ms ocupa uma thread do pool (não a de quem chama) até o relatório chegar ou o timeout acabar: até ≈ 3 s no 1º
-  `66` depois da abertura ou da memória, e até o orçamento de 2 s numa consulta do BM82x com reenvios. O
+  50 ms ocupa uma thread do pool (não a de quem chama) até o relatório chegar ou o timeout acabar: até ≈ 3,5 s pelo 1º
+  relatório de um `66` (`RealTimeFirstReportTimeout` no BM52x e a espera longa) e até o orçamento de 3,5 s numa
+  consulta do BM82x com reenvios. O
   `MeterConnection` e o `Bu86xLink` não trocam de thread por conta própria; sobre esses dois transportes, são
   assíncronos de verdade.
 - **Serialização.** Todas as operações no cabo passam por um semáforo: `ReadAsync` concorrentes, a leitura contínua e
@@ -469,8 +487,8 @@ V6.0.0.9), para facilitar o suporte cruzado:
 (ou continua `W8011`). Uma falha persistente, ou o `E9015`, termina a enumeração com `BrymenMeterException` (e termina o
 laço de `Start`, com `IsRunning` = `false`); com `AutoReconnect`, o medidor espera `ReconnectDelay`, reabre o cabo e
 continua. Toda falha vai para `LastError` e `ErrorOccurred`. No BM82x, as falhas contadas são as consultas com o
-orçamento dos reenvios esgotado, e não os pedidos perdidos: com o orçamento de 2 s, o `E9016` sai depois de cerca de
-6 s sem leitura. Com `Family = Auto`, a 3ª falha seguida também faz a família ser detectada de novo
+orçamento dos reenvios esgotado, e não os pedidos perdidos: com o orçamento de 3,5 s, o `E9016` sai depois de cerca de
+10,5 s sem leitura. Com `Family = Auto`, a 3ª falha seguida também faz a família ser detectada de novo
 ([Detecção](#detecção)).
 
 **Outras exceções:**
@@ -489,13 +507,14 @@ Os padrões vêm do software original e dos testes com o BM525s e o ET-2517A rea
 [`docs/protocol/bm52x-usb-protocol.md`](protocol/bm52x-usb-protocol.md)):
 
 - **1º `66` lento.** O 1º `66` depois da abertura e depois de comandos de memória (`88`, `89`, `8A`) tem o prazo de
-  `RealTimeAfterMemoryTimeout` (3 s): um envio só no BM52x conhecido (ou depois de um comando de memória respondido), e
+  `RealTimeAfterMemoryTimeout` (3 s; 3,5 s com os padrões, que são maiores): um envio só no BM52x conhecido (ou depois de um comando de memória respondido), e
   com os reenvios de `RealTimeResendTimeout` na detecção e no BM82x ([A espera longa](#pedidos-descartados-e-reenvio));
   os demais seguem a política da família. No BM525s real, o `66` seguinte ao último bloco da memória levou ≈ 2,06 s. É
   uma espera longa só: o `66` que termina, com resposta ou sem ela, volta à política normal.
-- **BM52x.** Cada consulta é um envio, com `ReportTimeout` (1 s) por relatório.
+- **BM52x.** Cada consulta é um envio, com `RealTimeFirstReportTimeout` (3,5 s) pelo 1º relatório e `ReportTimeout`
+  (1 s) pelos seguintes.
 - **BM82x e detecção.** O mesmo pedido é reenviado a cada `RealTimeResendTimeout` (300 ms) sem o 1º relatório, até
-  `RealTimeResendBudget` (2 s) ([Pedidos descartados e reenvio](#pedidos-descartados-e-reenvio)).
+  `RealTimeResendBudget` (3,5 s) ([Pedidos descartados e reenvio](#pedidos-descartados-e-reenvio)).
 - **1º comando depois de muito tempo ocioso.** No BM525s, ficou sem resposta (`W7012`) uma vez, com os seguintes
   normais. `ReadAsync` faz uma consulta só e não tenta de novo (além dos reenvios do BM82x): trate o `W7012` com uma nova
   tentativa, ou use a leitura contínua.
@@ -505,6 +524,59 @@ Os padrões vêm do software original e dos testes com o BM525s e o ET-2517A rea
 - **Descarte.** Antes de cada comando, os relatórios atrasados são descartados (`DrainTimeout`); depois de abrir o cabo
   e de uma troca interrompida ou com reenvios, o descarte exige `RecoveryDrainTimeout` de silêncio, e depois de uma
   consulta com reenvios interrompida, pelo menos `RealTimeResendTimeout`.
+
+### Funções lentas e a espera pelo 1º relatório
+
+O medidor só responde ao `66` no fim do ciclo de medição, e o ciclo depende da função. O cabo (o BC-86X original e o
+cabo compatível BrymenIR) faz 2 pedidos ópticos, escuta ≈ 3 s depois do 2º
+(2,72–3,15 s no original) e descarta todo comando USB que chega nesse tempo: com o medidor em silêncio, um comando
+ocupa o cabo ≈ 3,3 s. Medido com o firmware BrymenIR, que reproduz esses tempos, e a leitura contínua da biblioteca por
+20 s (BM52x = BM525s; BM82x = ET-2517A, com os ciclos medidos no BM525s):
+
+| Função (ciclo do medidor) | Do comando ao 1º relatório | BM52x com 1 s (0.2.0) | BM82x com 2 s (0.2.0) |
+|---|---|---|---|
+| Comuns (265 ms) | 0,17–0,26 s | sem erro | sem erro |
+| AC+DC (784 ms) | 0,67–0,78 s; ≈ 1,08 s com o fim do ciclo no 2º pedido | sem erro em regime | sem erro; 2 reenvios por leitura, descartados pelo cabo |
+| Hz lógico sem sinal (1031 ms) | 0,90–1,02 s | `W7012` em 6 a 9 de 19 consultas | sem erro; ~3 reenvios descartados por leitura |
+| Capacitância com 1000 µF (2457 ms) | 2,34–2,45 s | `W7012` em 14 de 22 | `W7012` em 7 de 15 |
+
+Cada `W7012` fecha e reabre o cabo. O que resolve é esperar o ciclo do medidor mais ≈ 0,35 s (1,4 s no Hz lógico, 2,9 s
+na capacitância); com 3,5 s, fica coberta toda resposta que o cabo pode dar, como a espera de até 4 s do software
+original. Os padrões são, por isso:
+
+| Opção | 0.2.0 | Agora | Onde vale |
+|---|---|---|---|
+| `RealTimeFirstReportTimeout` | — (o `ReportTimeout`, 1 s) | 3,5 s | BM52x: o 1º relatório de cada consulta, num envio só (`ReportTimeout`, se maior). |
+| `RealTimeResendBudget` | 2 s | 3,5 s | BM82x e detecção: o tempo total da consulta, com os reenvios. |
+| `ReportTimeout` | 1 s | 1 s | A memória e os relatórios seguintes ao 1º (≈ 8 ms um do outro). |
+| Espera longa do 1º `66` | 3 s | 3,5 s | O maior entre `RealTimeAfterMemoryTimeout` (3 s) e o prazo da família. |
+
+**O custo.** Com o medidor respondendo, nenhum: a consulta termina com o quadro, e as funções comuns continuam com uma
+leitura a cada ≈ 265 ms. O custo aparece só sem resposta:
+
+- cada `W7012` sai depois de 3,5 s, e não de 1 s (BM52x) ou 2 s (BM82x). `ReadAsync` com o medidor desligado leva 3,5 s
+  para falhar (com a família desconhecida, mais o `52 66` de reserva, que continua com o `ReportTimeout`);
+- com o medidor desligado, o `E9016` da leitura contínua (3 falhas seguidas) sai mais tarde. Com as opções da 0.2.0,
+  ele saiu em 11,3 s; com `ReportTimeout` e `RealTimeResendBudget` em 3,5 s, em 22,3 s, porque cada consulta da detecção
+  esperava o orçamento e depois o `52 66` de reserva com mais 3,5 s. Com os padrões atuais o `52 66` de reserva fica
+  com o `ReportTimeout` de 1 s;
+- mesmo com esperas curtas, o cabo limita o ritmo sem resposta: um comando aceito o ocupa ≈ 3,3 s, e os que chegam
+  nesse tempo são descartados. Por isso, com 1 s, o `W7012` da 0.2.0 já saía a cada ≈ 3,5 s (em 4,4 e 7,9 s), e não a
+  cada segundo: encurtar a espera adianta pouco a detecção do medidor desligado e custa as funções lentas.
+
+**Espera adaptativa: avaliada e não adotada.** A ideia seria esperar pouco nas funções comuns e mais nas lentas,
+conforme a função do último quadro (Hz, capacitância, AC+DC) ou depois da 1ª falha. Não compensa:
+
+- não há o que ganhar com o medidor respondendo, porque a consulta já termina com o quadro;
+- a 1ª consulta depois de trocar para uma função lenta ainda usaria a espera curta e daria `W7012`, e o ciclo da
+  capacitância cresce com o capacitor (um prazo derivado da função não cobriria todos);
+- sem resposta, o próprio cabo impõe ≈ 3,3 s por comando, e a espera curta só troca um `W7012` por comandos
+  descartados.
+
+Quem precisa acusar o medidor desligado mais cedo e não usa as funções lentas pode baixar `RealTimeFirstReportTimeout`
+(por exemplo, para 1,4 s, que ainda cobre o Hz lógico) e `RealTimeResendBudget`. Abaixo de ≈ 3,3 s, o orçamento do BM82x
+corta a espera do cabo, que repete o pedido óptico sozinho; a capacitância precisa de pelo menos ≈ 2,9 s nas duas
+famílias. Para o comportamento da 0.2.0: `RealTimeFirstReportTimeout = 1 s` e `RealTimeResendBudget = 2 s`.
 
 ## Memória do datalogger
 
@@ -573,9 +645,10 @@ invariante do `TimeSpan`:
     "Family": "Auto",
     "PollInterval": "00:00:00.200",
     "ReportTimeout": "00:00:01",
+    "RealTimeFirstReportTimeout": "00:00:03.500",
     "RealTimeAfterMemoryTimeout": "00:00:03",
     "RealTimeResendTimeout": "00:00:00.300",
-    "RealTimeResendBudget": "00:00:02",
+    "RealTimeResendBudget": "00:00:03.500",
     "ReconnectDelay": "00:00:02",
     "AutoReconnect": true,
     "DrainTimeout": "00:00:00.005",

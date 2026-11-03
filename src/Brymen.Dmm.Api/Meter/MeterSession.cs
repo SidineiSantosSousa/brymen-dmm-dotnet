@@ -80,7 +80,7 @@ internal sealed class MeterSession : IDisposable
     /// Espera pelo 1º relatório do primeiro <c>52 66</c> depois de comandos de memória e na partida do serviço. No
     /// BM525s real, o <c>66</c> seguinte à leitura do último bloco da memória (o <c>89</c> que alcança o TotalBytes) só
     /// começa a ser respondido ≈ 2,06 s depois de enviado, mesmo com uma pausa de até 1 s antes dele (6 de 6 no teste
-    /// de 2026-10-22); com o <c>Meter:ReportTimeout</c> padrão de 1 s, o polling acusaria W7012 depois de toda
+    /// de 2026-10-22); com uma espera de 1 s (o <c>Meter:ReportTimeout</c> padrão), o polling acusaria W7012 depois de toda
     /// importação. Na partida, a memória pode ter sido lida por outro programa (o software original, por exemplo). A
     /// política fica no <see cref="MeterConnection"/>.
     /// </summary>
@@ -123,6 +123,7 @@ internal sealed class MeterSession : IDisposable
             DevicePath = _options.DevicePath,
             Family = _options.Family,
             ReportTimeout = _options.ReportTimeout,
+            RealTimeFirstReportTimeout = _options.RealTimeFirstReportTimeout,
             RealTimeResendTimeout = _options.RealTimeResendTimeout,
             RealTimeResendBudget = _options.RealTimeResendBudget,
             DeviceProvider = provider,
