@@ -44,7 +44,7 @@ public sealed class BrymenMeterOptions
     /// fim do ciclo de medição: ≈ 0,26 s nas funções comuns, ≈ 1,02 s no Hz lógico sem sinal e ≈ 2,44 s na capacitância com
     /// 1000 µF; com 1 s (o padrão até a 0.2.0), essas duas davam W7012 em boa parte das consultas. Com o medidor
     /// respondendo, o prazo não atrasa nada (a consulta termina com o quadro); ele só pesa sem resposta: com o medidor
-    /// desligado, o <see cref="BrymenErrorCodes.TransmissionTimeout"/> da leitura contínua sai em ≈ 22 s, e não em ≈ 11 s.
+    /// desligado, o <see cref="BrymenErrorCodes.TransmissionTimeout"/> da leitura contínua sai em ≈ 14,8 s, e não em ≈ 11,3 s.
     /// </summary>
     public TimeSpan RealTimeFirstReportTimeout { get; set; } = MeterConnection.DefaultRealTimeFirstReportTimeout;
 

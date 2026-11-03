@@ -540,8 +540,9 @@ ocupa o cabo ≈ 3,3 s. Medido com o firmware BrymenIR, que reproduz esses tempo
 | Hz lógico sem sinal (1031 ms) | 0,90–1,02 s | `W7012` em 6 a 9 de 19 consultas | sem erro; ~3 reenvios descartados por leitura |
 | Capacitância com 1000 µF (2457 ms) | 2,34–2,45 s | `W7012` em 14 de 22 | `W7012` em 7 de 15 |
 
-Cada `W7012` fecha e reabre o cabo. O que resolve é esperar o ciclo do medidor mais ≈ 0,35 s (1,4 s no Hz lógico, 2,9 s
-na capacitância); com 3,5 s, fica coberta toda resposta que o cabo pode dar, como a espera de até 4 s do software
+Cada `W7012` fecha e reabre o cabo. Com os padrões atuais, as quatro linhas da tabela saem sem erro nas duas famílias,
+com uma leitura por ciclo do medidor (mesmo teste, em 03/11/2026). O que resolve é esperar o ciclo do medidor mais
+≈ 0,35 s (1,4 s no Hz lógico, 2,9 s na capacitância); com 3,5 s, fica coberta toda resposta que o cabo pode dar, como a espera de até 4 s do software
 original. Os padrões são, por isso:
 
 | Opção | 0.2.0 | Agora | Onde vale |
@@ -556,10 +557,14 @@ leitura a cada ≈ 265 ms. O custo aparece só sem resposta:
 
 - cada `W7012` sai depois de 3,5 s, e não de 1 s (BM52x) ou 2 s (BM82x). `ReadAsync` com o medidor desligado leva 3,5 s
   para falhar (com a família desconhecida, mais o `52 66` de reserva, que continua com o `ReportTimeout`);
-- com o medidor desligado, o `E9016` da leitura contínua (3 falhas seguidas) sai mais tarde. Com as opções da 0.2.0,
-  ele saiu em 11,3 s; com `ReportTimeout` e `RealTimeResendBudget` em 3,5 s, em 22,3 s, porque cada consulta da detecção
-  esperava o orçamento e depois o `52 66` de reserva com mais 3,5 s. Com os padrões atuais o `52 66` de reserva fica
-  com o `ReportTimeout` de 1 s;
+- com o medidor desligado, o `E9016` da leitura contínua (3 falhas seguidas) sai mais tarde: em 14,8 s com os padrões
+  atuais (`W7012` em 4,9 e 9,9 s), contra 11,3 s com os da 0.2.0 (`W7012` em 4,4 e 7,9 s). Subir o `ReportTimeout` para
+  3,5 s, em vez de usar a opção nova, levaria o `E9016` a 22,4 s: cada consulta da detecção espera o orçamento e depois
+  o `52 66` de reserva, que continua com o `ReportTimeout` de 1 s;
+- um efeito a favor: quando o ET-2517A ignora os 2 pedidos ópticos de uma troca, o cabo fica livre em ≈ 3,3 s, e um
+  reenvio que chegue antes do fim do orçamento de 3,5 s ainda traz a leitura. Com 2 s, essa consulta era `W7012`. Isso
+  depende de o fim da escuta (2,72–3,15 s depois do 2º pedido) e a latência do medidor caberem na folga, então é um
+  ganho eventual, não garantido;
 - mesmo com esperas curtas, o cabo limita o ritmo sem resposta: um comando aceito o ocupa ≈ 3,3 s, e os que chegam
   nesse tempo são descartados. Por isso, com 1 s, o `W7012` da 0.2.0 já saía a cada ≈ 3,5 s (em 4,4 e 7,9 s), e não a
   cada segundo: encurtar a espera adianta pouco a detecção do medidor desligado e custa as funções lentas.
