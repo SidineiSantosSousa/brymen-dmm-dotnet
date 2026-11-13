@@ -716,14 +716,14 @@ runtime em `$HOME` fica invisível para o serviço por causa do `ProtectHome`.
 ### 2. Instalar no Raspberry Pi (arm64)
 
 ```bash
-scp artifacts/brymen-dmm-0.2.0-linux-arm64.tar.gz pi@raspberrypi.local:
+scp artifacts/brymen-dmm-0.3.0-linux-arm64.tar.gz pi@raspberrypi.local:
 ssh pi@raspberrypi.local
-tar -xzf brymen-dmm-0.2.0-linux-arm64.tar.gz
-sudo bash brymen-dmm-0.2.0-linux-arm64/deploy/linux/install.sh brymen-dmm-0.2.0-linux-arm64
+tar -xzf brymen-dmm-0.3.0-linux-arm64.tar.gz
+sudo bash brymen-dmm-0.3.0-linux-arm64/deploy/linux/install.sh brymen-dmm-0.3.0-linux-arm64
 ```
 
 O `install.sh` também aceita o próprio `.tar.gz`. A partir de um clone do repositório, rode
-`sudo bash deploy/linux/install.sh artifacts/brymen-dmm-0.2.0-linux-arm64.tar.gz`. Ele:
+`sudo bash deploy/linux/install.sh artifacts/brymen-dmm-0.3.0-linux-arm64.tar.gz`. Ele:
 
 1. confere se o executável é ELF e se o sistema tem o interpretador dele (`/lib/ld-linux-aarch64.so.1` ou
    `/lib64/ld-linux-x86-64.so.2`), o que evita instalar o pacote x64 no Pi ou o arm64 num Raspberry Pi OS de
@@ -744,7 +744,7 @@ O `install.sh` também aceita o próprio `.tar.gz`. A partir de um clone do repo
 Igual ao Raspberry Pi, com o pacote `linux-x64`:
 
 ```bash
-sudo bash brymen-dmm-0.2.0-linux-x64/deploy/linux/install.sh brymen-dmm-0.2.0-linux-x64
+sudo bash brymen-dmm-0.3.0-linux-x64/deploy/linux/install.sh brymen-dmm-0.3.0-linux-x64
 ```
 
 ### 4. Verificar
@@ -791,11 +791,11 @@ O [`Dockerfile`](Dockerfile) gera uma imagem multi-arquitetura (`linux/amd64` e 
 
 ```bash
 # multi-arquitetura, enviando para um registry
-docker buildx build --platform linux/amd64,linux/arm64 -t registry.example/brymen-dmm:0.2.0 --push .
+docker buildx build --platform linux/amd64,linux/arm64 -t registry.example/brymen-dmm:0.3.0 --push .
 # uma arquitetura, carregando no Docker local
-docker buildx build --platform linux/arm64 -t brymen-dmm:0.2.0 --load .
+docker buildx build --platform linux/arm64 -t brymen-dmm:0.3.0 --load .
 # Docker sem o plugin buildx (builder legado), num Raspberry Pi ou Orange Pi de 64 bits
-DOCKER_BUILDKIT=0 docker build --build-arg BUILDPLATFORM=linux/arm64 --build-arg TARGETARCH=arm64 -t brymen-dmm:0.2.0 .
+DOCKER_BUILDKIT=0 docker build --build-arg BUILDPLATFORM=linux/arm64 --build-arg TARGETARCH=arm64 -t brymen-dmm:0.3.0 .
 ```
 
 O builder legado não define o `BUILDPLATFORM` nem o `TARGETARCH`, que o BuildKit preenche sozinho: passe os dois com
@@ -820,7 +820,7 @@ docker run -d --name brymen-dmm -p 5080:5080 --stop-timeout 45 \
   --group-add "$(getent group brymen-dmm | cut -d: -f3)" \
   -e Meter__DevicePath="$HIDRAW" \
   -v brymen-dmm-data:/data \
-  brymen-dmm:0.2.0
+  brymen-dmm:0.3.0
 
 # o mesmo cabo com um nome fixo no contêiner, independente do hidrawN do host
 docker run -d --name brymen-dmm -p 5080:5080 --stop-timeout 45 \
@@ -828,10 +828,10 @@ docker run -d --name brymen-dmm -p 5080:5080 --stop-timeout 45 \
   --group-add "$(getent group brymen-dmm | cut -d: -f3)" \
   -e Meter__DevicePath=/dev/bu86x \
   -v brymen-dmm-data:/data \
-  brymen-dmm:0.2.0
+  brymen-dmm:0.3.0
 
 # sem o cabo
-docker run -d --name brymen-dmm-sim -p 5081:5080 -e Meter__Transport=Simulated brymen-dmm:0.2.0
+docker run -d --name brymen-dmm-sim -p 5081:5080 -e Meter__Transport=Simulated brymen-dmm:0.3.0
 ```
 
 Com o [`docker-compose.yml`](docker-compose.yml):

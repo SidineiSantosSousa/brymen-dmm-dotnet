@@ -4,7 +4,7 @@ As mudanças relevantes dos pacotes `Brymen.Dmm` e `Brymen.Dmm.Extensions.Hostin
 O formato segue o [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/), e a versão é a do
 [`Directory.Build.props`](Directory.Build.props), a mesma para os pacotes e para a API.
 
-## Não lançado
+## 0.3.0 - 2026-11-13
 
 ### Mudado
 
