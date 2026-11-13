@@ -118,8 +118,10 @@ public sealed class Bm525sModelTests(ApiFactory factory) : IClassFixture<ApiFact
         Assert.True(ModelAssertions.Stat(meter, "requests") >= ModelAssertions.Stat(meter, "queries"));
         Assert.Equal(0, ModelAssertions.Stat(meter, "resends"));
         Assert.Equal(0, ModelAssertions.Stat(meter, "failedQueries"));
-        // A detecção é o 82 66, que o BM525s também responde; depois, o 52 66 validado no hardware.
-        var writes = ModelAssertions.RealTimeWrites(Device);
+        // A detecção é o 82 66, que o BM525s também responde; depois, o 52 66 validado no hardware. A 1ª leitura e o
+        // modelo já saem da detecção: espera a consulta seguinte, que num runner lento ainda pode não ter saído.
+        var writes = await TestHelpers.EventuallyAsync(
+            () => Task.FromResult(ModelAssertions.RealTimeWrites(Device) is { Count: > 1 } w ? w : null), "o 1º 52 66 depois da detecção");
         Assert.Equal("8266", writes[0]);
         Assert.Equal("5266", writes[^1]);
         Assert.DoesNotContain("8266", writes.Skip(1));
