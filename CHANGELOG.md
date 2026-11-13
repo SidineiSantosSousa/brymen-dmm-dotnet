@@ -4,6 +4,14 @@ As mudanças relevantes dos pacotes `Brymen.Dmm` e `Brymen.Dmm.Extensions.Hostin
 O formato segue o [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/), e a versão é a do
 [`Directory.Build.props`](Directory.Build.props), a mesma para os pacotes e para a API.
 
+## 0.3.1 - 2026-11-13
+
+### Mudado
+
+- Os READMEs dos pacotes `Brymen.Dmm` e `Brymen.Dmm.Extensions.Hosting` (a página do nuget.org) ficam em inglês e em
+  português, no mesmo arquivo: o inglês primeiro, o português na seção "Português". No do `Brymen.Dmm`, a descrição do
+  modelo corrigida (`"Minipa ET-2615A (Brymen BM525s, BM52x)"`) e o item das funções lentas. Sem mudança no código.
+
 ## 0.3.0 - 2026-11-13
 
 ### Mudado
