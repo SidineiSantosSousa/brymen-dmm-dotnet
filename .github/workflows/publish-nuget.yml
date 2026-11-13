@@ -1,0 +1,70 @@
+# Publica o Brymen.Dmm e o Brymen.Dmm.Extensions.Hosting no nuget.org com o Trusted Publishing (sem chave de API
+# guardada no repositório). Roda com o push de uma tag vX.Y.Z igual à <Version> do Directory.Build.props, ou à mão.
+# A política do nuget.org (dono sidhermit) autoriza este arquivo, pelo nome, a publicar Brymen.Dmm e Brymen.Dmm.*.
+name: Publicar no NuGet
+
+on:
+  push:
+    tags: [ 'v*.*.*' ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write   # o token OIDC que o NuGet/login troca por uma chave de API temporária
+
+jobs:
+  publish:
+    # Windows: os testes do Hid e do Linux sem hardware foram validados aí; os de hardware se ignoram sozinhos.
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          # O net8.0 para os testes dos alvos net8.0; o SDK do global.json para compilar.
+          dotnet-version: 8.0.x
+          global-json-file: global.json
+
+      - name: Conferir a tag com a versão
+        if: github.ref_type == 'tag'
+        shell: pwsh
+        run: |
+          $version = ([xml](Get-Content Directory.Build.props)).Project.PropertyGroup.Version | Where-Object { $_ } | Select-Object -First 1
+          if ("v$version" -ne '${{ github.ref_name }}') {
+            Write-Error "A tag ${{ github.ref_name }} não bate com a <Version> $version do Directory.Build.props."
+            exit 1
+          }
+
+      - name: Testar
+        run: dotnet test BrymenDmm.slnx -c Release
+
+      - name: Empacotar
+        run: |
+          dotnet pack src/Brymen.Dmm -c Release --no-build -o out
+          dotnet pack src/Brymen.Dmm.Extensions.Hosting -c Release --no-build -o out
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: pacotes
+          path: out/*
+
+      - name: Entrar no nuget.org
+        id: login
+        uses: NuGet/login@v1
+        with:
+          user: sidhermit
+
+      # O Brymen.Dmm antes do Hosting, que depende dele. Os .snupkg da mesma pasta vão junto. --skip-duplicate deixa
+      # rodar de novo depois de uma falha no meio sem erro na versão já publicada.
+      - name: Publicar
+        shell: pwsh
+        env:
+          NUGET_API_KEY: ${{ steps.login.outputs.NUGET_API_KEY }}
+        run: |
+          foreach ($id in 'Brymen.Dmm', 'Brymen.Dmm.Extensions.Hosting') {
+            # Pelo nome exato seguido da versão: "Brymen.Dmm.*" também pegaria o Hosting.
+            $pkg = Get-ChildItem out -Filter '*.nupkg' | Where-Object { $_.Name -match "^$([regex]::Escape($id))\.\d" } | Select-Object -First 1
+            if (-not $pkg) { Write-Error "Pacote $id não encontrado em out/."; exit 1 }
+            dotnet nuget push $pkg.FullName --api-key $env:NUGET_API_KEY --source https://api.nuget.org/v3/index.json --skip-duplicate
+            if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          }
