@@ -407,8 +407,8 @@ Chaves novas da versão 0.2.0:
 |---|---|---|
 | `Meter:Family` | `Auto` | Família do medidor: `Auto` (detectada na 1ª leitura), `Bm52x` ou `Bm82x` (fixas). |
 | `Meter:RealTimeResendTimeout` | `00:00:00.300` | BM82x e detecção: espera pelo 1º relatório antes de reenviar o mesmo pedido (10 ms a 30 s). |
-| `Meter:RealTimeResendBudget` | `00:00:02` | BM82x e detecção: tempo total da consulta com os reenvios; esgotado, `W7012` (10 ms a 1 min). Depois da 0.2.0, 3,5 s. |
-| `Meter:RealTimeFirstReportTimeout` (depois da 0.2.0) | `00:00:03.500` | BM52x: espera pelo 1º relatório de cada consulta de tempo real (10 ms a 1 min). |
+| `Meter:RealTimeResendBudget` | `00:00:02` | BM82x e detecção: tempo total da consulta com os reenvios; esgotado, `W7012` (10 ms a 1 min). Desde a 0.3.0, 3,5 s. |
+| `Meter:RealTimeFirstReportTimeout` (0.3.0) | `00:00:03.500` | BM52x: espera pelo 1º relatório de cada consulta de tempo real (10 ms a 1 min). |
 | `Meter:SimulatedModel` | `Bm525s` | Medidor do transporte `Simulated`: `Bm525s` ou `Et2517a`. |
 
 Chaves acrescentadas durante o desenvolvimento da versão 0.1.0:
