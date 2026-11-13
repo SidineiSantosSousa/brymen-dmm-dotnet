@@ -8,7 +8,7 @@
     <InvariantGlobalization>true</InvariantGlobalization>
     <!-- O produto das bibliotecas (o Protocol e o Hid vão dentro do pacote Brymen.Dmm); a API e o hosting têm o seu. -->
     <Product>Brymen.Dmm</Product>
-    <Version>0.3.0</Version>
+    <Version>0.3.1</Version>
     <!-- Autoria explícita: o padrão do SDK (o nome do assembly, "Brymen.Dmm.Hid") pareceria uma empresa Brymen. -->
     <Authors>Sidinei Santos Sousa</Authors>
     <Company>Sidinei Santos Sousa</Company>
