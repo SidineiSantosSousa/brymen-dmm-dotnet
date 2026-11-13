@@ -38,10 +38,15 @@ jobs:
       - name: Testar
         run: dotnet test BrymenDmm.slnx -c Release
 
+      # Sem --no-build: o Brymen.Dmm leva o Protocol e o Hid dentro do pacote, e esse alvo chama o Build deles
+      # (NETSDK1085 com --no-build). O pwsh só falharia pelo último comando, daí a conferência de cada um.
       - name: Empacotar
+        shell: pwsh
         run: |
-          dotnet pack src/Brymen.Dmm -c Release --no-build -o out
-          dotnet pack src/Brymen.Dmm.Extensions.Hosting -c Release --no-build -o out
+          foreach ($project in 'src/Brymen.Dmm', 'src/Brymen.Dmm.Extensions.Hosting') {
+            dotnet pack $project -c Release -o out
+            if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          }
 
       - uses: actions/upload-artifact@v4
         with:
